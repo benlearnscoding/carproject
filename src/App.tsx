@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Search, Plus, Star, ChevronRight, Heart, CarFront, UserRound } from "lucide-react";
+import { Search, Plus, Star, ChevronRight, Heart, CarFront, UserRound, ArrowLeft, Check } from "lucide-react";
 import { cars, type Car } from "./data";
 
 type Tab = "discover" | "cars" | "profile";
@@ -29,7 +29,15 @@ function CarCard({ car, onClick }: { car: Car; onClick: () => void }) {
   );
 }
 
-function CarDetail({ car, close }: { car: Car; close: () => void }) {
+function CarDetail({
+  car,
+  close,
+  onRate,
+}: {
+  car: Car;
+  close: () => void;
+  onRate: () => void;
+}) {
   return (
     <div className="modal-backdrop" onClick={close}>
       <div className="detail" onClick={(e) => e.stopPropagation()}>
@@ -61,7 +69,9 @@ function CarDetail({ car, close }: { car: Car; close: () => void }) {
 
           <div className="actions">
             <button className="primary"><Plus size={17}/> Add to garage</button>
-            <button className="secondary"><Star size={17}/> Rate this car</button>
+            <button className="secondary" onClick={onRate}>
+  <Star size={17}/> Rate this car
+</button>
             <button className="secondary"><Heart size={17}/> Want it</button>
           </div>
 
@@ -75,10 +85,113 @@ function CarDetail({ car, close }: { car: Car; close: () => void }) {
   );
 }
 
+const ratingCategories = ["Driving", "Sound", "Steering", "Performance", "Comfort", "Looks", "Reliability", "Value"];
+type Experience = "owned" | "driven" | "passenger";
+
+function RatingFlow({ car, close, complete }: { car: Car; close: () => void; complete: (score: number) => void }) {
+  const [step, setStep] = useState(1);
+  const [experience, setExperience] = useState<Experience | null>(null);
+  const [scores, setScores] = useState<Record<string, number>>(
+    () => Object.fromEntries(ratingCategories.map(category => [category, 8]))
+  );
+  const [review, setReview] = useState("");
+  const [submitted, setSubmitted] = useState(false);
+  const overall = Object.values(scores).reduce((sum, score) => sum + score, 0) / ratingCategories.length;
+
+  const updateScore = (category: string, score: number) => {
+    setScores(current => ({ ...current, [category]: score }));
+  };
+
+  return (
+    <div className="modal-backdrop rating-backdrop" onClick={close}>
+      <div className="rating-flow" onClick={event => event.stopPropagation()}>
+        <div className="rating-topbar">
+          {!submitted && step > 1 ? <button className="back" onClick={() => setStep(step - 1)}><ArrowLeft size={18} /> Back</button> : <span />}
+          {!submitted && <button className="close" onClick={close}>×</button>}
+        </div>
+
+        {submitted ? (
+          <div className="rating-success">
+            <div className="success-mark"><Check size={25} /></div>
+            <p className="eyebrow">RATING SAVED</p>
+            <h2>Your experience is now part of the record.</h2>
+            <p>Thanks for adding your point of view on the {car.make} {car.model}.</p>
+            <button className="primary" onClick={close}>Done</button>
+          </div>
+        ) : (
+          <>
+            <div className="rating-progress" aria-label={`Step ${step} of 3`}>
+              {[1, 2, 3].map(index => <span key={index} className={index <= step ? "current" : ""} />)}
+            </div>
+            <div className="rating-heading">
+              <p className="eyebrow">RATE · {step} OF 3</p>
+              <h2>{step === 1 ? "How do you know this car?" : step === 2 ? "Give it your numbers." : "Leave your mark."}</h2>
+              <p>{step === 1 ? `Your context makes a rating for the ${car.make} ${car.model} more useful.` : step === 2 ? "There is no perfect car. Rate the parts that mattered to you." : "A few honest words are often more useful than a perfect score."}</p>
+            </div>
+
+            {step === 1 && (
+              <div className="experience-options">
+                {([
+                  ["owned", "I owned one", "It was mine, for a while."],
+                  ["driven", "I've driven one", "Enough time behind the wheel to know it."],
+                  ["passenger", "I've ridden in one", "Experienced from the other seat."],
+                ] as const).map(([value, title, description]) => (
+                  <button key={value} className={`experience-option ${experience === value ? "selected" : ""}`} onClick={() => setExperience(value)}>
+                    <span className="option-dot" /><span><strong>{title}</strong><small>{description}</small></span>
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {step === 2 && (
+              <div className="score-editor">
+                <div className="overall-score"><span>Your overall score</span><strong>{overall.toFixed(1)}</strong><Star size={20} fill="currentColor" /></div>
+                {ratingCategories.map(category => (
+                  <div className="score-row" key={category}>
+                    <span>{category}</span>
+                    <div className="score-buttons" aria-label={`${category} score`}>
+                      {Array.from({ length: 10 }, (_, index) => index + 1).map(value => (
+                        <button key={value} className={value <= scores[category] ? "filled" : ""} onClick={() => updateScore(category, value)} aria-label={`${value} out of 10`} />
+                      ))}
+                    </div>
+                    <strong>{scores[category]}.0</strong>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {step === 3 && (
+              <div className="review-editor">
+                <div className="your-score"><span>Your rating</span><Score value={overall} /></div>
+                <label htmlFor="review">What stood out?</label>
+                <textarea id="review" value={review} onChange={event => setReview(event.target.value)} maxLength={500} placeholder="What did it feel like to drive, own, or ride in? The details people remember are the ones worth sharing." />
+                <div className="review-meta"><span>Optional · be specific, be honest.</span><span>{review.length}/500</span></div>
+              </div>
+            )}
+
+            <div className="rating-actions">
+              <button className="secondary" onClick={close}>Cancel</button>
+              {step < 3 ? <button className="primary" disabled={step === 1 && !experience} onClick={() => setStep(step + 1)}>Continue <ChevronRight size={17} /></button> : <button className="primary" onClick={() => { complete(overall); setSubmitted(true); }}><Star size={17} /> Publish rating</button>}
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export default function App() {
   const [tab, setTab] = useState<Tab>("discover");
   const [query, setQuery] = useState("");
   const [selected, setSelected] = useState<Car | null>(null);
+  const [ratingCar, setRatingCar] = useState<Car | null>(null);
+  const [submittedRatings, setSubmittedRatings] = useState<Record<string, number>>({});
+
+  const displayedCar = (car: Car): Car => {
+    const submittedScore = submittedRatings[car.id];
+    if (submittedScore === undefined) return car;
+    return { ...car, rating: (car.rating * car.ratings + submittedScore) / (car.ratings + 1), ratings: car.ratings + 1 };
+  };
 
   const filtered = useMemo(() => {
     const q = query.toLowerCase().trim();
@@ -115,7 +228,7 @@ export default function App() {
 
             <section className="section">
               <div className="section-head"><div><p className="eyebrow">COMMUNITY</p><h2>Cars people are talking about</h2></div><button className="text-button">View all <ChevronRight size={16}/></button></div>
-              <div className="grid">{filtered.map(car => <CarCard key={car.id} car={car} onClick={() => setSelected(car)} />)}</div>
+              <div className="grid">{filtered.map(car => <CarCard key={car.id} car={displayedCar(car)} onClick={() => setSelected(displayedCar(car))} />)}</div>
             </section>
 
             <section className="statement">
@@ -130,7 +243,7 @@ export default function App() {
           <section className="page-section">
             <p className="eyebrow">DATABASE</p><h1>Explore cars.</h1>
             <div className="search-large"><Search size={19}/><input value={query} onChange={e => setQuery(e.target.value)} placeholder="Search..." /></div>
-            <div className="grid">{filtered.map(car => <CarCard key={car.id} car={car} onClick={() => setSelected(car)} />)}</div>
+            <div className="grid">{filtered.map(car => <CarCard key={car.id} car={displayedCar(car)} onClick={() => setSelected(displayedCar(car))} />)}</div>
           </section>
         )}
 
@@ -145,7 +258,18 @@ export default function App() {
       </main>
 
       <footer><span>CARDB</span><span>Your automotive taste, documented.</span></footer>
-      {selected && <CarDetail car={selected} close={() => setSelected(null)} />}
+      {selected && (
+  <CarDetail
+    car={selected}
+    close={() => setSelected(null)}
+    onRate={() => setRatingCar(selected)}
+  />
+)}
+      {ratingCar && <RatingFlow car={ratingCar} close={() => setRatingCar(null)} complete={(score) => {
+        const updatedCar = { ...ratingCar, rating: (ratingCar.rating * ratingCar.ratings + score) / (ratingCar.ratings + 1), ratings: ratingCar.ratings + 1 };
+        setSubmittedRatings(current => ({ ...current, [ratingCar.id]: score }));
+        setSelected(current => current?.id === ratingCar.id ? updatedCar : current);
+      }} />}
     </div>
   );
 }
