@@ -202,7 +202,7 @@ export default function App() {
   return (
     <div className="app">
       <header className="nav">
-        <button className="logo" onClick={() => setTab("discover")}>CARDB<span>•</span></button>
+        <button className="logo" onClick={() => setTab("discover")}>DRIVEN<span>•</span></button>
         <nav>
           <button className={tab === "discover" ? "active" : ""} onClick={() => setTab("discover")}>Discover</button>
           <button className={tab === "cars" ? "active" : ""} onClick={() => setTab("cars")}>Cars</button>
@@ -234,7 +234,7 @@ export default function App() {
             <section className="statement">
               <p className="eyebrow">THE IDEA</p>
               <h2>Not a car magazine.<br/><em>A record of experience.</em></h2>
-              <p>Professional reviews tell you what a journalist thinks. CARDB shows you what people who actually owned and drove the car think.</p>
+              <p>Professional reviews tell you what a journalist thinks. Driven shows you what people who actually owned and drove the car think.</p>
             </section>
           </>
         )}
@@ -257,7 +257,7 @@ export default function App() {
         )}
       </main>
 
-      <footer><span>CARDB</span><span>Your automotive taste, documented.</span></footer>
+      <footer><span>DRIVEN</span><span>Your automotive taste, documented.</span></footer>
       {selected && (
   <CarDetail
     car={selected}
