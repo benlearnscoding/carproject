@@ -1,8 +1,29 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Search, Plus, Star, ChevronRight, Heart, CarFront, UserRound, ArrowLeft, Check } from "lucide-react";
 import { cars, type Car } from "./data";
 
 type Tab = "discover" | "cars" | "profile";
+type UserProfile = {
+  firstName: string;
+  lastName: string;
+  email: string;
+  username: string;
+  bio: string;
+};
+
+const profileStorageKey = "driven.profile";
+
+function loadStoredProfile(): UserProfile | null {
+  if (typeof window === "undefined") return null;
+
+  try {
+    const saved = JSON.parse(window.localStorage.getItem(profileStorageKey) || "null");
+    if (!saved || !["firstName", "lastName", "email", "username", "bio"].every(key => typeof saved[key] === "string")) return null;
+    return saved as UserProfile;
+  } catch {
+    return null;
+  }
+}
 
 function Score({ value }: { value: number }) {
   return (
@@ -180,12 +201,54 @@ function RatingFlow({ car, close, complete }: { car: Car; close: () => void; com
   );
 }
 
+function CreateProfile({ close, save, profile }: { close: () => void; save: (profile: UserProfile) => void; profile: UserProfile | null }) {
+  const [firstName, setFirstName] = useState(profile?.firstName ?? "");
+  const [lastName, setLastName] = useState(profile?.lastName ?? "");
+  const [email, setEmail] = useState(profile?.email ?? "");
+  const [username, setUsername] = useState(profile?.username ?? "");
+  const [password, setPassword] = useState("");
+  const [bio, setBio] = useState(profile?.bio ?? "");
+
+  const submit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!firstName.trim() || !lastName.trim() || !email.trim() || !username.trim() || !password) return;
+    save({ firstName: firstName.trim(), lastName: lastName.trim(), email: email.trim(), username: username.trim().replace(/^@/, ""), bio: bio.trim() });
+  };
+
+  return (
+    <div className="modal-backdrop profile-backdrop" onClick={close}>
+      <div className="profile-creator" onClick={event => event.stopPropagation()}>
+        <button className="close" onClick={close} aria-label="Close profile creator">×</button>
+        <p className="eyebrow">{profile ? "EDIT PROFILE" : "JOIN DRIVEN"}</p>
+        <h2>{profile ? "Refine your automotive identity." : "Your automotive identity starts here."}</h2>
+        <p className="profile-intro">A few details make your garage and ratings feel like your own.</p>
+        <form onSubmit={submit}>
+          <label>First name<input value={firstName} onChange={event => setFirstName(event.target.value)} placeholder="Your first name" autoFocus /></label>
+          <label>Last name<input value={lastName} onChange={event => setLastName(event.target.value)} placeholder="Your last name" /></label>
+          <label>Email<input type="email" value={email} onChange={event => setEmail(event.target.value)} placeholder="you@example.com" autoComplete="email" /></label>
+          <label>Username<input value={username} onChange={event => setUsername(event.target.value)} placeholder="yourusername" autoComplete="username" /></label>
+          <label>Password<input type="password" value={password} onChange={event => setPassword(event.target.value)} placeholder={profile ? "Enter a password to save changes" : "Create a password"} autoComplete={profile ? "current-password" : "new-password"} /></label>
+          <label>About you <small>Optional</small><textarea value={bio} onChange={event => setBio(event.target.value)} maxLength={180} placeholder="What do you love to drive?" /></label>
+          <div className="profile-form-footer"><span>{bio.length}/180</span><button className="primary" type="submit" disabled={!firstName.trim() || !lastName.trim() || !email.trim() || !username.trim() || !password}>{profile ? "Save profile" : "Create profile"} <ChevronRight size={17} /></button></div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
 export default function App() {
   const [tab, setTab] = useState<Tab>("discover");
   const [query, setQuery] = useState("");
   const [selected, setSelected] = useState<Car | null>(null);
   const [ratingCar, setRatingCar] = useState<Car | null>(null);
   const [submittedRatings, setSubmittedRatings] = useState<Record<string, number>>({});
+  const [profile, setProfile] = useState<UserProfile | null>(loadStoredProfile);
+  const [creatingProfile, setCreatingProfile] = useState(false);
+
+  useEffect(() => {
+    if (profile) window.localStorage.setItem(profileStorageKey, JSON.stringify(profile));
+    else window.localStorage.removeItem(profileStorageKey);
+  }, [profile]);
 
   const displayedCar = (car: Car): Car => {
     const submittedScore = submittedRatings[car.id];
@@ -208,7 +271,7 @@ export default function App() {
           <button className={tab === "cars" ? "active" : ""} onClick={() => setTab("cars")}>Cars</button>
           <button className={tab === "profile" ? "active" : ""} onClick={() => setTab("profile")}>My garage</button>
         </nav>
-        <button className="profile-button" onClick={() => setTab("profile")}><UserRound size={18}/><span>Benjamin</span></button>
+        <button className="profile-button" onClick={() => setTab("profile")}><UserRound size={18}/><span>{profile?.firstName || "Create profile"}</span></button>
       </header>
 
       <main>
@@ -248,12 +311,22 @@ export default function App() {
         )}
 
         {tab === "profile" && (
-          <section className="profile-page">
-            <div className="profile-hero"><div className="avatar big">B</div><div><p className="eyebrow">PROFILE</p><h1>Benjamin</h1><p>Car enthusiast · 8 cars owned · 47 driven</p></div></div>
-            <div className="profile-stats"><div><strong>47</strong><span>Driven</span></div><div><strong>8</strong><span>Owned</span></div><div><strong>21</strong><span>Brands</span></div><div><strong>9.1</strong><span>Avg. rating</span></div></div>
-            <div className="section-head"><div><p className="eyebrow">YOUR GARAGE</p><h2>Cars you've experienced</h2></div><button className="primary"><Plus size={17}/> Add car</button></div>
-            <div className="empty-garage"><CarFront size={32}/><h3>Your garage starts here.</h3><p>Add cars you've owned or driven and start building your automotive identity.</p><button className="secondary"><Plus size={17}/> Add your first car</button></div>
-          </section>
+          profile ? (
+            <section className="profile-page">
+              <div className="profile-hero"><div className="avatar big">{profile.firstName.charAt(0).toUpperCase()}</div><div><p className="eyebrow">@{profile.username}</p><h1>{profile.firstName} {profile.lastName}</h1><p>New to Driven</p></div><button className="secondary profile-edit" onClick={() => setCreatingProfile(true)}>Edit profile</button></div>
+              {profile.bio && <p className="profile-bio">{profile.bio}</p>}
+              <div className="profile-stats"><div><strong>0</strong><span>Driven</span></div><div><strong>0</strong><span>Owned</span></div><div><strong>0</strong><span>Brands</span></div><div><strong>—</strong><span>Avg. rating</span></div></div>
+              <div className="section-head"><div><p className="eyebrow">YOUR GARAGE</p><h2>Cars you've experienced</h2></div><button className="primary"><Plus size={17}/> Add car</button></div>
+              <div className="empty-garage"><CarFront size={32}/><h3>Your garage starts here.</h3><p>Add cars you've owned or driven and start building your automotive identity.</p><button className="secondary"><Plus size={17}/> Add your first car</button></div>
+            </section>
+          ) : (
+            <section className="profile-page profile-start">
+              <p className="eyebrow">YOUR GARAGE</p>
+              <h1>Your history starts with <em>you.</em></h1>
+              <p>Set up your profile to collect the cars you’ve owned, driven, and want next.</p>
+              <button className="primary" onClick={() => setCreatingProfile(true)}><UserRound size={17}/> Create your profile</button>
+            </section>
+          )
         )}
       </main>
 
@@ -270,6 +343,7 @@ export default function App() {
         setSubmittedRatings(current => ({ ...current, [ratingCar.id]: score }));
         setSelected(current => current?.id === ratingCar.id ? updatedCar : current);
       }} />}
+      {creatingProfile && <CreateProfile profile={profile} close={() => setCreatingProfile(false)} save={(newProfile) => { setProfile(newProfile); setCreatingProfile(false); }} />}
     </div>
   );
 }
