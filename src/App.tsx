@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
-import { Search, Plus, Star, ChevronRight, Heart, CarFront, UserRound, ArrowLeft, Check } from "lucide-react";
+import { Plus, Star, ChevronRight, ChevronDown, Heart, CarFront, UserRound, ArrowLeft, Check, LogOut } from "lucide-react";
+import type { User } from "@supabase/supabase-js";
 import { cars, type Car } from "./data";
+import { supabase } from "./supabase";
 
 type Tab = "discover" | "cars" | "profile";
 type UserProfile = {
@@ -10,6 +12,34 @@ type UserProfile = {
   username: string;
   bio: string;
 };
+type GarageStatus = "owned" | "driven" | "want";
+type GarageEntry = {
+  id: string;
+  carId: string;
+  status: GarageStatus;
+  createdAt: string;
+};
+const garageStatusLabels: Record<GarageStatus, string> = { owned: "Owned", driven: "Driven", want: "Want" };
+
+const makes = [
+  "Alpine",
+  "Aston Martin",
+  "Audi",
+  "BMW",
+  "Bugatti",
+  "Chevrolet",
+  "Ferrari",
+  "Lamborghini",
+  "Lotus",
+  "Maserati",
+  "McLaren",
+  "Mercedes",
+  "Mini",
+  "Nissan",
+  "Porsche",
+  "Toyota",
+  "Volkswagen",
+];
 
 const profileStorageKey = "driven.profile";
 
@@ -25,6 +55,51 @@ function loadStoredProfile(): UserProfile | null {
   }
 }
 
+function profileFromUser(user: User): UserProfile {
+  return {
+    firstName: String(user.user_metadata.first_name ?? ""),
+    lastName: String(user.user_metadata.last_name ?? ""),
+    email: user.email ?? "",
+    username: String(user.user_metadata.username ?? ""),
+    bio: String(user.user_metadata.bio ?? ""),
+  };
+}
+
+async function loadRemoteProfile(user: User): Promise<UserProfile> {
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("first_name,last_name,username,bio")
+    .eq("id", user.id)
+    .maybeSingle();
+
+  if (error) throw error;
+  if (!data) return profileFromUser(user);
+
+  return {
+    firstName: data.first_name,
+    lastName: data.last_name,
+    email: user.email ?? "",
+    username: data.username,
+    bio: data.bio,
+  };
+}
+
+async function loadGarage(userId: string): Promise<GarageEntry[]> {
+  const { data, error } = await supabase
+    .from("garage_entries")
+    .select("id,car_id,relationship,created_at")
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false });
+
+  if (error) throw error;
+  return (data ?? []).map(entry => ({
+    id: entry.id,
+    carId: entry.car_id,
+    status: entry.relationship as GarageStatus,
+    createdAt: entry.created_at,
+  }));
+}
+
 function Score({ value }: { value: number }) {
   return (
     <span className="score">
@@ -32,6 +107,42 @@ function Score({ value }: { value: number }) {
       {value.toFixed(1)}
     </span>
   );
+}
+
+function FilterDropdown({ label, value, options, onChange }: { label: string; value: string; options: string[]; onChange: (value: string) => void }) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <div className="make-filter" onBlur={event => { if (!event.currentTarget.contains(event.relatedTarget)) setOpen(false); }}>
+      <span>{label}</span>
+      <div className="filter-select">
+        <button type="button" className="filter-select-trigger" aria-label={`Filter cars by ${label.toLowerCase()}`} aria-haspopup="listbox" aria-expanded={open} onClick={() => setOpen(current => !current)}>
+          <span>{value || "All"}</span><ChevronDown size={14} />
+        </button>
+        {open && (
+          <div className="filter-menu" role="listbox" aria-label={`${label} options`}>
+            {["", ...options].map(option => (
+              <button type="button" role="option" aria-selected={value === option} className={value === option ? "selected" : ""} key={option || "all"} onClick={() => { onChange(option); setOpen(false); }}>
+                {option || "All"}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function MakeFilter({ value, onChange }: { value: string; onChange: (value: string) => void }) {
+  return <FilterDropdown label="Make" value={value} options={makes} onChange={onChange} />;
+}
+
+function ModelFilter({ make, value, onChange }: { make: string; value: string; onChange: (value: string) => void }) {
+  const models = Array.from(new Set(
+    cars.filter(car => !make || car.make === make).map(car => car.model)
+  )).sort((a, b) => a.localeCompare(b));
+
+  return <FilterDropdown label="Model" value={value} options={models} onChange={onChange} />;
 }
 
 function CarCard({ car, onClick }: { car: Car; onClick: () => void }) {
@@ -54,10 +165,12 @@ function CarDetail({
   car,
   close,
   onRate,
+  onAdd,
 }: {
   car: Car;
   close: () => void;
   onRate: () => void;
+  onAdd: () => void;
 }) {
   return (
     <div className="modal-backdrop" onClick={close}>
@@ -89,7 +202,7 @@ function CarDetail({
           </div>
 
           <div className="actions">
-            <button className="primary"><Plus size={17}/> Add to garage</button>
+            <button className="primary" onClick={onAdd}><Plus size={17}/> Add to garage</button>
             <button className="secondary" onClick={onRate}>
   <Star size={17}/> Rate this car
 </button>
@@ -201,35 +314,155 @@ function RatingFlow({ car, close, complete }: { car: Car; close: () => void; com
   );
 }
 
-function CreateProfile({ close, save, profile }: { close: () => void; save: (profile: UserProfile) => void; profile: UserProfile | null }) {
+function AddCarModal({
+  close,
+  add,
+  initialCarId,
+}: {
+  close: () => void;
+  add: (carId: string, status: GarageStatus) => Promise<void>;
+  initialCarId?: string;
+}) {
+  const initialCar = cars.find(car => car.id === initialCarId);
+  const [step, setStep] = useState<1 | 2>(1);
+  const [make, setMake] = useState(initialCar?.make ?? "");
+  const [model, setModel] = useState(initialCar?.model ?? "");
+  const [status, setStatus] = useState<GarageStatus>("driven");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  const makeOptions = Array.from(new Set(cars.map(car => car.make))).sort((a, b) => a.localeCompare(b));
+  const modelOptions = Array.from(new Set(cars.filter(car => car.make === make).map(car => car.model))).sort((a, b) => a.localeCompare(b));
+  const selectedCar = cars.find(car => car.make === make && car.model === model);
+
+  const submit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (step === 1) {
+      setStep(2);
+      return;
+    }
+    if (!selectedCar) return;
+    setBusy(true);
+    setError("");
+    try {
+      await add(selectedCar.id, status);
+      close();
+    } catch (submitError) {
+      setError(submitError instanceof Error ? submitError.message : "We could not add this car. Please try again.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div className="modal-backdrop profile-backdrop" onClick={close}>
+      <div className="profile-creator garage-creator" onClick={event => event.stopPropagation()}>
+        <button className="close" onClick={close} aria-label="Close add car form">×</button>
+        <p className="eyebrow">YOUR GARAGE</p>
+        <h2>{step === 1 ? "How does this car fit your story?" : "Choose your car."}</h2>
+        <p className="profile-intro">{step === 1 ? "Tell the community about your relationship with the car once." : "Select the make and model to finish adding it to your garage."}</p>
+        <form onSubmit={submit}>
+          {step === 1 ? (
+            <fieldset className="garage-status-fieldset">
+              <legend>Relationship</legend>
+              <div className="garage-status-options">
+                {([
+                  ["owned", "Owned", "It was or is yours."],
+                  ["driven", "Driven", "You spent time behind the wheel."],
+                  ["want", "Want", "It belongs on your shortlist."],
+                ] as const).map(([value, label, description]) => (
+                  <button type="button" key={value} className={status === value ? "selected" : ""} onClick={() => setStatus(value)}>
+                    <span className="option-dot" /><span><strong>{label}</strong><small>{description}</small></span>
+                  </button>
+                ))}
+              </div>
+            </fieldset>
+          ) : (
+            <>
+              <div className="garage-car-fields">
+                <FilterDropdown label="Make" value={make} options={makeOptions} onChange={nextMake => { setMake(nextMake); setModel(""); }} />
+                <FilterDropdown label="Model" value={model} options={modelOptions} onChange={setModel} />
+              </div>
+              {selectedCar && <div className="garage-preview"><img src={selectedCar.image} alt="" /><div><span>{selectedCar.make} · {selectedCar.generation}</span><strong>{selectedCar.model}</strong></div></div>}
+            </>
+          )}
+          {error && <p className="auth-error" role="alert">{error}</p>}
+          <div className="rating-actions garage-form-actions">
+            <button type="button" className="secondary" onClick={step === 1 ? close : () => setStep(1)}>{step === 1 ? "Cancel" : "Back"}</button>
+            <button className="primary" type="submit" disabled={(step === 2 && !selectedCar) || busy}>{step === 1 ? <>Continue <ChevronRight size={17}/></> : <>{busy ? "Adding…" : "Add to garage"} <Plus size={17}/></>}</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+function CreateProfile({
+  close,
+  save,
+  signIn,
+  profile,
+  authenticated,
+}: {
+  close: () => void;
+  save: (profile: UserProfile, password: string) => Promise<void>;
+  signIn: (email: string, password: string) => Promise<void>;
+  profile: UserProfile | null;
+  authenticated: boolean;
+}) {
+  const [signingIn, setSigningIn] = useState(false);
   const [firstName, setFirstName] = useState(profile?.firstName ?? "");
   const [lastName, setLastName] = useState(profile?.lastName ?? "");
   const [email, setEmail] = useState(profile?.email ?? "");
   const [username, setUsername] = useState(profile?.username ?? "");
   const [password, setPassword] = useState("");
   const [bio, setBio] = useState(profile?.bio ?? "");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
 
-  const submit = (event: React.FormEvent<HTMLFormElement>) => {
+  const submit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (!firstName.trim() || !lastName.trim() || !email.trim() || !username.trim() || !password) return;
-    save({ firstName: firstName.trim(), lastName: lastName.trim(), email: email.trim(), username: username.trim().replace(/^@/, ""), bio: bio.trim() });
+    setError("");
+    setBusy(true);
+
+    try {
+      if (signingIn) {
+        await signIn(email.trim(), password);
+      } else {
+        await save(
+          { firstName: firstName.trim(), lastName: lastName.trim(), email: email.trim(), username: username.trim().replace(/^@/, ""), bio: bio.trim() },
+          password,
+        );
+      }
+      close();
+    } catch (submitError) {
+      setError(submitError instanceof Error ? submitError.message : "Something went wrong. Please try again.");
+    } finally {
+      setBusy(false);
+    }
   };
+
+  const passwordRequired = signingIn || !authenticated;
+  const formValid = signingIn
+    ? Boolean(email.trim() && password)
+    : Boolean(firstName.trim() && lastName.trim() && email.trim() && username.trim() && (!passwordRequired || password));
 
   return (
     <div className="modal-backdrop profile-backdrop" onClick={close}>
       <div className="profile-creator" onClick={event => event.stopPropagation()}>
         <button className="close" onClick={close} aria-label="Close profile creator">×</button>
-        <p className="eyebrow">{profile ? "EDIT PROFILE" : "JOIN DRIVEN"}</p>
-        <h2>{profile ? "Refine your automotive identity." : "Your automotive identity starts here."}</h2>
-        <p className="profile-intro">A few details make your garage and ratings feel like your own.</p>
+        <p className="eyebrow">{signingIn ? "WELCOME BACK" : authenticated ? "EDIT PROFILE" : "JOIN DRIVEN"}</p>
+        <h2>{signingIn ? "Return to your garage." : authenticated ? "Refine your automotive identity." : "Your automotive identity starts here."}</h2>
+        <p className="profile-intro">{signingIn ? "Sign in with the email and password you used to join." : "Your account and profile will be securely stored with Supabase."}</p>
         <form onSubmit={submit}>
-          <label>First name<input value={firstName} onChange={event => setFirstName(event.target.value)} placeholder="Your first name" autoFocus /></label>
-          <label>Last name<input value={lastName} onChange={event => setLastName(event.target.value)} placeholder="Your last name" /></label>
-          <label>Email<input type="email" value={email} onChange={event => setEmail(event.target.value)} placeholder="you@example.com" autoComplete="email" /></label>
-          <label>Username<input value={username} onChange={event => setUsername(event.target.value)} placeholder="yourusername" autoComplete="username" /></label>
-          <label>Password<input type="password" value={password} onChange={event => setPassword(event.target.value)} placeholder={profile ? "Enter a password to save changes" : "Create a password"} autoComplete={profile ? "current-password" : "new-password"} /></label>
-          <label>About you <small>Optional</small><textarea value={bio} onChange={event => setBio(event.target.value)} maxLength={180} placeholder="What do you love to drive?" /></label>
-          <div className="profile-form-footer"><span>{bio.length}/180</span><button className="primary" type="submit" disabled={!firstName.trim() || !lastName.trim() || !email.trim() || !username.trim() || !password}>{profile ? "Save profile" : "Create profile"} <ChevronRight size={17} /></button></div>
+          {!signingIn && <label>First name<input value={firstName} onChange={event => setFirstName(event.target.value)} placeholder="Your first name" autoFocus /></label>}
+          {!signingIn && <label>Last name<input value={lastName} onChange={event => setLastName(event.target.value)} placeholder="Your last name" /></label>}
+          <label>Email<input type="email" value={email} onChange={event => setEmail(event.target.value)} placeholder="you@example.com" autoComplete="email" autoFocus={signingIn} /></label>
+          {!signingIn && <label>Username<input value={username} onChange={event => setUsername(event.target.value)} placeholder="yourusername" autoComplete="username" /></label>}
+          <label>Password {!passwordRequired && <small>Optional — only enter to change it</small>}<input type="password" value={password} onChange={event => setPassword(event.target.value)} placeholder={signingIn ? "Your password" : authenticated ? "Leave blank to keep your password" : "Create a password"} autoComplete={signingIn ? "current-password" : "new-password"} /></label>
+          {!signingIn && <label>About you <small>Optional</small><textarea value={bio} onChange={event => setBio(event.target.value)} maxLength={180} placeholder="What do you love to drive?" /></label>}
+          {error && <p className="auth-error" role="alert">{error}</p>}
+          <div className="profile-form-footer"><span>{signingIn ? "Secure sign in" : `${bio.length}/180`}</span><button className="primary" type="submit" disabled={!formValid || busy}>{busy ? "Please wait…" : signingIn ? "Sign in" : authenticated ? "Save profile" : "Create account"} <ChevronRight size={17} /></button></div>
+          {!authenticated && <button className="auth-switch" type="button" onClick={() => { setSigningIn(current => !current); setError(""); }}>{signingIn ? "New to Driven? Create an account" : "Already have an account? Sign in"}</button>}
         </form>
       </div>
     </div>
@@ -238,17 +471,146 @@ function CreateProfile({ close, save, profile }: { close: () => void; save: (pro
 
 export default function App() {
   const [tab, setTab] = useState<Tab>("discover");
-  const [query, setQuery] = useState("");
+  const [selectedMake, setSelectedMake] = useState("");
+  const [selectedModel, setSelectedModel] = useState("");
   const [selected, setSelected] = useState<Car | null>(null);
   const [ratingCar, setRatingCar] = useState<Car | null>(null);
   const [submittedRatings, setSubmittedRatings] = useState<Record<string, number>>({});
   const [profile, setProfile] = useState<UserProfile | null>(loadStoredProfile);
   const [creatingProfile, setCreatingProfile] = useState(false);
+  const [authUserId, setAuthUserId] = useState<string | null>(null);
+  const [authNotice, setAuthNotice] = useState("");
+  const [garageEntries, setGarageEntries] = useState<GarageEntry[]>([]);
+  const [addingCar, setAddingCar] = useState(false);
+  const [garageSeedCarId, setGarageSeedCarId] = useState<string | undefined>();
 
   useEffect(() => {
-    if (profile) window.localStorage.setItem(profileStorageKey, JSON.stringify(profile));
-    else window.localStorage.removeItem(profileStorageKey);
-  }, [profile]);
+    let active = true;
+
+    const applyUser = async (user: User | null) => {
+      if (!active) return;
+      setAuthUserId(user?.id ?? null);
+      if (!user) {
+        setGarageEntries([]);
+        return;
+      }
+
+      try {
+        const [remoteProfile, remoteGarage] = await Promise.all([loadRemoteProfile(user), loadGarage(user.id)]);
+        if (!active) return;
+        setProfile(remoteProfile);
+        setGarageEntries(remoteGarage);
+        window.localStorage.removeItem(profileStorageKey);
+      } catch (profileError) {
+        if (active) setAuthNotice(profileError instanceof Error ? profileError.message : "We could not load your profile.");
+      }
+    };
+
+    supabase.auth.getUser().then(({ data }) => applyUser(data.user));
+    const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
+      window.setTimeout(() => applyUser(session?.user ?? null), 0);
+    });
+
+    return () => {
+      active = false;
+      authListener.subscription.unsubscribe();
+    };
+  }, []);
+
+  const saveProfile = async (newProfile: UserProfile, password: string) => {
+    const userMetadata = {
+      first_name: newProfile.firstName,
+      last_name: newProfile.lastName,
+      username: newProfile.username,
+      bio: newProfile.bio,
+    };
+
+    if (!authUserId) {
+      const { data, error } = await supabase.auth.signUp({
+        email: newProfile.email,
+        password,
+        options: { data: userMetadata, emailRedirectTo: window.location.origin },
+      });
+      if (error) throw error;
+
+      setProfile(newProfile);
+      window.localStorage.setItem(profileStorageKey, JSON.stringify(newProfile));
+      setAuthNotice(data.session ? "Your Driven account is ready." : "Account created. Check your email to confirm it, then sign in.");
+      return;
+    }
+
+    const userUpdate = {
+      email: newProfile.email,
+      data: userMetadata,
+      ...(password ? { password } : {}),
+    };
+    const { error: authError } = await supabase.auth.updateUser(userUpdate);
+    if (authError) throw authError;
+
+    const { error: profileError } = await supabase.from("profiles").upsert({
+      id: authUserId,
+      first_name: newProfile.firstName,
+      last_name: newProfile.lastName,
+      username: newProfile.username,
+      bio: newProfile.bio,
+      updated_at: new Date().toISOString(),
+    });
+    if (profileError) throw profileError;
+
+    setProfile(newProfile);
+    setAuthNotice("Profile updated.");
+  };
+
+  const signIn = async (email: string, password: string) => {
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) throw error;
+    const [remoteProfile, remoteGarage] = await Promise.all([loadRemoteProfile(data.user), loadGarage(data.user.id)]);
+    setAuthUserId(data.user.id);
+    setProfile(remoteProfile);
+    setGarageEntries(remoteGarage);
+    window.localStorage.removeItem(profileStorageKey);
+    setAuthNotice("Welcome back to Driven.");
+  };
+
+  const logOut = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) setAuthNotice(error.message);
+    setAuthUserId(null);
+    setProfile(null);
+    setGarageEntries([]);
+    window.localStorage.removeItem(profileStorageKey);
+    setTab("discover");
+  };
+
+  const openAddCar = (carId?: string) => {
+    if (!authUserId) {
+      setAuthNotice("Create or sign in to your Driven account before adding cars to your garage.");
+      setCreatingProfile(true);
+      return;
+    }
+    setGarageSeedCarId(carId);
+    setAddingCar(true);
+  };
+
+  const addCarToGarage = async (carId: string, status: GarageStatus) => {
+    if (!authUserId) throw new Error("Please sign in before adding a car.");
+    const { data, error } = await supabase
+      .from("garage_entries")
+      .upsert({ user_id: authUserId, car_id: carId, relationship: status }, { onConflict: "user_id,car_id" })
+      .select("id,car_id,relationship,created_at")
+      .single();
+    if (error) throw error;
+
+    const savedEntry: GarageEntry = {
+      id: data.id,
+      carId: data.car_id,
+      status: data.relationship as GarageStatus,
+      createdAt: data.created_at,
+    };
+    setGarageEntries(current => [savedEntry, ...current.filter(entry => entry.carId !== carId)]);
+    const savedCar = cars.find(car => car.id === carId);
+    setAuthNotice(`${savedCar?.make ?? "Car"} ${savedCar?.model ?? ""} added to your garage.`.trim());
+  };
 
   const displayedCar = (car: Car): Car => {
     const submittedScore = submittedRatings[car.id];
@@ -257,10 +619,20 @@ export default function App() {
   };
 
   const filtered = useMemo(() => {
-    const q = query.toLowerCase().trim();
-    if (!q) return cars;
-    return cars.filter(c => `${c.make} ${c.model} ${c.generation}`.toLowerCase().includes(q));
-  }, [query]);
+    return cars.filter(car => {
+      const matchesMake = !selectedMake || car.make === selectedMake;
+      const matchesModel = !selectedModel || car.model === selectedModel;
+      return matchesMake && matchesModel;
+    });
+  }, [selectedMake, selectedModel]);
+
+  const garageCars = garageEntries.flatMap(entry => {
+    const car = cars.find(candidate => candidate.id === entry.carId);
+    return car ? [{ entry, car }] : [];
+  });
+  const drivenCount = garageEntries.filter(entry => entry.status === "driven" || entry.status === "owned").length;
+  const ownedCount = garageEntries.filter(entry => entry.status === "owned").length;
+  const garageBrands = new Set(garageCars.map(({ car }) => car.make)).size;
 
   return (
     <div className="app">
@@ -271,8 +643,13 @@ export default function App() {
           <button className={tab === "cars" ? "active" : ""} onClick={() => setTab("cars")}>Cars</button>
           <button className={tab === "profile" ? "active" : ""} onClick={() => setTab("profile")}>My garage</button>
         </nav>
-        <button className="profile-button" onClick={() => setTab("profile")}><UserRound size={18}/><span>{profile?.firstName || "Create profile"}</span></button>
+        <div className="profile-actions">
+          <button className="profile-button" onClick={() => setTab("profile")}><UserRound size={18}/><span>{profile?.firstName || "Create profile"}</span></button>
+          {profile && <button className="logout-button" onClick={logOut}><LogOut size={17}/><span>Log out</span></button>}
+        </div>
       </header>
+
+      {authNotice && <div className="auth-notice" role="status"><span>{authNotice}</span><button type="button" aria-label="Dismiss message" onClick={() => setAuthNotice("")}>×</button></div>}
 
       <main>
         {tab === "discover" && (
@@ -283,15 +660,17 @@ export default function App() {
                 <h1>Your automotive taste,<br/><em>documented.</em></h1>
                 <p className="hero-copy">Rate the cars you've owned. Log the ones you've driven. Build your garage. Discover what other enthusiasts actually think.</p>
               </div>
-              <div className="hero-search">
-                <Search size={19}/>
-                <input value={query} onChange={e => setQuery(e.target.value)} placeholder="Search a car, make or generation..." />
+              <div className="hero-filters">
+                <div className="classification-filters">
+                  <MakeFilter value={selectedMake} onChange={make => { setSelectedMake(make); setSelectedModel(""); }} />
+                  <ModelFilter make={selectedMake} value={selectedModel} onChange={setSelectedModel} />
+                </div>
               </div>
             </section>
 
             <section className="section">
               <div className="section-head"><div><p className="eyebrow">COMMUNITY</p><h2>Cars people are talking about</h2></div><button className="text-button">View all <ChevronRight size={16}/></button></div>
-              <div className="grid">{filtered.map(car => <CarCard key={car.id} car={displayedCar(car)} onClick={() => setSelected(displayedCar(car))} />)}</div>
+              <div className="grid">{filtered.slice(0, 12).map(car => <CarCard key={car.id} car={displayedCar(car)} onClick={() => setSelected(displayedCar(car))} />)}</div>
             </section>
 
             <section className="statement">
@@ -305,7 +684,12 @@ export default function App() {
         {tab === "cars" && (
           <section className="page-section">
             <p className="eyebrow">DATABASE</p><h1>Explore cars.</h1>
-            <div className="search-large"><Search size={19}/><input value={query} onChange={e => setQuery(e.target.value)} placeholder="Search..." /></div>
+            <div className="catalog-filters">
+              <div className="classification-filters">
+                <MakeFilter value={selectedMake} onChange={make => { setSelectedMake(make); setSelectedModel(""); }} />
+                <ModelFilter make={selectedMake} value={selectedModel} onChange={setSelectedModel} />
+              </div>
+            </div>
             <div className="grid">{filtered.map(car => <CarCard key={car.id} car={displayedCar(car)} onClick={() => setSelected(displayedCar(car))} />)}</div>
           </section>
         )}
@@ -313,11 +697,22 @@ export default function App() {
         {tab === "profile" && (
           profile ? (
             <section className="profile-page">
-              <div className="profile-hero"><div className="avatar big">{profile.firstName.charAt(0).toUpperCase()}</div><div><p className="eyebrow">@{profile.username}</p><h1>{profile.firstName} {profile.lastName}</h1><p>New to Driven</p></div><button className="secondary profile-edit" onClick={() => setCreatingProfile(true)}>Edit profile</button></div>
+              <div className="profile-hero"><div className="avatar big">{profile.firstName.charAt(0).toUpperCase()}</div><div><p className="eyebrow">@{profile.username}</p><h1>{profile.firstName} {profile.lastName}</h1><p>{authUserId ? "New to Driven" : "Saved on this device only"}</p></div><button className="secondary profile-edit" onClick={() => setCreatingProfile(true)}>{authUserId ? "Edit profile" : "Create account"}</button></div>
               {profile.bio && <p className="profile-bio">{profile.bio}</p>}
-              <div className="profile-stats"><div><strong>0</strong><span>Driven</span></div><div><strong>0</strong><span>Owned</span></div><div><strong>0</strong><span>Brands</span></div><div><strong>—</strong><span>Avg. rating</span></div></div>
-              <div className="section-head"><div><p className="eyebrow">YOUR GARAGE</p><h2>Cars you've experienced</h2></div><button className="primary"><Plus size={17}/> Add car</button></div>
-              <div className="empty-garage"><CarFront size={32}/><h3>Your garage starts here.</h3><p>Add cars you've owned or driven and start building your automotive identity.</p><button className="secondary"><Plus size={17}/> Add your first car</button></div>
+              <div className="profile-stats"><div><strong>{drivenCount}</strong><span>Driven</span></div><div><strong>{ownedCount}</strong><span>Owned</span></div><div><strong>{garageBrands}</strong><span>Brands</span></div><div><strong>—</strong><span>Avg. rating</span></div></div>
+              <div className="section-head"><div><p className="eyebrow">YOUR GARAGE</p><h2>Cars you've experienced</h2></div><button className="primary" onClick={() => openAddCar()}><Plus size={17}/> Add car</button></div>
+              {garageCars.length ? (
+                <div className="garage-grid">
+                  {garageCars.map(({ entry, car }) => (
+                    <button className="garage-card" key={entry.id} onClick={() => setSelected(displayedCar(car))}>
+                      <img src={car.image} alt={`${car.make} ${car.model}`} />
+                      <div><span className="garage-status">{garageStatusLabels[entry.status]}</span><p>{car.make} · {car.generation}</p><h3>{car.model}</h3><small>{car.year} · {car.transmission}</small></div>
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <div className="empty-garage"><CarFront size={32}/><h3>Your garage starts here.</h3><p>Add cars you've owned or driven and start building your automotive identity.</p><button className="secondary" onClick={() => openAddCar()}><Plus size={17}/> Add your first car</button></div>
+              )}
             </section>
           ) : (
             <section className="profile-page profile-start">
@@ -336,6 +731,7 @@ export default function App() {
     car={selected}
     close={() => setSelected(null)}
     onRate={() => setRatingCar(selected)}
+    onAdd={() => { openAddCar(selected.id); setSelected(null); }}
   />
 )}
       {ratingCar && <RatingFlow car={ratingCar} close={() => setRatingCar(null)} complete={(score) => {
@@ -343,7 +739,8 @@ export default function App() {
         setSubmittedRatings(current => ({ ...current, [ratingCar.id]: score }));
         setSelected(current => current?.id === ratingCar.id ? updatedCar : current);
       }} />}
-      {creatingProfile && <CreateProfile profile={profile} close={() => setCreatingProfile(false)} save={(newProfile) => { setProfile(newProfile); setCreatingProfile(false); }} />}
+      {creatingProfile && <CreateProfile profile={profile} authenticated={Boolean(authUserId)} close={() => setCreatingProfile(false)} save={saveProfile} signIn={signIn} />}
+      {addingCar && <AddCarModal initialCarId={garageSeedCarId} close={() => setAddingCar(false)} add={addCarToGarage} />}
     </div>
   );
 }

@@ -2,6 +2,7 @@ export type Car = {
   id: string;
   make: string;
   model: string;
+  transmission: "Automatic" | "Manual";
   generation: string;
   year: number;
   image: string;
@@ -12,11 +13,68 @@ export type Car = {
   tags: string[];
 };
 
+const audiModels = [
+  { id: "rs3-8y", model: "RS 3", generation: "8Y", year: 2023, tags: ["Turbo", "Quattro", "Hot hatch", "Five-cylinder"] },
+  { id: "rs4-b9", model: "RS 4", generation: "B9", year: 2021, tags: ["Turbo", "Quattro", "Avant", "V6"] },
+  { id: "rs5-b9", model: "RS 5", generation: "B9", year: 2022, tags: ["Turbo", "Quattro", "Coupe", "V6"] },
+  { id: "rs6-c8", model: "RS 6", generation: "C8", year: 2023, tags: ["V8", "Quattro", "Avant", "Super wagon"] },
+  { id: "rs7-c8", model: "RS 7", generation: "C8", year: 2022, tags: ["V8", "Quattro", "Sportback", "Grand tourer"] },
+  { id: "rs-tt-8s", model: "RS TT", generation: "8S", year: 2020, tags: ["Turbo", "Quattro", "Coupe", "Five-cylinder"] },
+  { id: "rsq3-f3", model: "RS Q3", generation: "F3", year: 2023, tags: ["Turbo", "Quattro", "SUV", "Five-cylinder"] },
+  { id: "rsq8-4m", model: "RS Q8", generation: "4M", year: 2022, tags: ["V8", "Quattro", "SUV", "Performance"] },
+  { id: "s1-8x", model: "S 1", generation: "8X", year: 2017, tags: ["Turbo", "Quattro", "Hot hatch", "Compact"] },
+  { id: "s3-8y", model: "S 3", generation: "8Y", year: 2023, tags: ["Turbo", "Quattro", "Sportback", "Daily"] },
+  { id: "s4-b9", model: "S 4", generation: "B9", year: 2021, tags: ["Turbo", "Quattro", "Sedan", "V6"] },
+  { id: "s5-b9", model: "S 5", generation: "B9", year: 2022, tags: ["Turbo", "Quattro", "Coupe", "V6"] },
+  { id: "s6-c8", model: "S 6", generation: "C8", year: 2022, tags: ["Turbo", "Quattro", "Sedan", "V6"] },
+  { id: "s7-c8", model: "S 7", generation: "C8", year: 2023, tags: ["Turbo", "Quattro", "Sportback", "V6"] },
+  { id: "s8-d5", model: "S 8", generation: "D5", year: 2022, tags: ["V8", "Quattro", "Luxury", "Sedan"] },
+  { id: "sq5-fy", model: "S Q5", generation: "FY", year: 2023, tags: ["Turbo", "Quattro", "SUV", "V6"] },
+  { id: "s-tt-8s", model: "S TT", generation: "8S", year: 2020, tags: ["Turbo", "Quattro", "Coupe", "Roadster"] },
+];
+
+const ferrariModels: Array<Pick<Car, "id" | "model" | "generation" | "year" | "transmission" | "tags">> = [
+  { id: "f12-berlinetta", model: "F12", generation: "Berlinetta", year: 2015, transmission: "Automatic", tags: ["V12", "Grand tourer", "RWD", "Naturally aspirated"] },
+  { id: "599-gtb", model: "599", generation: "GTB Fiorano", year: 2008, transmission: "Automatic", tags: ["V12", "Grand tourer", "RWD", "Naturally aspirated"] },
+  { id: "f430", model: "F430", generation: "F131", year: 2007, transmission: "Manual", tags: ["V8", "Mid-engine", "RWD", "Analog"] },
+  { id: "812-superfast", model: "812", generation: "Superfast", year: 2020, transmission: "Automatic", tags: ["V12", "Grand tourer", "RWD", "Naturally aspirated"] },
+  { id: "488-gtb", model: "488", generation: "GTB", year: 2017, transmission: "Automatic", tags: ["V8", "Twin-turbo", "Mid-engine", "RWD"] },
+  { id: "296-gtb", model: "296", generation: "GTB", year: 2023, transmission: "Automatic", tags: ["V6", "Hybrid", "Mid-engine", "RWD"] },
+  { id: "360-modena", model: "360", generation: "Modena", year: 2001, transmission: "Manual", tags: ["V8", "Mid-engine", "RWD", "Analog"] },
+  { id: "roma", model: "Roma", generation: "F169", year: 2022, transmission: "Automatic", tags: ["V8", "Twin-turbo", "Grand tourer", "RWD"] },
+  { id: "california-t", model: "California", generation: "T", year: 2016, transmission: "Automatic", tags: ["V8", "Convertible", "Grand tourer", "RWD"] },
+  { id: "daytona-sp3", model: "Daytona", generation: "SP3", year: 2023, transmission: "Automatic", tags: ["V12", "Icona", "Mid-engine", "Limited"] },
+  { id: "f40", model: "F40", generation: "Type F120", year: 1990, transmission: "Manual", tags: ["V8", "Twin-turbo", "Manual", "Icon"] },
+  { id: "f50", model: "F50", generation: "Type F130", year: 1997, transmission: "Manual", tags: ["V12", "Manual", "Mid-engine", "Icon"] },
+];
+
+const astonMartinModels: Array<Pick<Car, "id" | "model" | "generation" | "year" | "transmission" | "tags">> = [
+  { id: "aston-v8-vantage", model: "V8 Vantage", generation: "AM6", year: 2016, transmission: "Manual", tags: ["V8", "Grand tourer", "RWD", "British"] },
+  { id: "aston-v12-vantage", model: "V12 Vantage", generation: "AM6", year: 2017, transmission: "Manual", tags: ["V12", "Grand tourer", "RWD", "British"] },
+  { id: "aston-vanquish", model: "Vanquish", generation: "Second generation", year: 2016, transmission: "Automatic", tags: ["V12", "Grand tourer", "RWD", "British"] },
+  { id: "aston-vanquish-s", model: "Vanquish S", generation: "Second generation", year: 2018, transmission: "Automatic", tags: ["V12", "Grand tourer", "RWD", "Performance"] },
+  { id: "aston-rapide", model: "Rapide", generation: "S", year: 2016, transmission: "Automatic", tags: ["V12", "Four-door", "Luxury", "Grand tourer"] },
+  { id: "aston-db11", model: "DB 11", generation: "AM5", year: 2020, transmission: "Automatic", tags: ["V8", "Twin-turbo", "Grand tourer", "Luxury"] },
+  { id: "aston-db12", model: "DB 12", generation: "AM8", year: 2024, transmission: "Automatic", tags: ["V8", "Twin-turbo", "Super tourer", "Luxury"] },
+  { id: "aston-db9", model: "DB 9", generation: "AM5", year: 2015, transmission: "Automatic", tags: ["V12", "Grand tourer", "RWD", "Luxury"] },
+  { id: "aston-db6", model: "DB 6", generation: "Mark 2", year: 1970, transmission: "Manual", tags: ["Straight-6", "Classic", "Grand tourer", "British"] },
+  { id: "aston-db7", model: "DB 7", generation: "Vantage", year: 2002, transmission: "Manual", tags: ["V12", "Classic", "Grand tourer", "British"] },
+  { id: "aston-dbs", model: "DBS", generation: "Superleggera", year: 2021, transmission: "Automatic", tags: ["V12", "Twin-turbo", "Grand tourer", "Performance"] },
+];
+
+const lamborghiniModels: Array<Pick<Car, "id" | "model" | "generation" | "year" | "transmission" | "tags">> = [
+  { id: "lamborghini-aventador", model: "Aventador", generation: "LP 700-4", year: 2016, transmission: "Automatic", tags: ["V12", "AWD", "Mid-engine", "Supercar"] },
+  { id: "lamborghini-huracan", model: "Huracan", generation: "LP 610-4", year: 2018, transmission: "Automatic", tags: ["V10", "AWD", "Mid-engine", "Supercar"] },
+  { id: "lamborghini-gallardo", model: "Gallardo", generation: "LP 560-4", year: 2010, transmission: "Manual", tags: ["V10", "AWD", "Mid-engine", "Analog"] },
+  { id: "lamborghini-murcielago", model: "Murcielago", generation: "LP 640", year: 2008, transmission: "Manual", tags: ["V12", "AWD", "Mid-engine", "Icon"] },
+  { id: "lamborghini-urus", model: "Urus", generation: "First generation", year: 2022, transmission: "Automatic", tags: ["V8", "Twin-turbo", "AWD", "Performance SUV"] },
+];
+
 export const cars: Car[] = [
   {
     id: "r8-v8",
     make: "Audi",
-    model: "R8 V8",
+    model: "R8",
     generation: "Type 42",
     year: 2012,
     image: "https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?auto=format&fit=crop&w=1200&q=80",
@@ -24,6 +82,7 @@ export const cars: Car[] = [
     ratings: 842,
     driven: 1190,
     owners: 284,
+    transmission: "Manual",
     tags: ["V8", "Manual", "Analog", "Weekend"],
   },
   {
@@ -37,6 +96,7 @@ export const cars: Car[] = [
     ratings: 1240,
     driven: 1860,
     owners: 412,
+    transmission: "Manual",
     tags: ["Flat-6", "Manual", "Classic", "Driver"],
   },
   {
@@ -50,6 +110,7 @@ export const cars: Car[] = [
     ratings: 2184,
     driven: 3020,
     owners: 690,
+    transmission: "Manual",
     tags: ["Straight-6", "Manual", "Icon", "Driver"],
   },
   {
@@ -63,20 +124,8 @@ export const cars: Car[] = [
     ratings: 524,
     driven: 810,
     owners: 156,
+    transmission: "Automatic",
     tags: ["Lightweight", "Turbo", "French", "Fun"],
-  },
-  {
-    id: "s2000-ap2",
-    make: "Honda",
-    model: "S2000",
-    generation: "AP2",
-    year: 2006,
-    image: "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?auto=format&fit=crop&w=1200&q=80",
-    rating: 9.0,
-    ratings: 986,
-    driven: 1540,
-    owners: 338,
-    tags: ["VTEC", "Roadster", "Manual", "High-revving"],
   },
   {
     id: "miata-na",
@@ -89,6 +138,7 @@ export const cars: Car[] = [
     ratings: 1872,
     driven: 2680,
     owners: 721,
+    transmission: "Manual",
     tags: ["Roadster", "Manual", "Lightweight", "Pop-ups"],
   },
   {
@@ -102,11 +152,12 @@ export const cars: Car[] = [
     ratings: 1148,
     driven: 1735,
     owners: 394,
+    transmission: "Manual",
     tags: ["Turbo", "Rear-wheel drive", "Coupe", "Driver"],
   },
   {
     id: "c63-w204",
-    make: "Mercedes-Benz",
+    make: "Mercedes",
     model: "C 63 AMG",
     generation: "W204",
     year: 2012,
@@ -115,6 +166,7 @@ export const cars: Car[] = [
     ratings: 768,
     driven: 1050,
     owners: 245,
+    transmission: "Automatic",
     tags: ["V8", "AMG", "Sedan", "Naturally aspirated"],
   },
   {
@@ -128,6 +180,7 @@ export const cars: Car[] = [
     ratings: 642,
     driven: 930,
     owners: 188,
+    transmission: "Manual",
     tags: ["Lightweight", "Mid-engine", "Manual", "Analog"],
   },
   {
@@ -141,6 +194,7 @@ export const cars: Car[] = [
     ratings: 491,
     driven: 760,
     owners: 206,
+    transmission: "Automatic",
     tags: ["4x4", "Adventure", "Modern", "Utility"],
   },
   {
@@ -154,6 +208,7 @@ export const cars: Car[] = [
     ratings: 559,
     driven: 880,
     owners: 142,
+    transmission: "Automatic",
     tags: ["V8", "Mid-engine", "Naturally aspirated", "Exotic"],
   },
   {
@@ -167,6 +222,58 @@ export const cars: Car[] = [
     ratings: 1453,
     driven: 2310,
     owners: 516,
+    transmission: "Manual",
     tags: ["Hot hatch", "Turbo", "Daily", "FWD"],
   },
+  {
+    id: "golf-r-mk7-5",
+    make: "Volkswagen",
+    model: "Golf R",
+    generation: "Mk7.5",
+    year: 2019,
+    image: "https://images.unsplash.com/photo-1502161254066-6c74afbf07aa?auto=format&fit=crop&w=1200&q=80",
+    rating: 9.0,
+    ratings: 986,
+    driven: 1640,
+    owners: 382,
+    transmission: "Automatic",
+    tags: ["Hot hatch", "Turbo", "Daily", "AWD"],
+  },
+  ...audiModels.map((car, index): Car => ({
+    ...car,
+    make: "Audi",
+    transmission: car.id === "s1-8x" ? "Manual" : "Automatic",
+    image: "https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?auto=format&fit=crop&w=1200&q=80",
+    rating: Number((8.5 + ((index * 3) % 9) / 10).toFixed(1)),
+    ratings: 340 + index * 83,
+    driven: 520 + index * 115,
+    owners: 114 + index * 31,
+  })),
+  ...ferrariModels.map((car, index): Car => ({
+    ...car,
+    make: "Ferrari",
+    image: "https://images.unsplash.com/photo-1542282088-72c9c27ed0cd?auto=format&fit=crop&w=1200&q=80",
+    rating: Number((8.8 + ((index * 2) % 8) / 10).toFixed(1)),
+    ratings: 285 + index * 67,
+    driven: 390 + index * 92,
+    owners: 72 + index * 19,
+  })),
+  ...astonMartinModels.map((car, index): Car => ({
+    ...car,
+    make: "Aston Martin",
+    image: "https://images.unsplash.com/photo-1544829099-b9a0c07fad1a?auto=format&fit=crop&w=1200&q=80",
+    rating: Number((8.7 + ((index * 2) % 7) / 10).toFixed(1)),
+    ratings: 210 + index * 54,
+    driven: 330 + index * 78,
+    owners: 61 + index * 17,
+  })),
+  ...lamborghiniModels.map((car, index): Car => ({
+    ...car,
+    make: "Lamborghini",
+    image: "https://images.unsplash.com/photo-1621135802920-133df287f89c?auto=format&fit=crop&w=1200&q=80",
+    rating: Number((8.8 + ((index * 2) % 7) / 10).toFixed(1)),
+    ratings: 395 + index * 91,
+    driven: 540 + index * 126,
+    owners: 88 + index * 24,
+  })),
 ];
