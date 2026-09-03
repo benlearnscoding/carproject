@@ -618,6 +618,9 @@ export default function App() {
         options: { data: userMetadata, emailRedirectTo: window.location.origin },
       });
       if (error) throw error;
+      if (data.user && Array.isArray(data.user.identities) && data.user.identities.length === 0) {
+        throw new Error("An account already exists with this email. Sign in instead.");
+      }
 
       setProfile(newProfile);
       window.localStorage.setItem(profileStorageKey, JSON.stringify(newProfile));
