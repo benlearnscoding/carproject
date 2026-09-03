@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Plus, Star, ChevronRight, ChevronDown, Heart, CarFront, UserRound, ArrowLeft, Check, LogOut } from "lucide-react";
+import { Plus, Star, ChevronRight, ChevronDown, Heart, CarFront, UserRound, ArrowLeft, Check, LogOut, X } from "lucide-react";
 import type { User } from "@supabase/supabase-js";
 import { cars, type Car } from "./data";
 import { supabase } from "./supabase";
@@ -20,6 +20,18 @@ type GarageEntry = {
   createdAt: string;
 };
 const garageStatusLabels: Record<GarageStatus, string> = { owned: "Owned", driven: "Driven", want: "Want" };
+type RatingExperience = "owned" | "driven" | "passenger";
+type RatingSubmission = {
+  experience: RatingExperience;
+  scores: Record<string, number>;
+  overall: number;
+  review: string;
+};
+type SavedRating = RatingSubmission & {
+  id: string;
+  carId: string;
+  createdAt: string;
+};
 
 const makes = [
   "Alpine",
@@ -100,6 +112,25 @@ async function loadGarage(userId: string): Promise<GarageEntry[]> {
   }));
 }
 
+async function loadRatings(userId: string): Promise<Record<string, SavedRating>> {
+  const { data, error } = await supabase
+    .from("car_ratings")
+    .select("id,car_id,experience,scores,overall,review,created_at")
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false });
+
+  if (error) throw error;
+  return Object.fromEntries((data ?? []).map(rating => [rating.car_id, {
+    id: rating.id,
+    carId: rating.car_id,
+    experience: rating.experience as RatingExperience,
+    scores: rating.scores as Record<string, number>,
+    overall: Number(rating.overall),
+    review: rating.review ?? "",
+    createdAt: rating.created_at,
+  }]));
+}
+
 function Score({ value }: { value: number }) {
   return (
     <span className="score">
@@ -166,12 +197,22 @@ function CarDetail({
   close,
   onRate,
   onAdd,
+  personalRating,
+  profile,
 }: {
   car: Car;
   close: () => void;
   onRate: () => void;
   onAdd: () => void;
+  personalRating?: SavedRating;
+  profile?: UserProfile;
 }) {
+  const experienceLabel = personalRating?.experience === "owned"
+    ? "Owned"
+    : personalRating?.experience === "driven"
+      ? "Driven"
+      : "Passenger";
+
   return (
     <div className="modal-backdrop" onClick={close}>
       <div className="detail" onClick={(e) => e.stopPropagation()}>
@@ -209,10 +250,16 @@ function CarDetail({
             <button className="secondary"><Heart size={17}/> Want it</button>
           </div>
 
-          <div className="review">
-            <div className="review-user"><div className="avatar">B</div><div><strong>Benjamin</strong><small>Owned · 3 years</small></div><Score value={9.4}/></div>
-            <p>"One of those cars that feels special every time you start it. The engine and steering are the reason I'd keep it forever."</p>
-          </div>
+          {personalRating && (
+            <div className="review">
+              <div className="review-user">
+                <div className="avatar">{profile?.firstName.charAt(0).toUpperCase() || "Y"}</div>
+                <div><strong>{profile ? `${profile.firstName} ${profile.lastName}`.trim() : "Your rating"}</strong><small>{experienceLabel}</small></div>
+                <Score value={personalRating.overall}/>
+              </div>
+              {personalRating.review && <p>“{personalRating.review}”</p>}
+            </div>
+          )}
         </div>
       </div>
     </div>
@@ -220,27 +267,43 @@ function CarDetail({
 }
 
 const ratingCategories = ["Driving", "Sound", "Steering", "Performance", "Comfort", "Looks", "Reliability", "Value"];
-type Experience = "owned" | "driven" | "passenger";
 
-function RatingFlow({ car, close, complete }: { car: Car; close: () => void; complete: (score: number) => void }) {
-  const [step, setStep] = useState(1);
-  const [experience, setExperience] = useState<Experience | null>(null);
+function RatingFlow({ car, close, complete, initialExperience, initialRating }: { car: Car; close: () => void; complete: (rating: RatingSubmission) => Promise<void>; initialExperience?: RatingExperience; initialRating?: SavedRating }) {
+  const [step, setStep] = useState(initialExperience || initialRating ? 2 : 1);
+  const [experience, setExperience] = useState<RatingExperience | null>(initialRating?.experience ?? initialExperience ?? null);
   const [scores, setScores] = useState<Record<string, number>>(
-    () => Object.fromEntries(ratingCategories.map(category => [category, 8]))
+    () => Object.fromEntries(ratingCategories.map(category => [category, Number(initialRating?.scores[category] ?? 0)]))
   );
-  const [review, setReview] = useState("");
+  const [review, setReview] = useState(initialRating?.review ?? "");
   const [submitted, setSubmitted] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
   const overall = Object.values(scores).reduce((sum, score) => sum + score, 0) / ratingCategories.length;
+  const scoresComplete = Object.values(scores).every(score => score > 0);
 
   const updateScore = (category: string, score: number) => {
     setScores(current => ({ ...current, [category]: score }));
+  };
+
+  const publish = async () => {
+    if (!experience) return;
+    setSaving(true);
+    setError("");
+    try {
+      await complete({ experience, scores, overall, review: review.trim() });
+      setSubmitted(true);
+    } catch (publishError) {
+      setError(publishError instanceof Error ? publishError.message : "We could not save your rating. Please try again.");
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
     <div className="modal-backdrop rating-backdrop" onClick={close}>
       <div className="rating-flow" onClick={event => event.stopPropagation()}>
         <div className="rating-topbar">
-          {!submitted && step > 1 ? <button className="back" onClick={() => setStep(step - 1)}><ArrowLeft size={18} /> Back</button> : <span />}
+          {!submitted && step > 1 && !(initialExperience && step === 2) ? <button className="back" onClick={() => setStep(step - 1)}><ArrowLeft size={18} /> Back</button> : <span />}
           {!submitted && <button className="close" onClick={close}>×</button>}
         </div>
 
@@ -305,8 +368,9 @@ function RatingFlow({ car, close, complete }: { car: Car; close: () => void; com
 
             <div className="rating-actions">
               <button className="secondary" onClick={close}>Cancel</button>
-              {step < 3 ? <button className="primary" disabled={step === 1 && !experience} onClick={() => setStep(step + 1)}>Continue <ChevronRight size={17} /></button> : <button className="primary" onClick={() => { complete(overall); setSubmitted(true); }}><Star size={17} /> Publish rating</button>}
+              {step < 3 ? <button className="primary" disabled={(step === 1 && !experience) || (step === 2 && !scoresComplete)} onClick={() => setStep(step + 1)}>Continue <ChevronRight size={17} /></button> : <button className="primary" disabled={saving} onClick={publish}><Star size={17} /> {saving ? "Saving…" : "Publish rating"}</button>}
             </div>
+            {error && <p className="auth-error rating-save-error" role="alert">{error}</p>}
           </>
         )}
       </div>
@@ -318,16 +382,18 @@ function AddCarModal({
   close,
   add,
   initialCarId,
+  initialStatus,
 }: {
   close: () => void;
   add: (carId: string, status: GarageStatus) => Promise<void>;
   initialCarId?: string;
+  initialStatus?: GarageStatus;
 }) {
   const initialCar = cars.find(car => car.id === initialCarId);
-  const [step, setStep] = useState<1 | 2>(1);
+  const [step, setStep] = useState<1 | 2>(initialStatus ? 2 : 1);
   const [make, setMake] = useState(initialCar?.make ?? "");
   const [model, setModel] = useState(initialCar?.model ?? "");
-  const [status, setStatus] = useState<GarageStatus>("driven");
+  const [status, setStatus] = useState<GarageStatus | null>(initialStatus ?? null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const makeOptions = Array.from(new Set(cars.map(car => car.make))).sort((a, b) => a.localeCompare(b));
@@ -336,11 +402,8 @@ function AddCarModal({
 
   const submit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (step === 1) {
-      setStep(2);
-      return;
-    }
-    if (!selectedCar) return;
+    if (step === 1) return;
+    if (!selectedCar || !status) return;
     setBusy(true);
     setError("");
     try {
@@ -370,7 +433,7 @@ function AddCarModal({
                   ["driven", "Driven", "You spent time behind the wheel."],
                   ["want", "Want", "It belongs on your shortlist."],
                 ] as const).map(([value, label, description]) => (
-                  <button type="button" key={value} className={status === value ? "selected" : ""} onClick={() => setStatus(value)}>
+                  <button type="button" key={value} className={status === value ? "selected" : ""} onClick={() => { setStatus(value); setStep(2); }}>
                     <span className="option-dot" /><span><strong>{label}</strong><small>{description}</small></span>
                   </button>
                 ))}
@@ -387,8 +450,8 @@ function AddCarModal({
           )}
           {error && <p className="auth-error" role="alert">{error}</p>}
           <div className="rating-actions garage-form-actions">
-            <button type="button" className="secondary" onClick={step === 1 ? close : () => setStep(1)}>{step === 1 ? "Cancel" : "Back"}</button>
-            <button className="primary" type="submit" disabled={(step === 2 && !selectedCar) || busy}>{step === 1 ? <>Continue <ChevronRight size={17}/></> : <>{busy ? "Adding…" : "Add to garage"} <Plus size={17}/></>}</button>
+            <button type="button" className="secondary" onClick={close}>Cancel</button>
+            {step === 2 && <button className="primary" type="submit" disabled={!selectedCar || busy}>{busy ? "Adding…" : "Add to garage"} <Plus size={17}/></button>}
           </div>
         </form>
       </div>
@@ -474,8 +537,9 @@ export default function App() {
   const [selectedMake, setSelectedMake] = useState("");
   const [selectedModel, setSelectedModel] = useState("");
   const [selected, setSelected] = useState<Car | null>(null);
+  const [selectedGarageExperience, setSelectedGarageExperience] = useState<RatingExperience | undefined>();
   const [ratingCar, setRatingCar] = useState<Car | null>(null);
-  const [submittedRatings, setSubmittedRatings] = useState<Record<string, number>>({});
+  const [savedRatings, setSavedRatings] = useState<Record<string, SavedRating>>({});
   const [profile, setProfile] = useState<UserProfile | null>(loadStoredProfile);
   const [creatingProfile, setCreatingProfile] = useState(false);
   const [authUserId, setAuthUserId] = useState<string | null>(null);
@@ -483,6 +547,7 @@ export default function App() {
   const [garageEntries, setGarageEntries] = useState<GarageEntry[]>([]);
   const [addingCar, setAddingCar] = useState(false);
   const [garageSeedCarId, setGarageSeedCarId] = useState<string | undefined>();
+  const [garageSeedStatus, setGarageSeedStatus] = useState<GarageStatus | undefined>();
 
   useEffect(() => {
     let active = true;
@@ -492,14 +557,16 @@ export default function App() {
       setAuthUserId(user?.id ?? null);
       if (!user) {
         setGarageEntries([]);
+        setSavedRatings({});
         return;
       }
 
       try {
-        const [remoteProfile, remoteGarage] = await Promise.all([loadRemoteProfile(user), loadGarage(user.id)]);
+        const [remoteProfile, remoteGarage, remoteRatings] = await Promise.all([loadRemoteProfile(user), loadGarage(user.id), loadRatings(user.id)]);
         if (!active) return;
         setProfile(remoteProfile);
         setGarageEntries(remoteGarage);
+        setSavedRatings(remoteRatings);
         window.localStorage.removeItem(profileStorageKey);
       } catch (profileError) {
         if (active) setAuthNotice(profileError instanceof Error ? profileError.message : "We could not load your profile.");
@@ -564,10 +631,11 @@ export default function App() {
   const signIn = async (email: string, password: string) => {
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) throw error;
-    const [remoteProfile, remoteGarage] = await Promise.all([loadRemoteProfile(data.user), loadGarage(data.user.id)]);
+    const [remoteProfile, remoteGarage, remoteRatings] = await Promise.all([loadRemoteProfile(data.user), loadGarage(data.user.id), loadRatings(data.user.id)]);
     setAuthUserId(data.user.id);
     setProfile(remoteProfile);
     setGarageEntries(remoteGarage);
+    setSavedRatings(remoteRatings);
     window.localStorage.removeItem(profileStorageKey);
     setAuthNotice("Welcome back to Driven.");
   };
@@ -578,6 +646,7 @@ export default function App() {
     setAuthUserId(null);
     setProfile(null);
     setGarageEntries([]);
+    setSavedRatings({});
     window.localStorage.removeItem(profileStorageKey);
     setTab("discover");
   };
@@ -589,6 +658,10 @@ export default function App() {
       return;
     }
     setGarageSeedCarId(carId);
+    const existingStatus = garageEntries.find(entry => entry.carId === carId)?.status;
+    const ratedExperience = carId ? savedRatings[carId]?.experience : undefined;
+    const ratedStatus = ratedExperience === "owned" || ratedExperience === "driven" ? ratedExperience : undefined;
+    setGarageSeedStatus(existingStatus ?? ratedStatus);
     setAddingCar(true);
   };
 
@@ -612,8 +685,39 @@ export default function App() {
     setAuthNotice(`${savedCar?.make ?? "Car"} ${savedCar?.model ?? ""} added to your garage.`.trim());
   };
 
+  const saveCarRating = async (carId: string, rating: RatingSubmission) => {
+    if (!authUserId) throw new Error("Create or sign in to your Driven account to save ratings to your profile.");
+    const { data, error } = await supabase
+      .from("car_ratings")
+      .upsert({
+        user_id: authUserId,
+        car_id: carId,
+        experience: rating.experience,
+        scores: rating.scores,
+        overall: rating.overall,
+        review: rating.review,
+        updated_at: new Date().toISOString(),
+      }, { onConflict: "user_id,car_id" })
+      .select("id,car_id,experience,scores,overall,review,created_at")
+      .single();
+    if (error) throw error;
+
+    const savedRating: SavedRating = {
+      id: data.id,
+      carId: data.car_id,
+      experience: data.experience as RatingExperience,
+      scores: data.scores as Record<string, number>,
+      overall: Number(data.overall),
+      review: data.review ?? "",
+      createdAt: data.created_at,
+    };
+    setSavedRatings(current => ({ ...current, [carId]: savedRating }));
+    const ratedCar = cars.find(car => car.id === carId);
+    setAuthNotice(`Your ${savedRating.overall.toFixed(1)} rating for ${ratedCar?.make ?? "this car"} ${ratedCar?.model ?? ""} is saved.`.trim());
+  };
+
   const displayedCar = (car: Car): Car => {
-    const submittedScore = submittedRatings[car.id];
+    const submittedScore = savedRatings[car.id]?.overall;
     if (submittedScore === undefined) return car;
     return { ...car, rating: (car.rating * car.ratings + submittedScore) / (car.ratings + 1), ratings: car.ratings + 1 };
   };
@@ -633,6 +737,20 @@ export default function App() {
   const drivenCount = garageEntries.filter(entry => entry.status === "driven" || entry.status === "owned").length;
   const ownedCount = garageEntries.filter(entry => entry.status === "owned").length;
   const garageBrands = new Set(garageCars.map(({ car }) => car.make)).size;
+  const ratedCars = Object.values(savedRatings).flatMap(rating => {
+    const car = cars.find(candidate => candidate.id === rating.carId);
+    return car ? [{ rating, car }] : [];
+  });
+  const garageCarIds = new Set(garageCars.map(({ car }) => car.id));
+  const profileCars = [
+    ...garageCars.map(({ entry, car }) => ({ entry, car, rating: savedRatings[car.id] })),
+    ...ratedCars
+      .filter(({ car }) => !garageCarIds.has(car.id))
+      .map(({ rating, car }) => ({ entry: null, car, rating })),
+  ];
+  const averagePersonalRating = ratedCars.length
+    ? ratedCars.reduce((sum, { rating }) => sum + rating.overall, 0) / ratedCars.length
+    : null;
 
   return (
     <div className="app">
@@ -663,20 +781,23 @@ export default function App() {
               <div className="hero-filters">
                 <div className="classification-filters">
                   <MakeFilter value={selectedMake} onChange={make => { setSelectedMake(make); setSelectedModel(""); }} />
-                  <ModelFilter make={selectedMake} value={selectedModel} onChange={setSelectedModel} />
+                  <div className="model-filter-row">
+                    <ModelFilter make={selectedMake} value={selectedModel} onChange={setSelectedModel} />
+                    <button className="filter-reset" type="button" aria-label="Reset all car filters" title="Reset filters" disabled={!selectedMake && !selectedModel} onClick={() => { setSelectedMake(""); setSelectedModel(""); }}><X size={17}/></button>
+                  </div>
                 </div>
               </div>
             </section>
 
             <section className="section">
               <div className="section-head"><div><p className="eyebrow">COMMUNITY</p><h2>Cars people are talking about</h2></div><button className="text-button">View all <ChevronRight size={16}/></button></div>
-              <div className="grid">{filtered.slice(0, 12).map(car => <CarCard key={car.id} car={displayedCar(car)} onClick={() => setSelected(displayedCar(car))} />)}</div>
+              <div className="grid">{filtered.slice(0, 12).map(car => <CarCard key={car.id} car={displayedCar(car)} onClick={() => { setSelectedGarageExperience(undefined); setSelected(displayedCar(car)); }} />)}</div>
             </section>
 
             <section className="statement">
               <p className="eyebrow">THE IDEA</p>
               <h2>Not a car magazine.<br/><em>A record of experience.</em></h2>
-              <p>Professional reviews tell you what a journalist thinks. Driven shows you what people who actually owned and drove the car think.</p>
+              <p>Whether you own, drive, dream about cars your point of view is worth the share. Welcome to Driven, the one stop shop for car fanatics.</p>
             </section>
           </>
         )}
@@ -687,10 +808,13 @@ export default function App() {
             <div className="catalog-filters">
               <div className="classification-filters">
                 <MakeFilter value={selectedMake} onChange={make => { setSelectedMake(make); setSelectedModel(""); }} />
-                <ModelFilter make={selectedMake} value={selectedModel} onChange={setSelectedModel} />
+                <div className="model-filter-row">
+                  <ModelFilter make={selectedMake} value={selectedModel} onChange={setSelectedModel} />
+                  <button className="filter-reset" type="button" aria-label="Reset all car filters" title="Reset filters" disabled={!selectedMake && !selectedModel} onClick={() => { setSelectedMake(""); setSelectedModel(""); }}><X size={17}/></button>
+                </div>
               </div>
             </div>
-            <div className="grid">{filtered.map(car => <CarCard key={car.id} car={displayedCar(car)} onClick={() => setSelected(displayedCar(car))} />)}</div>
+            <div className="grid">{filtered.map(car => <CarCard key={car.id} car={displayedCar(car)} onClick={() => { setSelectedGarageExperience(undefined); setSelected(displayedCar(car)); }} />)}</div>
           </section>
         )}
 
@@ -699,16 +823,30 @@ export default function App() {
             <section className="profile-page">
               <div className="profile-hero"><div className="avatar big">{profile.firstName.charAt(0).toUpperCase()}</div><div><p className="eyebrow">@{profile.username}</p><h1>{profile.firstName} {profile.lastName}</h1><p>{authUserId ? "New to Driven" : "Saved on this device only"}</p></div><button className="secondary profile-edit" onClick={() => setCreatingProfile(true)}>{authUserId ? "Edit profile" : "Create account"}</button></div>
               {profile.bio && <p className="profile-bio">{profile.bio}</p>}
-              <div className="profile-stats"><div><strong>{drivenCount}</strong><span>Driven</span></div><div><strong>{ownedCount}</strong><span>Owned</span></div><div><strong>{garageBrands}</strong><span>Brands</span></div><div><strong>—</strong><span>Avg. rating</span></div></div>
+              <div className="profile-stats"><div><strong>{drivenCount}</strong><span>Driven</span></div><div><strong>{ownedCount}</strong><span>Owned</span></div><div><strong>{garageBrands}</strong><span>Brands</span></div><div><strong>{averagePersonalRating === null ? "—" : averagePersonalRating.toFixed(1)}</strong><span>Avg. rating</span></div></div>
               <div className="section-head"><div><p className="eyebrow">YOUR GARAGE</p><h2>Cars you've experienced</h2></div><button className="primary" onClick={() => openAddCar()}><Plus size={17}/> Add car</button></div>
-              {garageCars.length ? (
+              {profileCars.length ? (
                 <div className="garage-grid">
-                  {garageCars.map(({ entry, car }) => (
-                    <button className="garage-card" key={entry.id} onClick={() => setSelected(displayedCar(car))}>
-                      <img src={car.image} alt={`${car.make} ${car.model}`} />
-                      <div><span className="garage-status">{garageStatusLabels[entry.status]}</span><p>{car.make} · {car.generation}</p><h3>{car.model}</h3><small>{car.year} · {car.transmission}</small></div>
-                    </button>
-                  ))}
+                  {profileCars.map(({ entry, car, rating }) => {
+                    const relationship = entry
+                      ? garageStatusLabels[entry.status]
+                      : rating?.experience === "passenger"
+                        ? "Passenger"
+                        : rating
+                          ? garageStatusLabels[rating.experience]
+                          : "";
+                    return (
+                      <button className="garage-card" key={entry?.id ?? rating?.id ?? car.id} onClick={() => { setSelectedGarageExperience(entry?.status === "owned" || entry?.status === "driven" ? entry.status : rating?.experience); setSelected(displayedCar(car)); }}>
+                        <img src={car.image} alt={`${car.make} ${car.model}`} />
+                        <div>
+                          <span className="garage-status">{relationship}</span>
+                          {rating && <span className="garage-rating"><Star size={11} fill="currentColor"/> {rating.overall.toFixed(1)}</span>}
+                          <p>{car.make} · {car.generation}</p><h3>{car.model}</h3>
+                          <small>{car.year} · {car.transmission}{rating ? " · Your grade" : ""}</small>
+                        </div>
+                      </button>
+                    );
+                  })}
                 </div>
               ) : (
                 <div className="empty-garage"><CarFront size={32}/><h3>Your garage starts here.</h3><p>Add cars you've owned or driven and start building your automotive identity.</p><button className="secondary" onClick={() => openAddCar()}><Plus size={17}/> Add your first car</button></div>
@@ -729,18 +867,20 @@ export default function App() {
       {selected && (
   <CarDetail
     car={selected}
-    close={() => setSelected(null)}
+    close={() => { setSelected(null); setSelectedGarageExperience(undefined); }}
     onRate={() => setRatingCar(selected)}
     onAdd={() => { openAddCar(selected.id); setSelected(null); }}
+    personalRating={savedRatings[selected.id]}
+    profile={profile ?? undefined}
   />
 )}
-      {ratingCar && <RatingFlow car={ratingCar} close={() => setRatingCar(null)} complete={(score) => {
-        const updatedCar = { ...ratingCar, rating: (ratingCar.rating * ratingCar.ratings + score) / (ratingCar.ratings + 1), ratings: ratingCar.ratings + 1 };
-        setSubmittedRatings(current => ({ ...current, [ratingCar.id]: score }));
+      {ratingCar && <RatingFlow car={ratingCar} initialExperience={selectedGarageExperience ?? savedRatings[ratingCar.id]?.experience} initialRating={savedRatings[ratingCar.id]} close={() => setRatingCar(null)} complete={async (rating) => {
+        await saveCarRating(ratingCar.id, rating);
+        const updatedCar = { ...ratingCar, rating: (ratingCar.rating * ratingCar.ratings + rating.overall) / (ratingCar.ratings + 1), ratings: ratingCar.ratings + 1 };
         setSelected(current => current?.id === ratingCar.id ? updatedCar : current);
       }} />}
       {creatingProfile && <CreateProfile profile={profile} authenticated={Boolean(authUserId)} close={() => setCreatingProfile(false)} save={saveProfile} signIn={signIn} />}
-      {addingCar && <AddCarModal initialCarId={garageSeedCarId} close={() => setAddingCar(false)} add={addCarToGarage} />}
+      {addingCar && <AddCarModal initialCarId={garageSeedCarId} initialStatus={garageSeedStatus} close={() => setAddingCar(false)} add={addCarToGarage} />}
     </div>
   );
 }
