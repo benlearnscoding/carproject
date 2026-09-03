@@ -36,7 +36,7 @@ type CommunityRating = {
   id: string;
   carId: string;
   overall: number;
-  reviewPreview: string;
+  review: string;
   username: string;
   ratedAt: string;
 };
@@ -155,7 +155,7 @@ async function loadCommunityRatings(): Promise<CommunityRating[]> {
     id: rating.id,
     carId: rating.car_id,
     overall: Number(rating.overall),
-    reviewPreview: rating.review_preview ?? "",
+    review: rating.review_preview ?? "",
     username: rating.username,
     ratedAt: rating.rated_at,
   }));
@@ -425,7 +425,7 @@ function CommunityRatingCard({ rating, car, onClick }: { rating: CommunityRating
       <div className="card-body">
         <div className="community-rating-meta"><span>@{rating.username}</span><span>{car.make}</span></div>
         <h3>{car.model}</h3>
-        {rating.reviewPreview && <p className="review-preview">“{rating.reviewPreview}…”</p>}
+        {rating.review && <p className="review-preview">“{rating.review}”</p>}
       </div>
     </button>
   );

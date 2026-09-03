@@ -16,10 +16,7 @@ as $$
     ratings.id,
     ratings.car_id,
     ratings.overall,
-    case
-      when trim(ratings.review) = '' then ''
-      else array_to_string((regexp_split_to_array(trim(ratings.review), '\s+'))[1:3], ' ')
-    end as review_preview,
+    ratings.review as review_preview,
     profiles.username,
     ratings.updated_at as rated_at
   from public.car_ratings as ratings
