@@ -32,6 +32,22 @@ type SavedRating = RatingSubmission & {
   carId: string;
   createdAt: string;
 };
+type CommunityRating = {
+  id: string;
+  carId: string;
+  overall: number;
+  reviewPreview: string;
+  username: string;
+  ratedAt: string;
+};
+type CommunityRatingRow = {
+  id: string;
+  car_id: string;
+  overall: number | string;
+  review_preview: string | null;
+  username: string;
+  rated_at: string;
+};
 
 const makes = [
   "Alpine",
@@ -129,6 +145,27 @@ async function loadRatings(userId: string): Promise<Record<string, SavedRating>>
     review: rating.review ?? "",
     createdAt: rating.created_at,
   }]));
+}
+
+async function loadCommunityRatings(): Promise<CommunityRating[]> {
+  const { data, error } = await supabase.rpc("get_recent_community_ratings", { result_limit: 24 });
+  if (error) throw error;
+
+  const ratings = (data as CommunityRatingRow[] | null ?? []).map(rating => ({
+    id: rating.id,
+    carId: rating.car_id,
+    overall: Number(rating.overall),
+    reviewPreview: rating.review_preview ?? "",
+    username: rating.username,
+    ratedAt: rating.rated_at,
+  }));
+
+  for (let index = ratings.length - 1; index > 0; index -= 1) {
+    const randomIndex = Math.floor(Math.random() * (index + 1));
+    [ratings[index], ratings[randomIndex]] = [ratings[randomIndex], ratings[index]];
+  }
+
+  return ratings;
 }
 
 function Score({ value }: { value: number }) {
@@ -378,6 +415,22 @@ function RatingFlow({ car, close, complete, initialExperience, initialRating }: 
   );
 }
 
+function CommunityRatingCard({ rating, car, onClick }: { rating: CommunityRating; car: Car; onClick: () => void }) {
+  return (
+    <button className="car-card community-rating-card" onClick={onClick}>
+      <div className="car-image">
+        <img src={car.image} alt={`${car.make} ${car.model}`} />
+        <div className="image-score"><Score value={rating.overall} /></div>
+      </div>
+      <div className="card-body">
+        <div className="community-rating-meta"><span>@{rating.username}</span><span>{car.make}</span></div>
+        <h3>{car.model}</h3>
+        {rating.reviewPreview && <p className="review-preview">“{rating.reviewPreview}…”</p>}
+      </div>
+    </button>
+  );
+}
+
 function AddCarModal({
   close,
   add,
@@ -559,6 +612,8 @@ export default function App() {
   const [selectedGarageExperience, setSelectedGarageExperience] = useState<RatingExperience | undefined>();
   const [ratingCar, setRatingCar] = useState<Car | null>(null);
   const [savedRatings, setSavedRatings] = useState<Record<string, SavedRating>>({});
+  const [communityRatings, setCommunityRatings] = useState<CommunityRating[]>([]);
+  const [communityRatingsLoading, setCommunityRatingsLoading] = useState(true);
   const [profile, setProfile] = useState<UserProfile | null>(loadStoredProfile);
   const [creatingProfile, setCreatingProfile] = useState(false);
   const [authUserId, setAuthUserId] = useState<string | null>(null);
@@ -601,6 +656,15 @@ export default function App() {
       active = false;
       authListener.subscription.unsubscribe();
     };
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+    loadCommunityRatings()
+      .then(ratings => { if (active) setCommunityRatings(ratings); })
+      .catch(() => { if (active) setCommunityRatings([]); })
+      .finally(() => { if (active) setCommunityRatingsLoading(false); });
+    return () => { active = false; };
   }, []);
 
   const saveProfile = async (newProfile: UserProfile, password: string) => {
@@ -784,6 +848,11 @@ export default function App() {
   const averagePersonalRating = ratedCars.length
     ? ratedCars.reduce((sum, { rating }) => sum + rating.overall, 0) / ratedCars.length
     : null;
+  const filteredCommunityRatings = communityRatings.flatMap(rating => {
+    const car = cars.find(candidate => candidate.id === rating.carId);
+    if (!car || (selectedMake && car.make !== selectedMake) || (selectedModel && car.model !== selectedModel)) return [];
+    return [{ rating, car }];
+  }).slice(0, 12);
 
   return (
     <div className="app">
@@ -824,7 +893,13 @@ export default function App() {
 
             <section className="section">
               <div className="section-head"><div><p className="eyebrow">COMMUNITY</p><h2>Cars people are talking about</h2></div><button className="text-button">View all <ChevronRight size={16}/></button></div>
-              <div className="grid">{filtered.slice(0, 12).map(car => <CarCard key={car.id} car={displayedCar(car)} onClick={() => { setSelectedGarageExperience(undefined); setSelected(displayedCar(car)); }} />)}</div>
+              {communityRatingsLoading ? (
+                <p className="community-empty">Loading recent ratings…</p>
+              ) : filteredCommunityRatings.length ? (
+                <div className="grid">{filteredCommunityRatings.map(({ rating, car }) => <CommunityRatingCard key={rating.id} rating={rating} car={displayedCar(car)} onClick={() => { setSelectedGarageExperience(undefined); setSelected(displayedCar(car)); }} />)}</div>
+              ) : (
+                <p className="community-empty">No recent ratings match these filters yet.</p>
+              )}
             </section>
 
             <section className="statement">
