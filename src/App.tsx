@@ -467,7 +467,7 @@ function CreateProfile({
   authenticated,
 }: {
   close: () => void;
-  save: (profile: UserProfile, password: string) => Promise<void>;
+  save: (profile: UserProfile, password: string) => Promise<boolean>;
   signIn: (email: string, password: string) => Promise<void>;
   profile: UserProfile | null;
   authenticated: boolean;
@@ -482,6 +482,7 @@ function CreateProfile({
   const [bio, setBio] = useState(profile?.bio ?? "");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [confirmationEmail, setConfirmationEmail] = useState("");
 
   const submit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -491,13 +492,18 @@ function CreateProfile({
     try {
       if (signingIn) {
         await signIn(email.trim(), password);
+        close();
       } else {
-        await save(
+        const confirmationRequired = await save(
           { firstName: firstName.trim(), lastName: lastName.trim(), email: email.trim(), username: username.trim().replace(/^@/, ""), bio: bio.trim() },
           password,
         );
+        if (confirmationRequired) {
+          setConfirmationEmail(email.trim());
+        } else {
+          close();
+        }
       }
-      close();
     } catch (submitError) {
       setError(submitError instanceof Error ? submitError.message : "Something went wrong. Please try again.");
     } finally {
@@ -514,6 +520,16 @@ function CreateProfile({
     <div className="modal-backdrop profile-backdrop" onClick={close}>
       <div className="profile-creator" onClick={event => event.stopPropagation()}>
         <button className="close" onClick={close} aria-label="Close profile creator">×</button>
+        {confirmationEmail ? (
+          <div className="profile-confirmation" role="status">
+            <div className="confirmation-icon"><Check size={25}/></div>
+            <p className="eyebrow">ONE LAST STEP</p>
+            <h2>Confirm your email.</h2>
+            <p>We sent a confirmation link to <strong>{confirmationEmail}</strong>. Open that email and follow the link to activate your Driven account.</p>
+            <button className="primary" type="button" onClick={close}>Got it</button>
+          </div>
+        ) : (
+          <>
         <p className="eyebrow">{signingIn ? "WELCOME BACK" : authenticated ? "EDIT PROFILE" : "JOIN DRIVEN"}</p>
         <h2>{signingIn ? "Return to your garage." : authenticated ? "Refine your automotive identity." : "Your automotive identity starts here."}</h2>
         <p className="profile-intro">{signingIn ? "Sign in with the email and password you used to join." : "Your account and profile will be securely stored with Supabase."}</p>
@@ -528,6 +544,8 @@ function CreateProfile({
           <div className="profile-form-footer"><span>{signingIn ? "Secure sign in" : `${bio.length}/180`}</span><button className="primary" type="submit" disabled={!formValid || busy}>{busy ? "Please wait…" : signingIn ? "Sign in" : authenticated ? "Save profile" : "Create account"} <ChevronRight size={17} /></button></div>
           {!authenticated && <button className="auth-switch" type="button" onClick={() => { setSigningIn(current => !current); setError(""); }}>{signingIn ? "New to Driven? Create an account" : "Already have an account? Sign in"}</button>}
         </form>
+          </>
+        )}
       </div>
     </div>
   );
@@ -604,7 +622,7 @@ export default function App() {
       setProfile(newProfile);
       window.localStorage.setItem(profileStorageKey, JSON.stringify(newProfile));
       setAuthNotice(data.session ? "Your Driven account is ready." : "Account created. Check your email to confirm it, then sign in.");
-      return;
+      return !data.session;
     }
 
     const userUpdate = {
@@ -627,6 +645,7 @@ export default function App() {
 
     setProfile(newProfile);
     setAuthNotice("Profile updated.");
+    return false;
   };
 
   const signIn = async (email: string, password: string) => {
