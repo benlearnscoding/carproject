@@ -665,6 +665,16 @@ export default function App() {
     setAddingCar(true);
   };
 
+  const openRating = (car: Car) => {
+    if (!authUserId) {
+      setAuthNotice("Log in or create a Driven account to rate a car.");
+      setCreatingProfile(true);
+      return;
+    }
+
+    setRatingCar(car);
+  };
+
   const addCarToGarage = async (carId: string, status: GarageStatus) => {
     if (!authUserId) throw new Error("Please sign in before adding a car.");
     const { data, error } = await supabase
@@ -868,7 +878,7 @@ export default function App() {
   <CarDetail
     car={selected}
     close={() => { setSelected(null); setSelectedGarageExperience(undefined); }}
-    onRate={() => setRatingCar(selected)}
+    onRate={() => openRating(selected)}
     onAdd={() => { openAddCar(selected.id); setSelected(null); }}
     personalRating={savedRatings[selected.id]}
     profile={profile ?? undefined}
