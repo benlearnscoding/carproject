@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Plus, Star, ChevronRight, ChevronDown, Heart, CarFront, UserRound, ArrowLeft, Check, LogOut, X } from "lucide-react";
+import { Plus, Star, ChevronRight, ChevronDown, Heart, CarFront, UserRound, ArrowLeft, Check, LogOut, X, Eye, EyeOff } from "lucide-react";
 import type { User } from "@supabase/supabase-js";
 import { cars, type Car } from "./data";
 import { supabase } from "./supabase";
@@ -478,6 +478,7 @@ function CreateProfile({
   const [email, setEmail] = useState(profile?.email ?? "");
   const [username, setUsername] = useState(profile?.username ?? "");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [bio, setBio] = useState(profile?.bio ?? "");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -521,7 +522,7 @@ function CreateProfile({
           {!signingIn && <label>Last name<input value={lastName} onChange={event => setLastName(event.target.value)} placeholder="Your last name" /></label>}
           <label>Email<input type="email" value={email} onChange={event => setEmail(event.target.value)} placeholder="you@example.com" autoComplete="email" autoFocus={signingIn} /></label>
           {!signingIn && <label>Username<input value={username} onChange={event => setUsername(event.target.value)} placeholder="yourusername" autoComplete="username" /></label>}
-          <label>Password {!passwordRequired && <small>Optional — only enter to change it</small>}<input type="password" value={password} onChange={event => setPassword(event.target.value)} placeholder={signingIn ? "Your password" : authenticated ? "Leave blank to keep your password" : "Create a password"} autoComplete={signingIn ? "current-password" : "new-password"} /></label>
+          <label>Password {!passwordRequired && <small>Optional — only enter to change it</small>}<span className="password-field"><input type={showPassword ? "text" : "password"} value={password} onChange={event => setPassword(event.target.value)} placeholder={signingIn ? "Your password" : authenticated ? "Leave blank to keep your password" : "Create a password"} autoComplete={signingIn ? "current-password" : "new-password"} /><button type="button" className="password-toggle" aria-label={showPassword ? "Hide password" : "Show password"} aria-pressed={showPassword} onClick={() => setShowPassword(current => !current)}>{showPassword ? <EyeOff size={17}/> : <Eye size={17}/>}<span>{showPassword ? "Hide" : "Show"}</span></button></span></label>
           {!signingIn && <label>About you <small>Optional</small><textarea value={bio} onChange={event => setBio(event.target.value)} maxLength={180} placeholder="What do you love to drive?" /></label>}
           {error && <p className="auth-error" role="alert">{error}</p>}
           <div className="profile-form-footer"><span>{signingIn ? "Secure sign in" : `${bio.length}/180`}</span><button className="primary" type="submit" disabled={!formValid || busy}>{busy ? "Please wait…" : signingIn ? "Sign in" : authenticated ? "Save profile" : "Create account"} <ChevronRight size={17} /></button></div>

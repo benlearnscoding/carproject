@@ -190,6 +190,10 @@ body,.app { background:#0247DD; }
 .profile-creator label { display:grid; gap:8px; font-size:13px; font-weight:600; }
 .profile-creator label small { margin-left:5px; color:rgba(255,255,255,.65); font-weight:400; }
 .profile-creator input,.profile-creator textarea { width:100%; border:1px solid rgba(255,255,255,.42); border-radius:2px; background:rgba(0,0,0,.1); color:#fff; padding:12px 13px; outline:0; font:inherit; font-weight:400; }
+.password-field { position:relative; display:block; }
+.profile-creator .password-field input { padding-right:82px; }
+.password-toggle { position:absolute; top:50%; right:11px; transform:translateY(-50%); display:flex; align-items:center; gap:6px; border:0; background:none; color:rgba(255,255,255,.82); padding:5px; font:inherit; font-size:12px; font-weight:600; }
+.password-toggle:hover,.password-toggle:focus-visible { color:#fff; }
 .profile-creator textarea { min-height:104px; resize:vertical; }
 .profile-creator input::placeholder,.profile-creator textarea::placeholder { color:rgba(255,255,255,.62); }
 .profile-creator input:focus,.profile-creator textarea:focus { border-color:#fff; }
