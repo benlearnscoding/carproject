@@ -162,7 +162,7 @@ async function loadRatings(userId: string): Promise<Record<string, SavedRating>>
 }
 
 async function loadCommunityRatings(): Promise<CommunityRating[]> {
-  const { data, error } = await supabase.rpc("get_recent_community_ratings", { result_limit: 24 });
+  const { data, error } = await supabase.rpc("get_recent_community_ratings", { result_limit: 500 });
   if (error) throw error;
 
   const ratings = (data as CommunityRatingRow[] | null ?? []).map(rating => ({
@@ -666,6 +666,7 @@ export default function App() {
   const [savedRatings, setSavedRatings] = useState<Record<string, SavedRating>>({});
   const [communityRatings, setCommunityRatings] = useState<CommunityRating[]>([]);
   const [communityRatingsLoading, setCommunityRatingsLoading] = useState(true);
+  const [showAllCommunityRatings, setShowAllCommunityRatings] = useState(false);
   const [publicProfileUsername, setPublicProfileUsername] = useState<string | null>(null);
   const [publicProfile, setPublicProfile] = useState<PublicProfile | null>(null);
   const [publicProfileLoading, setPublicProfileLoading] = useState(false);
@@ -961,7 +962,8 @@ export default function App() {
     const car = cars.find(candidate => candidate.id === rating.carId);
     if (!car || (selectedMake && car.make !== selectedMake) || (selectedModel && car.model !== selectedModel)) return [];
     return [{ rating, car }];
-  }).slice(0, 12);
+  });
+  const displayedCommunityRatings = showAllCommunityRatings ? filteredCommunityRatings : filteredCommunityRatings.slice(0, 12);
 
   return (
     <div className="app">
@@ -1001,11 +1003,11 @@ export default function App() {
             </section>
 
             <section className="section">
-              <div className="section-head"><div><p className="eyebrow">COMMUNITY</p><h2>Cars people are talking about</h2></div><button className="text-button">View all <ChevronRight size={16}/></button></div>
+              <div className="section-head"><div><p className="eyebrow">COMMUNITY</p><h2>Cars people are talking about</h2></div><button className="text-button" type="button" aria-expanded={showAllCommunityRatings} onClick={() => setShowAllCommunityRatings(current => !current)}>{showAllCommunityRatings ? "Show latest" : "View all"} <ChevronRight size={16}/></button></div>
               {communityRatingsLoading ? (
                 <p className="community-empty">Loading recent ratings…</p>
-              ) : filteredCommunityRatings.length ? (
-                <div className="grid">{filteredCommunityRatings.map(({ rating, car }) => <CommunityRatingCard key={rating.id} rating={rating} car={displayedCar(car)} onProfile={() => openPublicProfile(rating.username)} onClick={() => { setSelectedGarageExperience(undefined); setSelected(displayedCar(car)); }} />)}</div>
+              ) : displayedCommunityRatings.length ? (
+                <div className="grid">{displayedCommunityRatings.map(({ rating, car }) => <CommunityRatingCard key={rating.id} rating={rating} car={displayedCar(car)} onProfile={() => openPublicProfile(rating.username)} onClick={() => { setSelectedGarageExperience(undefined); setSelected(displayedCar(car)); }} />)}</div>
               ) : (
                 <p className="community-empty">No recent ratings match these filters yet.</p>
               )}

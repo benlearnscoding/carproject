@@ -22,7 +22,7 @@ as $$
   from public.car_ratings as ratings
   join public.profiles as profiles on profiles.id = ratings.user_id
   order by ratings.updated_at desc
-  limit least(greatest(result_limit, 1), 50);
+  limit least(greatest(result_limit, 1), 500);
 $$;
 
 revoke all on function public.get_recent_community_ratings(integer) from public;
