@@ -532,7 +532,7 @@ function CreateProfile({
   profile: UserProfile | null;
   authenticated: boolean;
 }) {
-  const [signingIn, setSigningIn] = useState(false);
+  const [signingIn, setSigningIn] = useState(!authenticated);
   const [firstName, setFirstName] = useState(profile?.firstName ?? "");
   const [lastName, setLastName] = useState(profile?.lastName ?? "");
   const [email, setEmail] = useState(profile?.email ?? "");
@@ -602,7 +602,7 @@ function CreateProfile({
           {!signingIn && <label>About you <small>Optional</small><textarea value={bio} onChange={event => setBio(event.target.value)} maxLength={180} placeholder="What do you love to drive?" /></label>}
           {error && <p className="auth-error" role="alert">{error}</p>}
           <div className="profile-form-footer"><span>{signingIn ? "Secure sign in" : `${bio.length}/180`}</span><button className="primary" type="submit" disabled={!formValid || busy}>{busy ? "Please wait…" : signingIn ? "Sign in" : authenticated ? "Save profile" : "Create account"} <ChevronRight size={17} /></button></div>
-          {!authenticated && <button className="auth-switch" type="button" onClick={() => { setSigningIn(current => !current); setError(""); }}>{signingIn ? "New to Driven? Create an account" : "Already have an account? Sign in"}</button>}
+          {!authenticated && <button className="auth-switch" type="button" onClick={() => { setSigningIn(current => !current); setError(""); }}>{signingIn ? "Don't have an account? Sign up" : "Already have an account? Sign in"}</button>}
         </form>
           </>
         )}
