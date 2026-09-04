@@ -20,7 +20,7 @@ type GarageEntry = {
   createdAt: string;
 };
 const garageStatusLabels: Record<GarageStatus, string> = { owned: "Owned", driven: "Driven", want: "Want" };
-type RatingExperience = "owned" | "driven" | "passenger";
+type RatingExperience = "owned" | "driven" | "passenger" | "want";
 type RatingSubmission = {
   experience: RatingExperience;
   scores: Record<string, number>;
@@ -296,7 +296,9 @@ function CarDetail({
     ? "Owned"
     : personalRating?.experience === "driven"
       ? "Driven"
-      : "Passenger";
+      : personalRating?.experience === "want"
+        ? "Want"
+        : "Passenger";
 
   return (
     <div className="modal-backdrop" onClick={close}>
@@ -417,6 +419,7 @@ function RatingFlow({ car, close, complete, initialExperience, initialRating }: 
                   ["owned", "I owned one", "It was mine, for a while."],
                   ["driven", "I've driven one", "Enough time behind the wheel to know it."],
                   ["passenger", "I've ridden in one", "Experienced from the other seat."],
+                  ["want", "I want one", "It belongs on my shortlist."],
                 ] as const).map(([value, title, description]) => (
                   <button key={value} className={`experience-option ${experience === value ? "selected" : ""}`} onClick={() => setExperience(value)}>
                     <span className="option-dot" /><span><strong>{title}</strong><small>{description}</small></span>
@@ -487,12 +490,12 @@ function CommunityRatingCard({ rating, car, onClick, onProfile }: { rating: Comm
 
 function AddCarModal({
   close,
-  add,
+  continueToRating,
   initialCarId,
   initialStatus,
 }: {
   close: () => void;
-  add: (carId: string, status: GarageStatus) => Promise<void>;
+  continueToRating: (car: Car, status: GarageStatus) => void;
   initialCarId?: string;
   initialStatus?: GarageStatus;
 }) {
@@ -501,26 +504,16 @@ function AddCarModal({
   const [make, setMake] = useState(initialCar?.make ?? "");
   const [model, setModel] = useState(initialCar?.model ?? "");
   const [status, setStatus] = useState<GarageStatus | null>(initialStatus ?? null);
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState("");
   const makeOptions = Array.from(new Set(cars.map(car => car.make))).sort((a, b) => a.localeCompare(b));
   const modelOptions = Array.from(new Set(cars.filter(car => car.make === make).map(car => car.model))).sort((a, b) => a.localeCompare(b));
   const selectedCar = cars.find(car => car.make === make && car.model === model);
 
-  const submit = async (event: React.FormEvent<HTMLFormElement>) => {
+  const submit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (step === 1) return;
     if (!selectedCar || !status) return;
-    setBusy(true);
-    setError("");
-    try {
-      await add(selectedCar.id, status);
-      close();
-    } catch (submitError) {
-      setError(submitError instanceof Error ? submitError.message : "We could not add this car. Please try again.");
-    } finally {
-      setBusy(false);
-    }
+    continueToRating(selectedCar, status);
+    close();
   };
 
   return (
@@ -529,7 +522,7 @@ function AddCarModal({
         <button className="close" onClick={close} aria-label="Close add car form">×</button>
         <p className="eyebrow">YOUR GARAGE</p>
         <h2>{step === 1 ? "How does this car fit your story?" : "Choose your car."}</h2>
-        <p className="profile-intro">{step === 1 ? "Tell the community about your relationship with the car." : "Select the make and model to finish adding it to your garage."}</p>
+        <p className="profile-intro">{step === 1 ? "Tell the community about your relationship with the car." : "Select the make and model, then rate it before adding it to your garage."}</p>
         <form onSubmit={submit}>
           {step === 1 ? (
             <fieldset className="garage-status-fieldset">
@@ -555,10 +548,9 @@ function AddCarModal({
               {selectedCar && <div className="garage-preview"><img src={selectedCar.image} alt="" /><div><span>{selectedCar.make} · {selectedCar.generation}</span><strong>{selectedCar.model}</strong></div></div>}
             </>
           )}
-          {error && <p className="auth-error" role="alert">{error}</p>}
           <div className="rating-actions garage-form-actions">
             <button type="button" className="secondary" onClick={close}>Cancel</button>
-            {step === 2 && <button className="primary" type="submit" disabled={!selectedCar || busy}>{busy ? "Adding…" : "Add to garage"} <Plus size={17}/></button>}
+            {step === 2 && <button className="primary" type="submit" disabled={!selectedCar}>Continue to rating <ChevronRight size={17}/></button>}
           </div>
         </form>
       </div>
@@ -682,6 +674,7 @@ export default function App() {
   const [addingCar, setAddingCar] = useState(false);
   const [garageSeedCarId, setGarageSeedCarId] = useState<string | undefined>();
   const [garageSeedStatus, setGarageSeedStatus] = useState<GarageStatus | undefined>();
+  const [pendingGarageAdd, setPendingGarageAdd] = useState<{ carId: string; status: GarageStatus } | null>(null);
 
   const refreshCommunityRatings = useCallback(async (showLoading = false) => {
     if (showLoading) setCommunityRatingsLoading(true);
@@ -863,7 +856,7 @@ export default function App() {
     setGarageSeedCarId(carId);
     const existingStatus = garageEntries.find(entry => entry.carId === carId)?.status;
     const ratedExperience = carId ? savedRatings[carId]?.experience : undefined;
-    const ratedStatus = ratedExperience === "owned" || ratedExperience === "driven" ? ratedExperience : undefined;
+    const ratedStatus = ratedExperience === "owned" || ratedExperience === "driven" || ratedExperience === "want" ? ratedExperience : undefined;
     setGarageSeedStatus(existingStatus ?? ratedStatus);
     setAddingCar(true);
   };
@@ -875,6 +868,12 @@ export default function App() {
       return;
     }
 
+    setRatingCar(car);
+  };
+
+  const continueGarageAddToRating = (car: Car, status: GarageStatus) => {
+    setPendingGarageAdd({ carId: car.id, status });
+    setSelectedGarageExperience(status);
     setRatingCar(car);
   };
 
@@ -1153,13 +1152,17 @@ export default function App() {
     profile={profile ?? undefined}
   />
 )}
-      {ratingCar && <RatingFlow car={ratingCar} initialExperience={selectedGarageExperience ?? savedRatings[ratingCar.id]?.experience} initialRating={savedRatings[ratingCar.id]} close={() => setRatingCar(null)} complete={async (rating) => {
+      {ratingCar && <RatingFlow car={ratingCar} initialExperience={selectedGarageExperience ?? savedRatings[ratingCar.id]?.experience} initialRating={savedRatings[ratingCar.id]} close={() => { setRatingCar(null); setPendingGarageAdd(null); }} complete={async (rating) => {
         await saveCarRating(ratingCar.id, rating);
+        if (pendingGarageAdd?.carId === ratingCar.id) {
+          await addCarToGarage(ratingCar.id, pendingGarageAdd.status);
+          setPendingGarageAdd(null);
+        }
         const updatedCar = { ...ratingCar, rating: (ratingCar.rating * ratingCar.ratings + rating.overall) / (ratingCar.ratings + 1), ratings: ratingCar.ratings + 1 };
         setSelected(current => current?.id === ratingCar.id ? updatedCar : current);
       }} />}
       {creatingProfile && <CreateProfile profile={profile} authenticated={Boolean(authUserId)} close={() => setCreatingProfile(false)} save={saveProfile} signIn={signIn} />}
-      {addingCar && <AddCarModal initialCarId={garageSeedCarId} initialStatus={garageSeedStatus} close={() => setAddingCar(false)} add={addCarToGarage} />}
+      {addingCar && <AddCarModal initialCarId={garageSeedCarId} initialStatus={garageSeedStatus} close={() => setAddingCar(false)} continueToRating={continueGarageAddToRating} />}
     </div>
   );
 }

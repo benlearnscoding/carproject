@@ -2,7 +2,7 @@ create table if not exists public.car_ratings (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references public.profiles(id) on delete cascade,
   car_id text not null,
-  experience text not null check (experience in ('owned', 'driven', 'passenger')),
+  experience text not null check (experience in ('owned', 'driven', 'passenger', 'want')),
   scores jsonb not null default '{}'::jsonb,
   overall numeric(3,1) not null check (overall >= 1 and overall <= 10),
   review text not null default '' check (char_length(review) <= 500),
@@ -10,6 +10,10 @@ create table if not exists public.car_ratings (
   updated_at timestamptz not null default now(),
   unique (user_id, car_id)
 );
+
+alter table public.car_ratings drop constraint if exists car_ratings_experience_check;
+alter table public.car_ratings add constraint car_ratings_experience_check
+check (experience in ('owned', 'driven', 'passenger', 'want'));
 
 alter table public.car_ratings enable row level security;
 revoke all on table public.car_ratings from anon;
