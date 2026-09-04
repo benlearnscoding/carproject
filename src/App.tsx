@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Plus, Star, ChevronRight, ChevronDown, Heart, CarFront, UserRound, ArrowLeft, Check, LogOut, X, Eye, EyeOff } from "lucide-react";
 import type { User } from "@supabase/supabase-js";
 import { cars, type Car } from "./data";
@@ -680,6 +680,15 @@ export default function App() {
   const [garageSeedCarId, setGarageSeedCarId] = useState<string | undefined>();
   const [garageSeedStatus, setGarageSeedStatus] = useState<GarageStatus | undefined>();
 
+  const refreshCommunityRatings = useCallback(async (showLoading = false) => {
+    if (showLoading) setCommunityRatingsLoading(true);
+    try {
+      setCommunityRatings(await loadCommunityRatings());
+    } finally {
+      if (showLoading) setCommunityRatingsLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     let active = true;
 
@@ -718,12 +727,37 @@ export default function App() {
 
   useEffect(() => {
     let active = true;
-    loadCommunityRatings()
-      .then(ratings => { if (active) setCommunityRatings(ratings); })
-      .catch(() => { if (active) setCommunityRatings([]); })
-      .finally(() => { if (active) setCommunityRatingsLoading(false); });
-    return () => { active = false; };
+    const refresh = (showLoading = false) => {
+      if (showLoading) setCommunityRatingsLoading(true);
+      loadCommunityRatings()
+        .then(ratings => { if (active) setCommunityRatings(ratings); })
+        .catch(() => { if (active && showLoading) setCommunityRatings([]); })
+        .finally(() => { if (active && showLoading) setCommunityRatingsLoading(false); });
+    };
+    const refreshWhenVisible = () => {
+      if (document.visibilityState === "visible") refresh();
+    };
+
+    refresh(true);
+    window.addEventListener("focus", refreshWhenVisible);
+    document.addEventListener("visibilitychange", refreshWhenVisible);
+    const refreshInterval = window.setInterval(() => {
+      if (document.visibilityState === "visible") refresh();
+    }, 30000);
+
+    return () => {
+      active = false;
+      window.removeEventListener("focus", refreshWhenVisible);
+      document.removeEventListener("visibilitychange", refreshWhenVisible);
+      window.clearInterval(refreshInterval);
+    };
   }, []);
+
+  useEffect(() => {
+    if (tab === "discover" && !communityRatingsLoading) {
+      refreshCommunityRatings().catch(() => undefined);
+    }
+  }, [tab, communityRatingsLoading, refreshCommunityRatings]);
 
   const saveProfile = async (newProfile: UserProfile, password: string) => {
     const userMetadata = {
@@ -883,6 +917,7 @@ export default function App() {
       createdAt: data.created_at,
     };
     setSavedRatings(current => ({ ...current, [carId]: savedRating }));
+    refreshCommunityRatings().catch(() => undefined);
     const ratedCar = cars.find(car => car.id === carId);
     setAuthNotice(`Your ${savedRating.overall.toFixed(1)} rating for ${ratedCar?.make ?? "this car"} ${ratedCar?.model ?? ""} is saved.`.trim());
   };
