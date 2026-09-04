@@ -482,7 +482,7 @@ function AddCarModal({
         <button className="close" onClick={close} aria-label="Close add car form">×</button>
         <p className="eyebrow">YOUR GARAGE</p>
         <h2>{step === 1 ? "How does this car fit your story?" : "Choose your car."}</h2>
-        <p className="profile-intro">{step === 1 ? "Tell the community about your relationship with the car once." : "Select the make and model to finish adding it to your garage."}</p>
+        <p className="profile-intro">{step === 1 ? "Tell the community about your relationship with the car." : "Select the make and model to finish adding it to your garage."}</p>
         <form onSubmit={submit}>
           {step === 1 ? (
             <fieldset className="garage-status-fieldset">
