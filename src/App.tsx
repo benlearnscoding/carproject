@@ -415,6 +415,13 @@ function RatingFlow({ car, close, complete, initialExperience, initialRating }: 
   );
 }
 
+function joinedDateLabel(createdAt: string | null) {
+  if (!createdAt) return "Driven member";
+  const date = new Date(createdAt);
+  if (Number.isNaN(date.getTime())) return "Driven member";
+  return `Joined ${new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "long", year: "numeric" }).format(date)}`;
+}
+
 function CommunityRatingCard({ rating, car, onClick }: { rating: CommunityRating; car: Car; onClick: () => void }) {
   return (
     <button className="car-card community-rating-card" onClick={onClick}>
@@ -617,6 +624,7 @@ export default function App() {
   const [profile, setProfile] = useState<UserProfile | null>(loadStoredProfile);
   const [creatingProfile, setCreatingProfile] = useState(false);
   const [authUserId, setAuthUserId] = useState<string | null>(null);
+  const [authUserCreatedAt, setAuthUserCreatedAt] = useState<string | null>(null);
   const [authNotice, setAuthNotice] = useState("");
   const [garageEntries, setGarageEntries] = useState<GarageEntry[]>([]);
   const [addingCar, setAddingCar] = useState(false);
@@ -629,6 +637,7 @@ export default function App() {
     const applyUser = async (user: User | null) => {
       if (!active) return;
       setAuthUserId(user?.id ?? null);
+      setAuthUserCreatedAt(user?.created_at ?? null);
       if (!user) {
         setGarageEntries([]);
         setSavedRatings({});
@@ -720,6 +729,7 @@ export default function App() {
     if (error) throw error;
     const [remoteProfile, remoteGarage, remoteRatings] = await Promise.all([loadRemoteProfile(data.user), loadGarage(data.user.id), loadRatings(data.user.id)]);
     setAuthUserId(data.user.id);
+    setAuthUserCreatedAt(data.user.created_at);
     setProfile(remoteProfile);
     setGarageEntries(remoteGarage);
     setSavedRatings(remoteRatings);
@@ -731,6 +741,7 @@ export default function App() {
     const { error } = await supabase.auth.signOut();
     if (error) setAuthNotice(error.message);
     setAuthUserId(null);
+    setAuthUserCreatedAt(null);
     setProfile(null);
     setGarageEntries([]);
     setSavedRatings({});
@@ -929,7 +940,7 @@ export default function App() {
         {tab === "profile" && (
           profile ? (
             <section className="profile-page">
-              <div className="profile-hero"><div className="avatar big">{profile.firstName.charAt(0).toUpperCase()}</div><div><p className="eyebrow">@{profile.username}</p><h1>{profile.firstName} {profile.lastName}</h1><p>{authUserId ? "New to Driven" : "Saved on this device only"}</p></div><button className="secondary profile-edit" onClick={() => setCreatingProfile(true)}>{authUserId ? "Edit profile" : "Create account"}</button></div>
+              <div className="profile-hero"><div className="avatar big">{profile.firstName.charAt(0).toUpperCase()}</div><div><p className="eyebrow">@{profile.username}</p><h1>{profile.firstName} {profile.lastName}</h1><p>{authUserId ? joinedDateLabel(authUserCreatedAt) : "Saved on this device only"}</p></div><button className="secondary profile-edit" onClick={() => setCreatingProfile(true)}>{authUserId ? "Edit profile" : "Create account"}</button></div>
               {profile.bio && <p className="profile-bio">{profile.bio}</p>}
               <div className="profile-stats"><div><strong>{drivenCount}</strong><span>Driven</span></div><div><strong>{ownedCount}</strong><span>Owned</span></div><div><strong>{garageBrands}</strong><span>Brands</span></div><div><strong>{averagePersonalRating === null ? "—" : averagePersonalRating.toFixed(1)}</strong><span>Avg. rating</span></div></div>
               <div className="section-head"><div><p className="eyebrow">YOUR GARAGE</p><h2>Cars you've experienced</h2></div><button className="primary" onClick={() => openAddCar()}><Plus size={17}/> Add car</button></div>
