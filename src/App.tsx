@@ -998,7 +998,7 @@ export default function App() {
             </section>
 
             <section className="section">
-              <div className="section-head"><div><p className="eyebrow">COMMUNITY</p><h2>Cars people are talking about</h2></div><button className="text-button" type="button" aria-expanded={showAllCommunityRatings} onClick={() => setShowAllCommunityRatings(current => !current)}>{showAllCommunityRatings ? "Show latest" : "View all"} <ChevronRight size={16}/></button></div>
+              <div className="section-head"><div><p className="eyebrow">COMMUNITY</p><h2>Cars people are talking about</h2></div>{!showAllCommunityRatings && <button className="text-button" type="button" onClick={() => setShowAllCommunityRatings(true)}>View all <ChevronRight size={16}/></button>}</div>
               {communityRatingsLoading ? (
                 <p className="community-empty">Loading recent ratings…</p>
               ) : displayedCommunityRatings.length ? (
