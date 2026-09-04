@@ -48,6 +48,20 @@ type CommunityRatingRow = {
   username: string;
   rated_at: string;
 };
+type PublicProfile = {
+  firstName: string;
+  lastName: string;
+  username: string;
+  bio: string;
+  joinedAt: string;
+};
+type PublicProfileRow = {
+  first_name: string;
+  last_name: string;
+  username: string;
+  bio: string;
+  joined_at: string;
+};
 
 const makes = [
   "Alpine",
@@ -166,6 +180,19 @@ async function loadCommunityRatings(): Promise<CommunityRating[]> {
   }
 
   return ratings;
+}
+
+async function loadPublicProfile(username: string): Promise<PublicProfile> {
+  const { data, error } = await supabase.rpc("get_public_profile", { profile_username: username }).single();
+  if (error) throw error;
+  const profile = data as PublicProfileRow;
+  return {
+    firstName: profile.first_name,
+    lastName: profile.last_name,
+    username: profile.username,
+    bio: profile.bio,
+    joinedAt: profile.joined_at,
+  };
 }
 
 function Score({ value }: { value: number }) {
@@ -422,19 +449,37 @@ function joinedDateLabel(createdAt: string | null) {
   return `Joined ${new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "long", year: "numeric" }).format(date)}`;
 }
 
-function CommunityRatingCard({ rating, car, onClick }: { rating: CommunityRating; car: Car; onClick: () => void }) {
+function CommunityRatingCard({ rating, car, onClick, onProfile }: { rating: CommunityRating; car: Car; onClick: () => void; onProfile: () => void }) {
   return (
-    <button className="car-card community-rating-card" onClick={onClick}>
-      <div className="car-image">
-        <img src={car.image} alt={`${car.make} ${car.model}`} />
-        <div className="image-score"><Score value={rating.overall} /></div>
-      </div>
+    <article className="car-card community-rating-card">
+      <button className="community-car-button" onClick={onClick} aria-label={`Open ${car.make} ${car.model}`}><div className="car-image">
+          <img src={car.image} alt={`${car.make} ${car.model}`} />
+          <div className="image-score"><Score value={rating.overall} /></div>
+        </div></button>
       <div className="card-body">
-        <div className="community-rating-meta"><span>@{rating.username}</span><span>{car.make}</span></div>
-        <h3>{car.model}</h3>
-        {rating.review && <p className="review-preview">“{rating.review}”</p>}
+        <div className="community-rating-meta"><button className="community-profile-link" type="button" onClick={onProfile}>@{rating.username}</button><span>{car.make}</span></div>
+        <button className="community-car-copy" onClick={onClick}><h3>{car.model}</h3>{rating.review && <p className="review-preview">“{rating.review}”</p>}</button>
       </div>
-    </button>
+    </article>
+  );
+}
+
+function PublicProfileModal({ username, profile, loading, error, close }: { username: string; profile: PublicProfile | null; loading: boolean; error: string; close: () => void }) {
+  return (
+    <div className="modal-backdrop profile-backdrop" onClick={close}>
+      <div className="profile-creator public-profile" role="dialog" aria-label={`${username}'s profile`} onClick={event => event.stopPropagation()}>
+        <button className="close" onClick={close} aria-label="Close public profile">×</button>
+        {loading ? <p className="public-profile-state">Loading profile…</p> : error ? <p className="auth-error" role="alert">{error}</p> : profile && (
+          <>
+            <div className="avatar big">{(profile.firstName || profile.username).charAt(0).toUpperCase()}</div>
+            <p className="eyebrow">@{profile.username}</p>
+            <h2>{`${profile.firstName} ${profile.lastName}`.trim() || profile.username}</h2>
+            <p className="public-profile-joined">{joinedDateLabel(profile.joinedAt)}</p>
+            {profile.bio && <p className="public-profile-bio">{profile.bio}</p>}
+          </>
+        )}
+      </div>
+    </div>
   );
 }
 
@@ -621,6 +666,10 @@ export default function App() {
   const [savedRatings, setSavedRatings] = useState<Record<string, SavedRating>>({});
   const [communityRatings, setCommunityRatings] = useState<CommunityRating[]>([]);
   const [communityRatingsLoading, setCommunityRatingsLoading] = useState(true);
+  const [publicProfileUsername, setPublicProfileUsername] = useState<string | null>(null);
+  const [publicProfile, setPublicProfile] = useState<PublicProfile | null>(null);
+  const [publicProfileLoading, setPublicProfileLoading] = useState(false);
+  const [publicProfileError, setPublicProfileError] = useState("");
   const [profile, setProfile] = useState<UserProfile | null>(loadStoredProfile);
   const [creatingProfile, setCreatingProfile] = useState(false);
   const [authUserId, setAuthUserId] = useState<string | null>(null);
@@ -722,6 +771,20 @@ export default function App() {
     setProfile(newProfile);
     setAuthNotice("Profile updated.");
     return false;
+  };
+
+  const openPublicProfile = async (username: string) => {
+    setPublicProfileUsername(username);
+    setPublicProfile(null);
+    setPublicProfileError("");
+    setPublicProfileLoading(true);
+    try {
+      setPublicProfile(await loadPublicProfile(username));
+    } catch {
+      setPublicProfileError("We couldn't load this profile. Please try again.");
+    } finally {
+      setPublicProfileLoading(false);
+    }
   };
 
   const signIn = async (email: string, password: string) => {
@@ -907,7 +970,7 @@ export default function App() {
               {communityRatingsLoading ? (
                 <p className="community-empty">Loading recent ratings…</p>
               ) : filteredCommunityRatings.length ? (
-                <div className="grid">{filteredCommunityRatings.map(({ rating, car }) => <CommunityRatingCard key={rating.id} rating={rating} car={displayedCar(car)} onClick={() => { setSelectedGarageExperience(undefined); setSelected(displayedCar(car)); }} />)}</div>
+                <div className="grid">{filteredCommunityRatings.map(({ rating, car }) => <CommunityRatingCard key={rating.id} rating={rating} car={displayedCar(car)} onProfile={() => openPublicProfile(rating.username)} onClick={() => { setSelectedGarageExperience(undefined); setSelected(displayedCar(car)); }} />)}</div>
               ) : (
                 <p className="community-empty">No recent ratings match these filters yet.</p>
               )}
@@ -1000,6 +1063,7 @@ export default function App() {
       }} />}
       {creatingProfile && <CreateProfile profile={profile} authenticated={Boolean(authUserId)} close={() => setCreatingProfile(false)} save={saveProfile} signIn={signIn} />}
       {addingCar && <AddCarModal initialCarId={garageSeedCarId} initialStatus={garageSeedStatus} close={() => setAddingCar(false)} add={addCarToGarage} />}
+      {publicProfileUsername && <PublicProfileModal username={publicProfileUsername} profile={publicProfile} loading={publicProfileLoading} error={publicProfileError} close={() => { setPublicProfileUsername(null); setPublicProfile(null); setPublicProfileError(""); }} />}
     </div>
   );
 }
