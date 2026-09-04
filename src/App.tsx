@@ -4,7 +4,7 @@ import type { User } from "@supabase/supabase-js";
 import { cars, type Car } from "./data";
 import { supabase } from "./supabase";
 
-type Tab = "discover" | "cars" | "profile";
+type Tab = "discover" | "cars" | "profile" | "member";
 type UserProfile = {
   firstName: string;
   lastName: string;
@@ -54,6 +54,7 @@ type PublicProfile = {
   username: string;
   bio: string;
   joinedAt: string;
+  cars: PublicProfileCar[];
 };
 type PublicProfileRow = {
   first_name: string;
@@ -61,6 +62,20 @@ type PublicProfileRow = {
   username: string;
   bio: string;
   joined_at: string;
+};
+type PublicProfileCar = {
+  carId: string;
+  relationship: GarageStatus | null;
+  overall: number | null;
+  review: string;
+  ratedAt: string | null;
+};
+type PublicProfileCarRow = {
+  car_id: string;
+  relationship: GarageStatus | null;
+  overall: number | string | null;
+  review: string | null;
+  rated_at: string | null;
 };
 
 const makes = [
@@ -178,15 +193,26 @@ async function loadCommunityRatings(): Promise<CommunityRating[]> {
 }
 
 async function loadPublicProfile(username: string): Promise<PublicProfile> {
-  const { data, error } = await supabase.rpc("get_public_profile", { profile_username: username }).single();
-  if (error) throw error;
-  const profile = data as PublicProfileRow;
+  const [profileResult, carsResult] = await Promise.all([
+    supabase.rpc("get_public_profile", { profile_username: username }).single(),
+    supabase.rpc("get_public_profile_cars", { profile_username: username }),
+  ]);
+  if (profileResult.error) throw profileResult.error;
+  if (carsResult.error) throw carsResult.error;
+  const profile = profileResult.data as PublicProfileRow;
   return {
     firstName: profile.first_name,
     lastName: profile.last_name,
     username: profile.username,
     bio: profile.bio,
     joinedAt: profile.joined_at,
+    cars: ((carsResult.data as PublicProfileCarRow[] | null) ?? []).map(entry => ({
+      carId: entry.car_id,
+      relationship: entry.relationship,
+      overall: entry.overall === null ? null : Number(entry.overall),
+      review: entry.review ?? "",
+      ratedAt: entry.rated_at,
+    })),
   };
 }
 
@@ -456,25 +482,6 @@ function CommunityRatingCard({ rating, car, onClick, onProfile }: { rating: Comm
         <button className="community-car-copy" onClick={onClick}><h3>{car.model}</h3>{rating.review && <p className="review-preview">“{rating.review}”</p>}</button>
       </div>
     </article>
-  );
-}
-
-function PublicProfileModal({ username, profile, loading, error, close }: { username: string; profile: PublicProfile | null; loading: boolean; error: string; close: () => void }) {
-  return (
-    <div className="modal-backdrop profile-backdrop" onClick={close}>
-      <div className="profile-creator public-profile" role="dialog" aria-label={`${username}'s profile`} onClick={event => event.stopPropagation()}>
-        <button className="close" onClick={close} aria-label="Close public profile">×</button>
-        {loading ? <p className="public-profile-state">Loading profile…</p> : error ? <p className="auth-error" role="alert">{error}</p> : profile && (
-          <>
-            <div className="avatar big">{(profile.firstName || profile.username).charAt(0).toUpperCase()}</div>
-            <p className="eyebrow">@{profile.username}</p>
-            <h2>{`${profile.firstName} ${profile.lastName}`.trim() || profile.username}</h2>
-            <p className="public-profile-joined">{joinedDateLabel(profile.joinedAt)}</p>
-            {profile.bio && <p className="public-profile-bio">{profile.bio}</p>}
-          </>
-        )}
-      </div>
-    </div>
   );
 }
 
@@ -808,6 +815,7 @@ export default function App() {
   };
 
   const openPublicProfile = async (username: string) => {
+    setTab("member");
     setPublicProfileUsername(username);
     setPublicProfile(null);
     setPublicProfileError("");
@@ -971,6 +979,13 @@ export default function App() {
     if (filteredCommunityRatings.length < 2) return;
     setCommunitySlideStart(current => (current + direction + filteredCommunityRatings.length) % filteredCommunityRatings.length);
   };
+  const publicProfileCars = publicProfile?.cars.flatMap(entry => {
+    const car = cars.find(candidate => candidate.id === entry.carId);
+    return car ? [{ entry, car }] : [];
+  }) ?? [];
+  const publicReviewedCount = publicProfile?.cars.filter(entry => entry.overall !== null).length ?? 0;
+  const publicGarageCount = publicProfile?.cars.filter(entry => entry.relationship !== null).length ?? 0;
+  const publicGarageBrands = new Set(publicProfileCars.filter(({ entry }) => entry.relationship !== null).map(({ car }) => car.make)).size;
 
   return (
     <div className="app">
@@ -1048,6 +1063,40 @@ export default function App() {
           </section>
         )}
 
+        {tab === "member" && (
+          <section className="profile-page public-profile-page">
+            <button className="text-button public-profile-back" onClick={() => setTab("discover")}><ArrowLeft size={16}/> Back to Discover</button>
+            {publicProfileLoading ? (
+              <p className="public-profile-state">Loading profile…</p>
+            ) : publicProfileError ? (
+              <p className="auth-error" role="alert">{publicProfileError}</p>
+            ) : publicProfile ? (
+              <>
+                <div className="profile-hero"><div className="avatar big">{(publicProfile.firstName || publicProfile.username).charAt(0).toUpperCase()}</div><div><p className="eyebrow">@{publicProfile.username}</p><h1>{`${publicProfile.firstName} ${publicProfile.lastName}`.trim() || publicProfile.username}</h1><p>{joinedDateLabel(publicProfile.joinedAt)}</p></div></div>
+                {publicProfile.bio && <p className="profile-bio">{publicProfile.bio}</p>}
+                <div className="profile-stats"><div><strong>{publicGarageCount}</strong><span>Garage</span></div><div><strong>{publicReviewedCount}</strong><span>Reviewed</span></div><div><strong>{publicGarageBrands}</strong><span>Brands</span></div></div>
+                <div className="section-head"><div><p className="eyebrow">MEMBER GARAGE</p><h2>Cars and reviews</h2></div></div>
+                {publicProfileCars.length ? (
+                  <div className="garage-grid public-garage-grid">
+                    {publicProfileCars.map(({ entry, car }) => (
+                      <button className="garage-card public-garage-card" key={car.id} onClick={() => { setSelectedGarageExperience(undefined); setSelected(displayedCar(car)); }}>
+                        <img src={car.image} alt={`${car.make} ${car.model}`} />
+                        <div>
+                          <span className="garage-status">{entry.relationship ? garageStatusLabels[entry.relationship] : "Reviewed"}</span>
+                          {entry.overall !== null && <span className="garage-rating"><Star size={11} fill="currentColor"/> {entry.overall.toFixed(1)}</span>}
+                          <p>{car.make} · {car.generation}</p><h3>{car.model}</h3>
+                          <small>{car.year} · {car.transmission}</small>
+                          {entry.review && <blockquote>“{entry.review}”</blockquote>}
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                ) : <div className="empty-garage"><CarFront size={32}/><h3>No cars shared yet.</h3></div>}
+              </>
+            ) : <p className="public-profile-state">Select a member to view their profile.</p>}
+          </section>
+        )}
+
         {tab === "profile" && (
           profile ? (
             <section className="profile-page">
@@ -1111,7 +1160,6 @@ export default function App() {
       }} />}
       {creatingProfile && <CreateProfile profile={profile} authenticated={Boolean(authUserId)} close={() => setCreatingProfile(false)} save={saveProfile} signIn={signIn} />}
       {addingCar && <AddCarModal initialCarId={garageSeedCarId} initialStatus={garageSeedStatus} close={() => setAddingCar(false)} add={addCarToGarage} />}
-      {publicProfileUsername && <PublicProfileModal username={publicProfileUsername} profile={publicProfile} loading={publicProfileLoading} error={publicProfileError} close={() => { setPublicProfileUsername(null); setPublicProfile(null); setPublicProfileError(""); }} />}
     </div>
   );
 }
