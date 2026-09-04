@@ -661,7 +661,6 @@ export default function App() {
   const [savedRatings, setSavedRatings] = useState<Record<string, SavedRating>>({});
   const [communityRatings, setCommunityRatings] = useState<CommunityRating[]>([]);
   const [communityRatingsLoading, setCommunityRatingsLoading] = useState(true);
-  const [showAllCommunityRatings, setShowAllCommunityRatings] = useState(false);
   const [communitySlideStart, setCommunitySlideStart] = useState(0);
   const [publicProfileUsername, setPublicProfileUsername] = useState<string | null>(null);
   const [publicProfile, setPublicProfile] = useState<PublicProfile | null>(null);
@@ -967,7 +966,7 @@ export default function App() {
   const communitySlideRatings = Array.from({ length: communitySlideSize }, (_, offset) => (
     filteredCommunityRatings[(communitySlideStart + offset) % filteredCommunityRatings.length]
   ));
-  const displayedCommunityRatings = showAllCommunityRatings ? filteredCommunityRatings : communitySlideRatings;
+  const displayedCommunityRatings = communitySlideRatings;
   const moveCommunitySlide = (direction: -1 | 1) => {
     if (filteredCommunityRatings.length < 2) return;
     setCommunitySlideStart(current => (current + direction + filteredCommunityRatings.length) % filteredCommunityRatings.length);
@@ -1011,14 +1010,14 @@ export default function App() {
             </section>
 
             <section className="section">
-              <div className="section-head"><div><p className="eyebrow">COMMUNITY</p><h2>Cars people are talking about</h2></div><button className="text-button" type="button" aria-expanded={showAllCommunityRatings} onClick={() => setShowAllCommunityRatings(true)}>View all <ChevronRight size={16}/></button></div>
+              <div className="section-head"><div><p className="eyebrow">COMMUNITY</p><h2>Cars people are talking about</h2></div></div>
               {communityRatingsLoading ? (
                 <p className="community-empty">Loading recent ratings…</p>
               ) : displayedCommunityRatings.length ? (
-                <div className={showAllCommunityRatings ? "community-feed-all" : "community-carousel"}>
-                  {!showAllCommunityRatings && <button className="community-carousel-arrow previous" type="button" aria-label="Previous reviews" onClick={() => moveCommunitySlide(-1)} disabled={filteredCommunityRatings.length < 2}><ChevronLeft size={22}/></button>}
+                <div className="community-carousel">
+                  <button className="community-carousel-arrow previous" type="button" aria-label="Previous reviews" onClick={() => moveCommunitySlide(-1)} disabled={filteredCommunityRatings.length < 2}><ChevronLeft size={22}/></button>
                   <div className="grid community-carousel-grid">{displayedCommunityRatings.map(({ rating, car }) => <CommunityRatingCard key={rating.id} rating={rating} car={displayedCar(car)} onProfile={() => openPublicProfile(rating.username)} onClick={() => { setSelectedGarageExperience(undefined); setSelected(displayedCar(car)); }} />)}</div>
-                  {!showAllCommunityRatings && <button className="community-carousel-arrow next" type="button" aria-label="Next reviews" onClick={() => moveCommunitySlide(1)} disabled={filteredCommunityRatings.length < 2}><ChevronRight size={22}/></button>}
+                  <button className="community-carousel-arrow next" type="button" aria-label="Next reviews" onClick={() => moveCommunitySlide(1)} disabled={filteredCommunityRatings.length < 2}><ChevronRight size={22}/></button>
                 </div>
               ) : (
                 <p className="community-empty">No recent ratings match these filters yet.</p>
