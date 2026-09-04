@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Plus, Star, ChevronRight, ChevronDown, Heart, CarFront, UserRound, ArrowLeft, Check, LogOut, X, Eye, EyeOff } from "lucide-react";
+import { Plus, Star, ChevronRight, ChevronLeft, ChevronDown, Heart, CarFront, UserRound, ArrowLeft, Check, LogOut, X, Eye, EyeOff } from "lucide-react";
 import type { User } from "@supabase/supabase-js";
 import { cars, type Car } from "./data";
 import { supabase } from "./supabase";
@@ -662,6 +662,7 @@ export default function App() {
   const [communityRatings, setCommunityRatings] = useState<CommunityRating[]>([]);
   const [communityRatingsLoading, setCommunityRatingsLoading] = useState(true);
   const [showAllCommunityRatings, setShowAllCommunityRatings] = useState(false);
+  const [communitySlideStart, setCommunitySlideStart] = useState(0);
   const [publicProfileUsername, setPublicProfileUsername] = useState<string | null>(null);
   const [publicProfile, setPublicProfile] = useState<PublicProfile | null>(null);
   const [publicProfileLoading, setPublicProfileLoading] = useState(false);
@@ -754,6 +755,10 @@ export default function App() {
       refreshCommunityRatings().catch(() => undefined);
     }
   }, [tab, communityRatingsLoading, refreshCommunityRatings]);
+
+  useEffect(() => {
+    setCommunitySlideStart(0);
+  }, [selectedMake, selectedModel]);
 
   const saveProfile = async (newProfile: UserProfile, password: string) => {
     const userMetadata = {
@@ -958,7 +963,15 @@ export default function App() {
     if (!car || (selectedMake && car.make !== selectedMake) || (selectedModel && car.model !== selectedModel)) return [];
     return [{ rating, car }];
   });
-  const displayedCommunityRatings = showAllCommunityRatings ? filteredCommunityRatings : filteredCommunityRatings.slice(0, 12);
+  const communitySlideSize = Math.min(4, filteredCommunityRatings.length);
+  const communitySlideRatings = Array.from({ length: communitySlideSize }, (_, offset) => (
+    filteredCommunityRatings[(communitySlideStart + offset) % filteredCommunityRatings.length]
+  ));
+  const displayedCommunityRatings = showAllCommunityRatings ? filteredCommunityRatings : communitySlideRatings;
+  const moveCommunitySlide = (direction: -1 | 1) => {
+    if (filteredCommunityRatings.length < 2) return;
+    setCommunitySlideStart(current => (current + direction + filteredCommunityRatings.length) % filteredCommunityRatings.length);
+  };
 
   return (
     <div className="app">
@@ -1002,7 +1015,11 @@ export default function App() {
               {communityRatingsLoading ? (
                 <p className="community-empty">Loading recent ratings…</p>
               ) : displayedCommunityRatings.length ? (
-                <div className="grid">{displayedCommunityRatings.map(({ rating, car }) => <CommunityRatingCard key={rating.id} rating={rating} car={displayedCar(car)} onProfile={() => openPublicProfile(rating.username)} onClick={() => { setSelectedGarageExperience(undefined); setSelected(displayedCar(car)); }} />)}</div>
+                <div className={showAllCommunityRatings ? "community-feed-all" : "community-carousel"}>
+                  {!showAllCommunityRatings && <button className="community-carousel-arrow previous" type="button" aria-label="Previous reviews" onClick={() => moveCommunitySlide(-1)} disabled={filteredCommunityRatings.length < 2}><ChevronLeft size={22}/></button>}
+                  <div className="grid community-carousel-grid">{displayedCommunityRatings.map(({ rating, car }) => <CommunityRatingCard key={rating.id} rating={rating} car={displayedCar(car)} onProfile={() => openPublicProfile(rating.username)} onClick={() => { setSelectedGarageExperience(undefined); setSelected(displayedCar(car)); }} />)}</div>
+                  {!showAllCommunityRatings && <button className="community-carousel-arrow next" type="button" aria-label="Next reviews" onClick={() => moveCommunitySlide(1)} disabled={filteredCommunityRatings.length < 2}><ChevronRight size={22}/></button>}
+                </div>
               ) : (
                 <p className="community-empty">No recent ratings match these filters yet.</p>
               )}
