@@ -174,11 +174,6 @@ async function loadCommunityRatings(): Promise<CommunityRating[]> {
     ratedAt: rating.rated_at,
   }));
 
-  for (let index = ratings.length - 1; index > 0; index -= 1) {
-    const randomIndex = Math.floor(Math.random() * (index + 1));
-    [ratings[index], ratings[randomIndex]] = [ratings[randomIndex], ratings[index]];
-  }
-
   return ratings;
 }
 
