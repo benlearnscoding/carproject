@@ -49,6 +49,7 @@ em { font-family:Georgia,serif; font-weight:400; }
 .community-carousel-arrow { position:absolute; z-index:2; top:calc((100cqi - 54px) * .09375); width:52px; height:52px; display:grid; place-items:center; padding:0; border:0; background:transparent; color:#fff; filter:drop-shadow(0 3px 5px rgba(0,24,94,.4)); transform:translateY(-50%); transition:opacity .18s,transform .18s; }
 .community-carousel-arrow.previous { left:0; }
 .community-carousel-arrow.next { right:0; }
+.community-carousel-arrow svg { width:29px; height:29px; }
 .community-carousel-arrow:hover:not(:disabled) { opacity:.72; transform:translateY(-50%) scale(1.12); }
 .community-carousel-arrow:disabled { opacity:.32; cursor:not-allowed; }
 .car-card { border:0; background:none; padding:0; text-align:left; }
