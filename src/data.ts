@@ -1,5 +1,6 @@
 import mclarenEiffelImage from "./assets/mclaren-eiffel.png";
 import mercedesAmgImage from "./assets/mercedes-amg.png";
+import porscheArcImage from "./assets/porsche-arc-de-triomphe.png";
 
 export type Car = {
   id: string;
@@ -121,7 +122,7 @@ export const cars: Car[] = [
     model: "911 Carrera S",
     generation: "997.2",
     year: 2010,
-    image: "https://images.unsplash.com/photo-1503736334956-4c8f8e92946d?auto=format&fit=crop&w=1200&q=80",
+    image: porscheArcImage,
     rating: 9.3,
     ratings: 1240,
     driven: 1860,
@@ -771,7 +772,7 @@ export const cars: Car[] = [
   ...porscheModels.map((car, index): Car => ({
     ...car,
     make: "Porsche",
-    image: "https://images.unsplash.com/photo-1503736334956-4c8f8e92946d?auto=format&fit=crop&w=1200&q=80",
+    image: porscheArcImage,
     rating: Number((8.8 + ((index * 3) % 8) / 10).toFixed(1)),
     ratings: 470 + index * 116,
     driven: 720 + index * 158,
