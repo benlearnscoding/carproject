@@ -1047,7 +1047,7 @@ export default function App() {
 
         {tab === "cars" && (
           <section className="page-section">
-            <p className="eyebrow">DATABASE</p><h1>Explore cars.</h1>
+            <h1>Explore cars.</h1>
             <div className="catalog-filters">
               <div className="classification-filters">
                 <MakeFilter value={selectedMake} onChange={make => { setSelectedMake(make); setSelectedModel(""); }} />
