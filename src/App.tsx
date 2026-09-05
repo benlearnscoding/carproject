@@ -1008,7 +1008,6 @@ export default function App() {
           <>
             <section className="hero">
               <div>
-                <p className="eyebrow">THE SOCIAL DATABASE FOR CAR PEOPLE</p>
                 <h1>Your automotive taste,<br/><em>documented.</em></h1>
                 <p className="hero-copy">Rate the cars you've owned. Log the ones you've driven. Build your garage. Discover what other enthusiasts actually think.</p>
               </div>
