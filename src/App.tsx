@@ -1023,7 +1023,7 @@ export default function App() {
             </section>
 
             <section className="section">
-              <div className="section-head"><div><p className="eyebrow">COMMUNITY</p><h2>Cars people are talking about</h2></div></div>
+              <div className="section-head"><div><h2>Cars people are talking about</h2></div></div>
               {communityRatingsLoading ? (
                 <p className="community-empty">Loading recent ratings…</p>
               ) : displayedCommunityRatings.length ? (
