@@ -360,8 +360,13 @@ function CarDetail({
 const ratingCategories = ["Driving", "Sound", "Steering", "Performance", "Comfort", "Looks", "Reliability", "Value"];
 
 function RatingFlow({ car, close, complete, initialExperience, initialRating }: { car: Car; close: () => void; complete: (rating: RatingSubmission) => Promise<void>; initialExperience?: RatingExperience; initialRating?: SavedRating }) {
-  const [step, setStep] = useState(initialExperience || initialRating ? 2 : 1);
-  const [experience, setExperience] = useState<RatingExperience | null>(initialRating?.experience ?? initialExperience ?? null);
+  const startingExperience = initialRating?.experience === "owned" || initialRating?.experience === "driven"
+    ? initialRating.experience
+    : initialExperience === "owned" || initialExperience === "driven"
+      ? initialExperience
+      : null;
+  const [step, setStep] = useState(startingExperience ? 2 : 1);
+  const [experience, setExperience] = useState<RatingExperience | null>(startingExperience);
   const [scores, setScores] = useState<Record<string, number>>(
     () => Object.fromEntries(ratingCategories.map(category => [category, Number(initialRating?.scores[category] ?? 0)]))
   );
@@ -377,7 +382,7 @@ function RatingFlow({ car, close, complete, initialExperience, initialRating }: 
   };
 
   const publish = async () => {
-    if (!experience) return;
+    if (experience !== "owned" && experience !== "driven") return;
     setSaving(true);
     setError("");
     try {
@@ -422,8 +427,6 @@ function RatingFlow({ car, close, complete, initialExperience, initialRating }: 
                 {([
                   ["owned", "I owned one", "It was mine, for a while."],
                   ["driven", "I've driven one", "Enough time behind the wheel to know it."],
-                  ["passenger", "I've ridden in one", "Experienced from the other seat."],
-                  ["want", "I want one", "It belongs on my shortlist."],
                 ] as const).map(([value, title, description]) => (
                   <button key={value} className={`experience-option ${experience === value ? "selected" : ""}`} onClick={() => setExperience(value)}>
                     <span className="option-dot" /><span><strong>{title}</strong><small>{description}</small></span>
@@ -1229,6 +1232,8 @@ export default function App() {
         if (pendingGarageAdd?.carId === ratingCar.id) {
           await addCarToGarage(ratingCar.id, pendingGarageAdd.status);
           setPendingGarageAdd(null);
+        } else if (garageEntries.some(entry => entry.carId === ratingCar.id && entry.status === "want") && (rating.experience === "owned" || rating.experience === "driven")) {
+          await addCarToGarage(ratingCar.id, rating.experience);
         }
         const updatedCar = { ...ratingCar, rating: (ratingCar.rating * ratingCar.ratings + rating.overall) / (ratingCar.ratings + 1), ratings: ratingCar.ratings + 1 };
         setSelected(current => current?.id === ratingCar.id ? updatedCar : current);
