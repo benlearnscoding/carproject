@@ -282,6 +282,8 @@ function CarDetail({
   close,
   onRate,
   onAdd,
+  onWant,
+  wanted,
   personalRating,
   profile,
 }: {
@@ -289,6 +291,8 @@ function CarDetail({
   close: () => void;
   onRate: () => void;
   onAdd: () => void;
+  onWant: () => void;
+  wanted: boolean;
   personalRating?: SavedRating;
   profile?: UserProfile;
 }) {
@@ -334,7 +338,7 @@ function CarDetail({
             <button className="secondary" onClick={onRate}>
   <Star size={17}/> Rate this car
 </button>
-            <button className="secondary"><Heart size={17}/> Want it</button>
+            <button className="secondary" onClick={onWant} aria-pressed={wanted}><Heart size={17} fill={wanted ? "currentColor" : "none"}/> {wanted ? "Wanted" : "Want it"}</button>
           </div>
 
           {personalRating && (
@@ -490,12 +494,12 @@ function CommunityRatingCard({ rating, car, onClick, onProfile }: { rating: Comm
 
 function AddCarModal({
   close,
-  continueToRating,
+  completeSelection,
   initialCarId,
   initialStatus,
 }: {
   close: () => void;
-  continueToRating: (car: Car, status: GarageStatus) => void;
+  completeSelection: (car: Car, status: GarageStatus) => Promise<void>;
   initialCarId?: string;
   initialStatus?: GarageStatus;
 }) {
@@ -504,16 +508,26 @@ function AddCarModal({
   const [make, setMake] = useState(initialCar?.make ?? "");
   const [model, setModel] = useState(initialCar?.model ?? "");
   const [status, setStatus] = useState<GarageStatus | null>(initialStatus ?? null);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
   const makeOptions = Array.from(new Set(cars.map(car => car.make))).sort((a, b) => a.localeCompare(b));
   const modelOptions = Array.from(new Set(cars.filter(car => car.make === make).map(car => car.model))).sort((a, b) => a.localeCompare(b));
   const selectedCar = cars.find(car => car.make === make && car.model === model);
 
-  const submit = (event: React.FormEvent<HTMLFormElement>) => {
+  const submit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (step === 1) return;
     if (!selectedCar || !status) return;
-    continueToRating(selectedCar, status);
-    close();
+    setBusy(true);
+    setError("");
+    try {
+      await completeSelection(selectedCar, status);
+      close();
+    } catch (submitError) {
+      setError(submitError instanceof Error ? submitError.message : "We could not save this car. Please try again.");
+    } finally {
+      setBusy(false);
+    }
   };
 
   return (
@@ -522,7 +536,7 @@ function AddCarModal({
         <button className="close" onClick={close} aria-label="Close add car form">×</button>
         <p className="eyebrow">YOUR GARAGE</p>
         <h2>{step === 1 ? "How does this car fit your story?" : "Choose your car."}</h2>
-        <p className="profile-intro">{step === 1 ? "Tell the community about your relationship with the car." : "Select the make and model, then rate it before adding it to your garage."}</p>
+        <p className="profile-intro">{step === 1 ? "Tell the community about your relationship with the car." : status === "want" ? "Select the make and model to add it to Cars I want." : "Select the make and model, then rate it before adding it to your garage."}</p>
         <form onSubmit={submit}>
           {step === 1 ? (
             <fieldset className="garage-status-fieldset">
@@ -548,9 +562,10 @@ function AddCarModal({
               {selectedCar && <div className="garage-preview"><img src={selectedCar.image} alt="" /><div><span>{selectedCar.make} · {selectedCar.generation}</span><strong>{selectedCar.model}</strong></div></div>}
             </>
           )}
+          {error && <p className="auth-error" role="alert">{error}</p>}
           <div className="rating-actions garage-form-actions">
             <button type="button" className="secondary" onClick={close}>Cancel</button>
-            {step === 2 && <button className="primary" type="submit" disabled={!selectedCar}>Continue to rating <ChevronRight size={17}/></button>}
+            {step === 2 && <button className="primary" type="submit" disabled={!selectedCar || busy}>{busy ? "Saving…" : status === "want" ? "Add to cars I want" : "Continue to rating"} {status === "want" ? <Heart size={17}/> : <ChevronRight size={17}/>}</button>}
           </div>
         </form>
       </div>
@@ -871,10 +886,36 @@ export default function App() {
     setRatingCar(car);
   };
 
-  const continueGarageAddToRating = (car: Car, status: GarageStatus) => {
+  const completeGarageSelection = async (car: Car, status: GarageStatus) => {
+    if (status === "want") {
+      await addCarToGarage(car.id, status);
+      return;
+    }
     setPendingGarageAdd({ carId: car.id, status });
     setSelectedGarageExperience(status);
     setRatingCar(car);
+  };
+
+  const wantCar = async (car: Car) => {
+    if (!authUserId) {
+      setAuthNotice("Log in or create a Driven account to save cars you want.");
+      setCreatingProfile(true);
+      return;
+    }
+    const existingEntry = garageEntries.find(entry => entry.carId === car.id);
+    if (existingEntry?.status === "want") {
+      setAuthNotice(`${car.make} ${car.model} is already in Cars I want.`);
+      return;
+    }
+    if (existingEntry) {
+      setAuthNotice(`${car.make} ${car.model} is already in your garage as ${garageStatusLabels[existingEntry.status]}.`);
+      return;
+    }
+    try {
+      await addCarToGarage(car.id, "want");
+    } catch (error) {
+      setAuthNotice(error instanceof Error ? error.message : "We could not save this car. Please try again.");
+    }
   };
 
   const addCarToGarage = async (carId: string, status: GarageStatus) => {
@@ -894,7 +935,9 @@ export default function App() {
     };
     setGarageEntries(current => [savedEntry, ...current.filter(entry => entry.carId !== carId)]);
     const savedCar = cars.find(car => car.id === carId);
-    setAuthNotice(`${savedCar?.make ?? "Car"} ${savedCar?.model ?? ""} added to your garage.`.trim());
+    setAuthNotice(status === "want"
+      ? `${savedCar?.make ?? "Car"} ${savedCar?.model ?? ""} added to Cars I want.`.trim()
+      : `${savedCar?.make ?? "Car"} ${savedCar?.model ?? ""} added to your garage.`.trim());
   };
 
   const saveCarRating = async (carId: string, rating: RatingSubmission) => {
@@ -947,18 +990,26 @@ export default function App() {
     const car = cars.find(candidate => candidate.id === entry.carId);
     return car ? [{ entry, car }] : [];
   });
+  const experiencedGarageCars = garageCars.filter(({ entry }) => entry.status !== "want");
+  const wantedGarageCars = garageCars.filter(({ entry }) => entry.status === "want");
   const drivenCount = garageEntries.filter(entry => entry.status === "driven" || entry.status === "owned").length;
   const ownedCount = garageEntries.filter(entry => entry.status === "owned").length;
-  const garageBrands = new Set(garageCars.map(({ car }) => car.make)).size;
+  const garageBrands = new Set(experiencedGarageCars.map(({ car }) => car.make)).size;
   const ratedCars = Object.values(savedRatings).flatMap(rating => {
     const car = cars.find(candidate => candidate.id === rating.carId);
     return car ? [{ rating, car }] : [];
   });
   const garageCarIds = new Set(garageCars.map(({ car }) => car.id));
-  const profileCars = [
-    ...garageCars.map(({ entry, car }) => ({ entry, car, rating: savedRatings[car.id] })),
+  const experiencedProfileCars = [
+    ...experiencedGarageCars.map(({ entry, car }) => ({ entry, car, rating: savedRatings[car.id] })),
     ...ratedCars
-      .filter(({ car }) => !garageCarIds.has(car.id))
+      .filter(({ rating, car }) => rating.experience !== "want" && !garageCarIds.has(car.id))
+      .map(({ rating, car }) => ({ entry: null, car, rating })),
+  ];
+  const wantedProfileCars = [
+    ...wantedGarageCars.map(({ entry, car }) => ({ entry, car, rating: savedRatings[car.id] })),
+    ...ratedCars
+      .filter(({ rating, car }) => rating.experience === "want" && !garageCarIds.has(car.id))
       .map(({ rating, car }) => ({ entry: null, car, rating })),
   ];
   const averagePersonalRating = ratedCars.length
@@ -1102,9 +1153,9 @@ export default function App() {
               {profile.bio && <p className="profile-bio">{profile.bio}</p>}
               <div className="profile-stats"><div><strong>{drivenCount}</strong><span>Driven</span></div><div><strong>{ownedCount}</strong><span>Owned</span></div><div><strong>{garageBrands}</strong><span>Brands</span></div><div><strong>{averagePersonalRating === null ? "—" : averagePersonalRating.toFixed(1)}</strong><span>Avg. rating</span></div></div>
               <div className="section-head"><div><p className="eyebrow">YOUR GARAGE</p><h2>Cars you've experienced</h2></div><button className="primary" onClick={() => openAddCar()}><Plus size={17}/> Add car</button></div>
-              {profileCars.length ? (
+              {experiencedProfileCars.length ? (
                 <div className="garage-grid">
-                  {profileCars.map(({ entry, car, rating }) => {
+                  {experiencedProfileCars.map(({ entry, car, rating }) => {
                     const relationship = entry
                       ? garageStatusLabels[entry.status]
                       : rating?.experience === "passenger"
@@ -1128,6 +1179,26 @@ export default function App() {
               ) : (
                 <div className="empty-garage"><CarFront size={32}/><h3>Your garage starts here.</h3><p>Add cars you've owned or driven and start building your automotive identity.</p><button className="secondary" onClick={() => openAddCar()}><Plus size={17}/> Add your first car</button></div>
               )}
+              <div className="wishlist-section">
+                <div className="section-head"><div><p className="eyebrow">WISHLIST</p><h2>Cars I want</h2></div></div>
+                {wantedProfileCars.length ? (
+                  <div className="garage-grid">
+                    {wantedProfileCars.map(({ entry, car, rating }) => (
+                      <button className="garage-card" key={entry?.id ?? rating?.id ?? car.id} onClick={() => { setSelectedGarageExperience("want"); setSelected(displayedCar(car)); }}>
+                        <img src={car.image} alt={`${car.make} ${car.model}`} />
+                        <div>
+                          <span className="garage-status">Want</span>
+                          {rating && <span className="garage-rating"><Star size={11} fill="currentColor"/> {rating.overall.toFixed(1)}</span>}
+                          <p>{car.make} · {car.generation}</p><h3>{car.model}</h3>
+                          <small>{car.year} · {car.transmission}</small>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="empty-garage wishlist-empty"><Heart size={32}/><h3>No cars saved yet.</h3><p>Use “Want it” on any car to add it here.</p></div>
+                )}
+              </div>
             </section>
           ) : (
             <section className="profile-page profile-start">
@@ -1147,6 +1218,8 @@ export default function App() {
     close={() => { setSelected(null); setSelectedGarageExperience(undefined); }}
     onRate={() => openRating(selected)}
     onAdd={() => { openAddCar(selected.id); setSelected(null); }}
+    onWant={() => { void wantCar(selected); }}
+    wanted={garageEntries.some(entry => entry.carId === selected.id && entry.status === "want")}
     personalRating={savedRatings[selected.id]}
     profile={profile ?? undefined}
   />
@@ -1161,7 +1234,7 @@ export default function App() {
         setSelected(current => current?.id === ratingCar.id ? updatedCar : current);
       }} />}
       {creatingProfile && <CreateProfile profile={profile} authenticated={Boolean(authUserId)} close={() => setCreatingProfile(false)} save={saveProfile} signIn={signIn} />}
-      {addingCar && <AddCarModal initialCarId={garageSeedCarId} initialStatus={garageSeedStatus} close={() => setAddingCar(false)} continueToRating={continueGarageAddToRating} />}
+      {addingCar && <AddCarModal initialCarId={garageSeedCarId} initialStatus={garageSeedStatus} close={() => setAddingCar(false)} completeSelection={completeGarageSelection} />}
     </div>
   );
 }
