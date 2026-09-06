@@ -7,14 +7,9 @@ button,input { font:inherit; }
 button { cursor:pointer; color:inherit; }
 .app { min-height:100vh; }
 .nav { height:72px; border-bottom:1px solid #dddcd7; display:flex; align-items:center; padding:0 5vw; justify-content:space-between; background:#f7f7f5cc; backdrop-filter:blur(12px); position:sticky; top:0; z-index:5; }
-.logo { position:relative; border:0; background:none; padding:0 0 18px; margin-bottom:-7px; font-weight:700; font-size:25.2px; letter-spacing:-1px; }
-.logo-word { display:block; line-height:1; }
-.logo-dot { margin-left:2px; }
-.logo-curb { position:absolute; left:50%; top:25px; width:100px; height:28px; transform:translateX(-50%); overflow:visible; filter:drop-shadow(0 2px 1px rgba(0,18,82,.7)); }
-.logo-curb path { fill:none; stroke-linecap:butt; stroke-linejoin:round; }
-.logo-curb-outline { stroke:#00164d; stroke-width:11; }
-.logo-curb-base { stroke:#fff; stroke-width:8; }
-.logo-curb-blue { stroke:#0247dd; stroke-width:8; stroke-dasharray:12 12; }
+.logo { position:relative; border:0; background:none; padding:0 0 13px; margin-bottom:-5px; font-weight:700; font-size:25.2px; letter-spacing:-1px; }
+.logo::after { content:""; position:absolute; left:50%; bottom:-6px; width:86px; height:19px; transform:translateX(-53%); background:conic-gradient(from 90deg,#fff 25%,#0035ad 0 50%,#fff 0 75%,#0035ad 0) 0 0/12px 12px; filter:drop-shadow(0 0 1px #fff) drop-shadow(0 1px 1px rgba(0,18,82,.9)); -webkit-mask-image:radial-gradient(ellipse 52% 120% at 50% 0,transparent 0 60%,#000 63% 88%,transparent 91%); mask-image:radial-gradient(ellipse 52% 120% at 50% 0,transparent 0 60%,#000 63% 88%,transparent 91%); }
+.logo span { margin-left:2px; }
 .nav nav { display:flex; gap:8px; }
 .profile-actions { display:flex; align-items:center; gap:8px; }
 .nav nav button,.profile-button { border:0; background:none; padding:10px 14px; color:#74736e; }
