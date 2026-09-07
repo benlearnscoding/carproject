@@ -310,6 +310,7 @@ function CarDetail({
   wanted,
   personalRating,
   profile,
+  communityRating,
 }: {
   car: Car;
   close: () => void;
@@ -319,6 +320,7 @@ function CarDetail({
   wanted: boolean;
   personalRating?: SavedRating;
   profile?: UserProfile;
+  communityRating?: CommunityRating;
 }) {
   const experienceLabel = personalRating?.experience === "owned"
     ? "Owned"
@@ -340,12 +342,12 @@ function CarDetail({
               <h1>{car.model}</h1>
               <p>{car.driven.toLocaleString()} people have driven one · {car.owners} owners</p>
             </div>
-            <div className="big-score"><Score value={car.rating} /><small>{car.ratings.toLocaleString()} {car.ratings === 1 ? "rating" : "ratings"}</small></div>
+            <div className="big-score"><Score value={communityRating?.overall ?? car.rating} /><small>{communityRating ? `@${communityRating.username}'s rating` : `${car.ratings.toLocaleString()} ${car.ratings === 1 ? "rating" : "ratings"}`}</small></div>
           </div>
 
           <div className="tags">{car.tags.map(tag => <span key={tag}>{tag}</span>)}</div>
 
-          <div className="rating-grid">
+          {!communityRating && <div className="rating-grid">
             {[
               ["Driving", 9.4], ["Sound", 9.5], ["Steering", 9.1],
               ["Performance", 9.0], ["Comfort", 7.7], ["Looks", 9.3],
@@ -355,7 +357,7 @@ function CarDetail({
                 <span>{label}</span><strong>{Number(value).toFixed(1)}</strong>
               </div>
             ))}
-          </div>
+          </div>}
 
           <div className="actions">
             <button className="primary" onClick={onAdd}><Plus size={17}/> Add to garage</button>
@@ -365,7 +367,18 @@ function CarDetail({
             <button className="secondary" onClick={onWant} aria-pressed={wanted}><Heart size={17} fill={wanted ? "currentColor" : "none"}/> {wanted ? "Wanted" : "Want it"}</button>
           </div>
 
-          {personalRating && (
+          {communityRating && (
+            <div className="review community-detail-review">
+              <div className="review-user">
+                <div className="avatar">{communityRating.username.charAt(0).toUpperCase()}</div>
+                <div><strong>@{communityRating.username}</strong><small>Individual rating</small></div>
+                <Score value={communityRating.overall}/>
+              </div>
+              {communityRating.review && <p>“{communityRating.review}”</p>}
+            </div>
+          )}
+
+          {personalRating && !communityRating && (
             <div className="review">
               <div className="review-user">
                 <div className="avatar">{profile?.firstName.charAt(0).toUpperCase() || "Y"}</div>
@@ -509,11 +522,11 @@ function CommunityRatingCard({ rating, car, onClick, onProfile }: { rating: Comm
     <article className="car-card community-rating-card">
       <button className="community-car-button" onClick={onClick} aria-label={`Open ${car.make} ${car.model}`}><div className="car-image">
           <img src={car.image} alt={`${car.make} ${car.model}`} />
-          <div className="image-score"><Score value={car.rating} /></div>
+          <div className="image-score"><Score value={rating.overall} /></div>
         </div></button>
       <div className="card-body">
         <div className="community-rating-meta"><button className="community-profile-link" type="button" onClick={onProfile}>@{rating.username}</button><span>{car.make}</span></div>
-        <button className="community-car-copy" onClick={onClick}><h3>{car.model}</h3><p className="community-rating-count">{car.ratings} {car.ratings === 1 ? "rating" : "ratings"}</p>{rating.review && <p className="review-preview">“{rating.review}”</p>}</button>
+        <button className="community-car-copy" onClick={onClick}><h3>{car.model}</h3><p className="community-rating-count">Rated {rating.overall.toFixed(1)} out of 10</p>{rating.review && <p className="review-preview">“{rating.review}”</p>}</button>
       </div>
     </article>
   );
@@ -698,6 +711,7 @@ export default function App() {
   const [selectedModel, setSelectedModel] = useState("");
   const [selectedSort, setSelectedSort] = useState("");
   const [selected, setSelected] = useState<Car | null>(null);
+  const [selectedCommunityRating, setSelectedCommunityRating] = useState<CommunityRating | null>(null);
   const [selectedGarageExperience, setSelectedGarageExperience] = useState<RatingExperience | undefined>();
   const [ratingCar, setRatingCar] = useState<Car | null>(null);
   const [savedRatings, setSavedRatings] = useState<Record<string, SavedRating>>({});
@@ -1146,7 +1160,7 @@ export default function App() {
               ) : displayedCommunityRatings.length ? (
                 <div className="community-carousel">
                   <button className="community-carousel-arrow previous" type="button" aria-label="Previous reviews" onClick={() => moveCommunitySlide(-1)} disabled={filteredCommunityRatings.length < 2}><ChevronLeft size={22}/></button>
-                  <div className="grid community-carousel-grid">{displayedCommunityRatings.map(({ rating, car }) => <CommunityRatingCard key={rating.id} rating={rating} car={displayedCar(car)} onProfile={() => openPublicProfile(rating.username)} onClick={() => { setSelectedGarageExperience(undefined); setSelected(displayedCar(car)); }} />)}</div>
+                  <div className="grid community-carousel-grid">{displayedCommunityRatings.map(({ rating, car }) => <CommunityRatingCard key={rating.id} rating={rating} car={displayedCar(car)} onProfile={() => openPublicProfile(rating.username)} onClick={() => { setSelectedGarageExperience(undefined); setSelectedCommunityRating(rating); setSelected(displayedCar(car)); }} />)}</div>
                   <button className="community-carousel-arrow next" type="button" aria-label="Next reviews" onClick={() => moveCommunitySlide(1)} disabled={filteredCommunityRatings.length < 2}><ChevronRight size={22}/></button>
                 </div>
               ) : (
@@ -1177,7 +1191,7 @@ export default function App() {
                 <SortFilter value={selectedSort} onChange={setSelectedSort} />
               </div>
             </div>
-            <div className="grid">{filtered.map(car => <CarCard key={car.id} car={displayedCar(car)} onClick={() => { setSelectedGarageExperience(undefined); setSelected(displayedCar(car)); }} />)}</div>
+            <div className="grid">{filtered.map(car => <CarCard key={car.id} car={displayedCar(car)} onClick={() => { setSelectedGarageExperience(undefined); setSelectedCommunityRating(null); setSelected(displayedCar(car)); }} />)}</div>
           </section>
         )}
 
@@ -1197,7 +1211,7 @@ export default function App() {
                 {publicProfileCars.length ? (
                   <div className="garage-grid public-garage-grid">
                     {publicProfileCars.map(({ entry, car }) => (
-                      <button className="garage-card public-garage-card" key={car.id} onClick={() => { setSelectedGarageExperience(undefined); setSelected(displayedCar(car)); }}>
+                      <button className="garage-card public-garage-card" key={car.id} onClick={() => { setSelectedGarageExperience(undefined); setSelectedCommunityRating(null); setSelected(displayedCar(car)); }}>
                         <img src={car.image} alt={`${car.make} ${car.model}`} />
                         <div>
                           <span className="garage-status">{entry.relationship ? garageStatusLabels[entry.relationship] : "Reviewed"}</span>
@@ -1233,7 +1247,7 @@ export default function App() {
                           ? garageStatusLabels[rating.experience]
                           : "";
                     return (
-                      <button className="garage-card" key={entry?.id ?? rating?.id ?? car.id} onClick={() => { setSelectedGarageExperience(entry?.status === "owned" || entry?.status === "driven" ? entry.status : rating?.experience); setSelected(displayedCar(car)); }}>
+                      <button className="garage-card" key={entry?.id ?? rating?.id ?? car.id} onClick={() => { setSelectedGarageExperience(entry?.status === "owned" || entry?.status === "driven" ? entry.status : rating?.experience); setSelectedCommunityRating(null); setSelected(displayedCar(car)); }}>
                         <img src={car.image} alt={`${car.make} ${car.model}`} />
                         <div>
                           <span className="garage-status">{relationship}</span>
@@ -1253,7 +1267,7 @@ export default function App() {
                 {wantedProfileCars.length ? (
                   <div className="garage-grid">
                     {wantedProfileCars.map(({ entry, car, rating }) => (
-                      <button className="garage-card" key={entry?.id ?? rating?.id ?? car.id} onClick={() => { setSelectedGarageExperience("want"); setSelected(displayedCar(car)); }}>
+                      <button className="garage-card" key={entry?.id ?? rating?.id ?? car.id} onClick={() => { setSelectedGarageExperience("want"); setSelectedCommunityRating(null); setSelected(displayedCar(car)); }}>
                         <img src={car.image} alt={`${car.make} ${car.model}`} />
                         <div>
                           <span className="garage-status">Want</span>
@@ -1284,13 +1298,14 @@ export default function App() {
       {selected && (
   <CarDetail
     car={selected}
-    close={() => { setSelected(null); setSelectedGarageExperience(undefined); }}
+    close={() => { setSelected(null); setSelectedGarageExperience(undefined); setSelectedCommunityRating(null); }}
     onRate={() => openRating(selected)}
-    onAdd={() => { openAddCar(selected.id); setSelected(null); }}
+    onAdd={() => { openAddCar(selected.id); setSelected(null); setSelectedCommunityRating(null); }}
     onWant={() => { void wantCar(selected); }}
     wanted={garageEntries.some(entry => entry.carId === selected.id && entry.status === "want")}
     personalRating={savedRatings[selected.id]}
     profile={profile ?? undefined}
+    communityRating={selectedCommunityRating ?? undefined}
   />
 )}
       {ratingCar && <RatingFlow car={ratingCar} initialExperience={selectedGarageExperience ?? savedRatings[ratingCar.id]?.experience} initialRating={savedRatings[ratingCar.id]} close={() => { setRatingCar(null); setPendingGarageAdd(null); }} complete={async (rating) => {
