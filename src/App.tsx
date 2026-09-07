@@ -236,10 +236,11 @@ async function loadPublicProfile(username: string): Promise<PublicProfile> {
 }
 
 function Score({ value }: { value: number }) {
+  const hasRatings = value > 0;
   return (
-    <span className="score">
+    <span className="score" aria-label={hasRatings ? `${value.toFixed(1)} average rating` : "No ratings yet"}>
       <Star size={15} fill="currentColor" />
-      {value.toFixed(1)}
+      {hasRatings && value.toFixed(1)}
     </span>
   );
 }
