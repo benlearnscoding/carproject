@@ -1145,7 +1145,7 @@ export default function App() {
     : null;
   const filteredCommunityRatings = communityRatings.flatMap(rating => {
     const car = cars.find(candidate => candidate.id === rating.carId);
-    if (!car || (selectedMake && car.make !== selectedMake) || (selectedModel && car.model !== selectedModel) || (selectedGeneration && car.generation !== selectedGeneration)) return [];
+    if (!car || (selectedMake && car.make !== selectedMake) || (selectedModel && car.model !== selectedModel)) return [];
     return [{ rating, car }];
   });
   const communitySlideSize = Math.min(4, filteredCommunityRatings.length);
@@ -1216,8 +1216,7 @@ export default function App() {
                   <MakeFilter value={selectedMake} onChange={make => { setSelectedMake(make); setSelectedModel(""); setSelectedGeneration(""); }} />
                   <div className="model-filter-row">
                     <ModelFilter make={selectedMake} value={selectedModel} onChange={model => { setSelectedModel(model); setSelectedGeneration(""); }} />
-                    <GenerationFilter make={selectedMake} model={selectedModel} value={selectedGeneration} onChange={setSelectedGeneration} />
-                    <button className="filter-reset" type="button" aria-label="Reset all car filters" title="Reset filters" disabled={!selectedMake && !selectedModel && !selectedGeneration} onClick={() => { setSelectedMake(""); setSelectedModel(""); setSelectedGeneration(""); }}><X size={17}/></button>
+                    <button className="filter-reset" type="button" aria-label="Reset all car filters" title="Reset filters" disabled={!selectedMake && !selectedModel} onClick={() => { setSelectedMake(""); setSelectedModel(""); setSelectedGeneration(""); }}><X size={17}/></button>
                   </div>
                 </div>
               </div>
