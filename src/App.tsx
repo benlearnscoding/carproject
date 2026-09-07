@@ -245,7 +245,7 @@ function Score({ value }: { value: number }) {
   );
 }
 
-function FilterDropdown({ label, value, options, onChange }: { label: string; value: string; options: string[]; onChange: (value: string) => void }) {
+function FilterDropdown({ label, value, options, onChange, emptyLabel = "All" }: { label: string; value: string; options: string[]; onChange: (value: string) => void; emptyLabel?: string }) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -253,13 +253,13 @@ function FilterDropdown({ label, value, options, onChange }: { label: string; va
       <span>{label}</span>
       <div className="filter-select">
         <button type="button" className="filter-select-trigger" aria-label={`Filter cars by ${label.toLowerCase()}`} aria-haspopup="listbox" aria-expanded={open} onClick={() => setOpen(current => !current)}>
-          <span>{value || "All"}</span><ChevronDown size={14} />
+          <span>{value || emptyLabel}</span><ChevronDown size={14} />
         </button>
         {open && (
           <div className="filter-menu" role="listbox" aria-label={`${label} options`}>
             {["", ...options].map(option => (
               <button type="button" role="option" aria-selected={value === option} className={value === option ? "selected" : ""} key={option || "all"} onClick={() => { onChange(option); setOpen(false); }}>
-                {option || "All"}
+                {option || emptyLabel}
               </button>
             ))}
           </div>
@@ -279,6 +279,10 @@ function ModelFilter({ make, value, onChange }: { make: string; value: string; o
   )).sort((a, b) => a.localeCompare(b));
 
   return <FilterDropdown label="Model" value={value} options={models} onChange={onChange} />;
+}
+
+function SortFilter({ value, onChange }: { value: string; onChange: (value: string) => void }) {
+  return <FilterDropdown label="Sort by" value={value} options={["Top rated", "Lowest rated"]} onChange={onChange} emptyLabel="Default" />;
 }
 
 function CarCard({ car, onClick }: { car: Car; onClick: () => void }) {
@@ -692,6 +696,7 @@ export default function App() {
   const [tab, setTab] = useState<Tab>("discover");
   const [selectedMake, setSelectedMake] = useState("");
   const [selectedModel, setSelectedModel] = useState("");
+  const [selectedSort, setSelectedSort] = useState("");
   const [selected, setSelected] = useState<Car | null>(null);
   const [selectedGarageExperience, setSelectedGarageExperience] = useState<RatingExperience | undefined>();
   const [ratingCar, setRatingCar] = useState<Car | null>(null);
@@ -1020,12 +1025,26 @@ export default function App() {
   };
 
   const filtered = useMemo(() => {
-    return cars.filter(car => {
+    const matchingCars = cars.filter(car => {
       const matchesMake = !selectedMake || car.make === selectedMake;
       const matchesModel = !selectedModel || car.model === selectedModel;
       return matchesMake && matchesModel;
     });
-  }, [selectedMake, selectedModel]);
+    if (!selectedSort || !ratingSummaries) return matchingCars;
+
+    return [...matchingCars].sort((first, second) => {
+      const firstSummary = ratingSummaries[first.id];
+      const secondSummary = ratingSummaries[second.id];
+      const firstIsRated = (firstSummary?.count ?? 0) > 0;
+      const secondIsRated = (secondSummary?.count ?? 0) > 0;
+      if (firstIsRated !== secondIsRated) return firstIsRated ? -1 : 1;
+      if (!firstIsRated) return first.make.localeCompare(second.make) || first.model.localeCompare(second.model);
+      const ratingDifference = selectedSort === "Top rated"
+        ? (secondSummary?.average ?? 0) - (firstSummary?.average ?? 0)
+        : (firstSummary?.average ?? 0) - (secondSummary?.average ?? 0);
+      return ratingDifference || first.make.localeCompare(second.make) || first.model.localeCompare(second.model);
+    });
+  }, [selectedMake, selectedModel, selectedSort, ratingSummaries]);
 
   const garageCars = garageEntries.flatMap(entry => {
     const car = cars.find(candidate => candidate.id === entry.carId);
@@ -1145,7 +1164,8 @@ export default function App() {
                 <MakeFilter value={selectedMake} onChange={make => { setSelectedMake(make); setSelectedModel(""); }} />
                 <div className="model-filter-row">
                   <ModelFilter make={selectedMake} value={selectedModel} onChange={setSelectedModel} />
-                  <button className="filter-reset" type="button" aria-label="Reset all car filters" title="Reset filters" disabled={!selectedMake && !selectedModel} onClick={() => { setSelectedMake(""); setSelectedModel(""); }}><X size={17}/></button>
+                  <SortFilter value={selectedSort} onChange={setSelectedSort} />
+                  <button className="filter-reset" type="button" aria-label="Reset all car filters" title="Reset filters" disabled={!selectedMake && !selectedModel && !selectedSort} onClick={() => { setSelectedMake(""); setSelectedModel(""); setSelectedSort(""); }}><X size={17}/></button>
                 </div>
               </div>
             </div>
