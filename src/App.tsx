@@ -420,7 +420,7 @@ function RatingFlow({ car, close, complete, initialExperience, initialRating }: 
   };
 
   return (
-    <div className="modal-backdrop rating-backdrop" onClick={close}>
+    <div className="modal-backdrop rating-backdrop">
       <div className="rating-flow" onClick={event => event.stopPropagation()}>
         <div className="rating-topbar">
           {!submitted && step > 1 && !(initialExperience && step === 2) ? <button className="back" onClick={() => setStep(step - 1)}><ArrowLeft size={18} /> Back</button> : <span />}
@@ -558,7 +558,7 @@ function AddCarModal({
   };
 
   return (
-    <div className="modal-backdrop profile-backdrop" onClick={close}>
+    <div className="modal-backdrop profile-backdrop">
       <div className="profile-creator garage-creator" onClick={event => event.stopPropagation()}>
         <button className="close" onClick={close} aria-label="Close add car form">×</button>
         <p className="eyebrow">YOUR GARAGE</p>
