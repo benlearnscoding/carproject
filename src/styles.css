@@ -51,7 +51,7 @@ em { font-family:Georgia,serif; font-weight:400; }
 .text-button { border:0; background:none; display:flex; align-items:center; gap:4px; color:#555; }
 .grid { display:grid; grid-template-columns:repeat(4,1fr); gap:18px; }
 .community-carousel { position:relative; display:block; container-type:inline-size; padding:0 74px; }
-.community-carousel-grid { min-width:0; }
+.community-carousel-grid { min-width:0; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); }
 .community-carousel-arrow { position:absolute; z-index:2; top:calc((100cqi - 54px) * .09375); width:52px; height:52px; display:grid; place-items:center; padding:0; border:0; background:transparent; color:#fff; filter:drop-shadow(0 3px 5px rgba(0,24,94,.4)); transform:translateY(-50%); transition:opacity .18s,transform .18s; }
 .community-carousel-arrow.previous { left:0; }
 .community-carousel-arrow.next { right:0; }
