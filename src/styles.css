@@ -13,7 +13,7 @@ button { cursor:pointer; color:inherit; }
 .logo-curb path { fill:none; stroke-linecap:butt; stroke-linejoin:round; }
 .logo-curb-outline { stroke:#00164d; stroke-width:10; }
 .logo-curb-base { stroke:#fff; stroke-width:7; }
-.logo-curb-blue { stroke:#0247DD; stroke-width:7; stroke-dasharray:13 11; stroke-dashoffset:5; }
+.logo-curb-blue { stroke:#0247DD; stroke-width:7; stroke-dasharray:13 13; stroke-dashoffset:14; }
 .nav nav { display:flex; gap:8px; }
 .profile-actions { display:flex; align-items:center; gap:8px; }
 .nav nav button,.profile-button { border:0; background:none; padding:10px 14px; color:#74736e; }
