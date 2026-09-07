@@ -11,7 +11,6 @@ button { cursor:pointer; color:inherit; }
 .logo-word { position:relative; z-index:2; display:block; line-height:1; }
 .logo-curb { position:absolute; z-index:1; top:-10px; left:50%; width:126px; height:60px; overflow:visible; pointer-events:none; transform:translateX(-50%); }
 .logo-curb path { fill:none; stroke-linecap:butt; stroke-linejoin:round; }
-.logo-curb-outline { stroke:#00164d; stroke-width:10; }
 .logo-curb-base { stroke:#fff; stroke-width:7; }
 .logo-curb-blue { stroke:#0247DD; stroke-width:7; stroke-dasharray:13 11; stroke-dashoffset:10; }
 .nav nav { display:flex; gap:8px; }
