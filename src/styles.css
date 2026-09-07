@@ -9,7 +9,7 @@ button { cursor:pointer; color:inherit; }
 .nav { height:72px; border-bottom:1px solid #dddcd7; display:flex; align-items:center; padding:0 5vw; justify-content:space-between; background:#f7f7f5cc; backdrop-filter:blur(12px); position:sticky; top:0; z-index:5; }
 .logo { position:relative; border:0; background:none; padding:0 0 13px; margin-bottom:-5px; font-weight:700; font-size:25.2px; letter-spacing:-1px; }
 .logo-word { position:relative; z-index:2; display:block; line-height:1; }
-.logo-curb { position:absolute; z-index:1; top:-10px; left:50%; width:126px; height:60px; overflow:visible; pointer-events:none; transform:translateX(-50%); }
+.logo-curb { position:absolute; z-index:1; top:-10px; left:calc(50% + 9px); width:126px; height:60px; overflow:visible; pointer-events:none; transform:translateX(-50%); }
 .logo-curb path { fill:none; stroke-linecap:butt; stroke-linejoin:round; }
 .logo-curb-base { stroke:#fff; stroke-width:7; }
 .logo-curb-blue { stroke:#0247DD; stroke-width:7; stroke-dasharray:8 8; stroke-dashoffset:8; }
