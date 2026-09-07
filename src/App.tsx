@@ -270,14 +270,14 @@ function Score({ value }: { value: number }) {
   );
 }
 
-function FilterDropdown({ label, value, options, onChange, emptyLabel = "All" }: { label: string; value: string; options: string[]; onChange: (value: string) => void; emptyLabel?: string }) {
+function FilterDropdown({ label, value, options, onChange, emptyLabel = "All", disabled = false }: { label: string; value: string; options: string[]; onChange: (value: string) => void; emptyLabel?: string; disabled?: boolean }) {
   const [open, setOpen] = useState(false);
 
   return (
     <div className="make-filter" onBlur={event => { if (!event.currentTarget.contains(event.relatedTarget)) setOpen(false); }}>
       <span>{label}</span>
       <div className="filter-select">
-        <button type="button" className="filter-select-trigger" aria-label={`Filter cars by ${label.toLowerCase()}`} aria-haspopup="listbox" aria-expanded={open} onClick={() => setOpen(current => !current)}>
+        <button type="button" className="filter-select-trigger" aria-label={`Filter cars by ${label.toLowerCase()}`} aria-haspopup="listbox" aria-expanded={open} disabled={disabled} onClick={() => setOpen(current => !current)}>
           <span>{value || emptyLabel}</span><ChevronDown size={14} />
         </button>
         {open && (
@@ -304,6 +304,14 @@ function ModelFilter({ make, value, onChange }: { make: string; value: string; o
   )).sort((a, b) => a.localeCompare(b));
 
   return <FilterDropdown label="Model" value={value} options={models} onChange={onChange} />;
+}
+
+function GenerationFilter({ make, model, value, onChange }: { make: string; model: string; value: string; onChange: (value: string) => void }) {
+  const generations = Array.from(new Set(
+    cars.filter(car => car.model === model && (!make || car.make === make)).map(car => car.generation)
+  )).sort((a, b) => a.localeCompare(b));
+
+  return <FilterDropdown label="Generation" value={value} options={generations} onChange={onChange} emptyLabel={model ? "All" : "Select model"} disabled={!model || !generations.length} />;
 }
 
 function SortFilter({ value, onChange }: { value: string; onChange: (value: string) => void }) {
@@ -738,6 +746,7 @@ export default function App() {
   const [tab, setTab] = useState<Tab>("discover");
   const [selectedMake, setSelectedMake] = useState("");
   const [selectedModel, setSelectedModel] = useState("");
+  const [selectedGeneration, setSelectedGeneration] = useState("");
   const [selectedSort, setSelectedSort] = useState("");
   const [selected, setSelected] = useState<Car | null>(null);
   const [selectedCommunityRating, setSelectedCommunityRating] = useState<CommunityRating | null>(null);
@@ -862,7 +871,7 @@ export default function App() {
 
   useEffect(() => {
     setCommunitySlideStart(0);
-  }, [selectedMake, selectedModel]);
+  }, [selectedMake, selectedModel, selectedGeneration]);
 
   const saveProfile = async (newProfile: UserProfile, password: string) => {
     const userMetadata = {
@@ -1086,7 +1095,8 @@ export default function App() {
     const matchingCars = cars.filter(car => {
       const matchesMake = !selectedMake || car.make === selectedMake;
       const matchesModel = !selectedModel || car.model === selectedModel;
-      return matchesMake && matchesModel;
+      const matchesGeneration = !selectedGeneration || car.generation === selectedGeneration;
+      return matchesMake && matchesModel && matchesGeneration;
     });
     if (!selectedSort || !ratingSummaries) return matchingCars;
 
@@ -1102,7 +1112,7 @@ export default function App() {
         : (firstSummary?.average ?? 0) - (secondSummary?.average ?? 0);
       return ratingDifference || first.make.localeCompare(second.make) || first.model.localeCompare(second.model);
     });
-  }, [selectedMake, selectedModel, selectedSort, ratingSummaries]);
+  }, [selectedMake, selectedModel, selectedGeneration, selectedSort, ratingSummaries]);
 
   const garageCars = garageEntries.flatMap(entry => {
     const car = cars.find(candidate => candidate.id === entry.carId);
@@ -1135,7 +1145,7 @@ export default function App() {
     : null;
   const filteredCommunityRatings = communityRatings.flatMap(rating => {
     const car = cars.find(candidate => candidate.id === rating.carId);
-    if (!car || (selectedMake && car.make !== selectedMake) || (selectedModel && car.model !== selectedModel)) return [];
+    if (!car || (selectedMake && car.make !== selectedMake) || (selectedModel && car.model !== selectedModel) || (selectedGeneration && car.generation !== selectedGeneration)) return [];
     return [{ rating, car }];
   });
   const communitySlideSize = Math.min(4, filteredCommunityRatings.length);
@@ -1203,10 +1213,11 @@ export default function App() {
               </div>
               <div className="hero-filters">
                 <div className="classification-filters">
-                  <MakeFilter value={selectedMake} onChange={make => { setSelectedMake(make); setSelectedModel(""); }} />
+                  <MakeFilter value={selectedMake} onChange={make => { setSelectedMake(make); setSelectedModel(""); setSelectedGeneration(""); }} />
                   <div className="model-filter-row">
-                    <ModelFilter make={selectedMake} value={selectedModel} onChange={setSelectedModel} />
-                    <button className="filter-reset" type="button" aria-label="Reset all car filters" title="Reset filters" disabled={!selectedMake && !selectedModel} onClick={() => { setSelectedMake(""); setSelectedModel(""); }}><X size={17}/></button>
+                    <ModelFilter make={selectedMake} value={selectedModel} onChange={model => { setSelectedModel(model); setSelectedGeneration(""); }} />
+                    <GenerationFilter make={selectedMake} model={selectedModel} value={selectedGeneration} onChange={setSelectedGeneration} />
+                    <button className="filter-reset" type="button" aria-label="Reset all car filters" title="Reset filters" disabled={!selectedMake && !selectedModel && !selectedGeneration} onClick={() => { setSelectedMake(""); setSelectedModel(""); setSelectedGeneration(""); }}><X size={17}/></button>
                   </div>
                 </div>
               </div>
@@ -1241,10 +1252,11 @@ export default function App() {
             <div className="catalog-filters">
               <div className="catalog-filter-row">
                 <div className="classification-filters">
-                  <MakeFilter value={selectedMake} onChange={make => { setSelectedMake(make); setSelectedModel(""); }} />
+                  <MakeFilter value={selectedMake} onChange={make => { setSelectedMake(make); setSelectedModel(""); setSelectedGeneration(""); }} />
                   <div className="model-filter-row">
-                    <ModelFilter make={selectedMake} value={selectedModel} onChange={setSelectedModel} />
-                    <button className="filter-reset" type="button" aria-label="Reset make and model filters" title="Reset make and model" disabled={!selectedMake && !selectedModel} onClick={() => { setSelectedMake(""); setSelectedModel(""); }}><X size={17}/></button>
+                    <ModelFilter make={selectedMake} value={selectedModel} onChange={model => { setSelectedModel(model); setSelectedGeneration(""); }} />
+                    <GenerationFilter make={selectedMake} model={selectedModel} value={selectedGeneration} onChange={setSelectedGeneration} />
+                    <button className="filter-reset" type="button" aria-label="Reset make, model, and generation filters" title="Reset make, model, and generation" disabled={!selectedMake && !selectedModel && !selectedGeneration} onClick={() => { setSelectedMake(""); setSelectedModel(""); setSelectedGeneration(""); }}><X size={17}/></button>
                   </div>
                 </div>
                 <SortFilter value={selectedSort} onChange={setSelectedSort} />
