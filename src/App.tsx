@@ -1141,6 +1141,8 @@ export default function App() {
     const car = cars.find(candidate => candidate.id === entry.carId);
     return car ? [{ entry, car }] : [];
   }) ?? [];
+  const publicExperiencedCars = publicProfileCars.filter(({ entry }) => entry.relationship !== "want");
+  const publicWantedCars = publicProfileCars.filter(({ entry }) => entry.relationship === "want");
   const publicReviewedCount = publicProfile?.cars.filter(entry => entry.overall !== null).length ?? 0;
   const publicGarageCount = publicProfile?.cars.filter(entry => entry.relationship !== null).length ?? 0;
   const publicGarageBrands = new Set(publicProfileCars.filter(({ entry }) => entry.relationship !== null).map(({ car }) => car.make)).size;
@@ -1244,9 +1246,9 @@ export default function App() {
                 {publicProfile.bio && <p className="profile-bio">{publicProfile.bio}</p>}
                 <div className="profile-stats"><div><strong>{publicGarageCount}</strong><span>Garage</span></div><div><strong>{publicReviewedCount}</strong><span>Reviewed</span></div><div><strong>{publicGarageBrands}</strong><span>Brands</span></div></div>
                 <div className="section-head"><div><p className="eyebrow">MEMBER GARAGE</p><h2>Cars and reviews</h2></div></div>
-                {publicProfileCars.length ? (
+                {publicExperiencedCars.length ? (
                   <div className="garage-grid public-garage-grid">
-                    {publicProfileCars.map(({ entry, car }) => (
+                    {publicExperiencedCars.map(({ entry, car }) => (
                       <button className="garage-card public-garage-card" key={car.id} onClick={() => { setSelectedGarageExperience(undefined); setSelectedCommunityRating(null); setSelected(displayedCar(car)); }}>
                         <img src={car.image} alt={`${car.make} ${car.model}`} />
                         <div>
@@ -1260,6 +1262,25 @@ export default function App() {
                     ))}
                   </div>
                 ) : <div className="empty-garage"><CarFront size={32}/><h3>No cars shared yet.</h3></div>}
+                <div className="wishlist-section">
+                  <div className="section-head"><div><p className="eyebrow">WISHLIST</p><h2>Cars I want</h2></div></div>
+                  {publicWantedCars.length ? (
+                    <div className="garage-grid public-garage-grid">
+                      {publicWantedCars.map(({ entry, car }) => (
+                        <button className="garage-card public-garage-card" key={car.id} onClick={() => { setSelectedGarageExperience("want"); setSelectedCommunityRating(null); setSelected(displayedCar(car)); }}>
+                          <img src={car.image} alt={`${car.make} ${car.model}`} />
+                          <div>
+                            <span className="garage-status">Want</span>
+                            {entry.overall !== null && <span className="garage-rating"><Star size={11} fill="currentColor"/> {entry.overall.toFixed(1)}</span>}
+                            <p>{car.make} · {car.generation}</p><h3>{car.model}</h3>
+                            <small>{car.year} · {car.transmission}</small>
+                            {entry.review && <blockquote>“{entry.review}”</blockquote>}
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  ) : <div className="empty-garage wishlist-empty"><Heart size={32}/><h3>No cars saved yet.</h3></div>}
+                </div>
               </>
             ) : <p className="public-profile-state">Select a member to view their profile.</p>}
           </section>
