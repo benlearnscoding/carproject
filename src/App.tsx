@@ -57,6 +57,15 @@ type CarRatingSummaryRow = {
   average_rating: number | string;
   rating_count: number | string;
 };
+type CarExperienceSummary = {
+  driven: number;
+  owners: number;
+};
+type CarExperienceSummaryRow = {
+  car_id: string;
+  driven_count: number | string;
+  owner_count: number | string;
+};
 type PublicProfile = {
   firstName: string;
   lastName: string;
@@ -208,6 +217,16 @@ async function loadCarRatingSummaries(): Promise<Record<string, CarRatingSummary
   return Object.fromEntries(((data as CarRatingSummaryRow[] | null) ?? []).map(summary => [summary.car_id, {
     average: Number(summary.average_rating),
     count: Number(summary.rating_count),
+  }]));
+}
+
+async function loadCarExperienceSummaries(): Promise<Record<string, CarExperienceSummary>> {
+  const { data, error } = await supabase.rpc("get_car_experience_summaries");
+  if (error) throw error;
+
+  return Object.fromEntries(((data as CarExperienceSummaryRow[] | null) ?? []).map(summary => [summary.car_id, {
+    driven: Number(summary.driven_count),
+    owners: Number(summary.owner_count),
   }]));
 }
 
@@ -717,6 +736,7 @@ export default function App() {
   const [savedRatings, setSavedRatings] = useState<Record<string, SavedRating>>({});
   const [communityRatings, setCommunityRatings] = useState<CommunityRating[]>([]);
   const [ratingSummaries, setRatingSummaries] = useState<Record<string, CarRatingSummary> | null>(null);
+  const [experienceSummaries, setExperienceSummaries] = useState<Record<string, CarExperienceSummary> | null>(null);
   const [communityRatingsLoading, setCommunityRatingsLoading] = useState(true);
   const [communitySlideStart, setCommunitySlideStart] = useState(0);
   const [publicProfileUsername, setPublicProfileUsername] = useState<string | null>(null);
@@ -746,6 +766,12 @@ export default function App() {
   const refreshRatingSummaries = useCallback(async () => {
     const summaries = await loadCarRatingSummaries();
     setRatingSummaries(summaries);
+    return summaries;
+  }, []);
+
+  const refreshExperienceSummaries = useCallback(async () => {
+    const summaries = await loadCarExperienceSummaries();
+    setExperienceSummaries(summaries);
     return summaries;
   }, []);
 
@@ -789,11 +815,12 @@ export default function App() {
     let active = true;
     const refresh = (showLoading = false) => {
       if (showLoading) setCommunityRatingsLoading(true);
-      Promise.all([loadCommunityRatings(), loadCarRatingSummaries()])
-        .then(([ratings, summaries]) => {
+      Promise.all([loadCommunityRatings(), loadCarRatingSummaries(), loadCarExperienceSummaries()])
+        .then(([ratings, summaries, experiences]) => {
           if (!active) return;
           setCommunityRatings(ratings);
           setRatingSummaries(summaries);
+          setExperienceSummaries(experiences);
         })
         .catch(() => { if (active && showLoading) setCommunityRatings([]); })
         .finally(() => { if (active && showLoading) setCommunityRatingsLoading(false); });
@@ -987,6 +1014,7 @@ export default function App() {
       createdAt: data.created_at,
     };
     setGarageEntries(current => [savedEntry, ...current.filter(entry => entry.carId !== carId)]);
+    refreshExperienceSummaries().catch(() => undefined);
     const savedCar = cars.find(car => car.id === carId);
     setAuthNotice(status === "want"
       ? `${savedCar?.make ?? "Car"} ${savedCar?.model ?? ""} added to Cars I want.`.trim()
@@ -1033,9 +1061,15 @@ export default function App() {
   };
 
   const displayedCar = (car: Car): Car => {
-    if (!ratingSummaries) return car;
-    const summary = ratingSummaries[car.id];
-    return { ...car, rating: summary?.average ?? 0, ratings: summary?.count ?? 0 };
+    const ratingSummary = ratingSummaries?.[car.id];
+    const experienceSummary = experienceSummaries?.[car.id];
+    return {
+      ...car,
+      rating: ratingSummaries ? ratingSummary?.average ?? 0 : car.rating,
+      ratings: ratingSummaries ? ratingSummary?.count ?? 0 : car.ratings,
+      driven: experienceSummaries ? experienceSummary?.driven ?? 0 : car.driven,
+      owners: experienceSummaries ? experienceSummary?.owners ?? 0 : car.owners,
+    };
   };
 
   const filtered = useMemo(() => {
