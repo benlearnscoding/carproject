@@ -75,7 +75,14 @@ const lamborghiniModels: Array<Pick<Car, "id" | "model" | "generation" | "year" 
 ];
 
 const porscheModels: Array<Pick<Car, "id" | "model" | "generation" | "year" | "transmission" | "tags">> = [
-  { id: "porsche-911-carrera-4s", model: "911 Carrera 4S", generation: "992", year: 2022, transmission: "Automatic", tags: ["Flat-6", "AWD", "Sports car", "Daily"] },
+  { id: "porsche-911-carrera-4s", model: "911 Carrera 4S", generation: "992.1", year: 2022, transmission: "Automatic", tags: ["Flat-6", "AWD", "Sports car", "Daily"] },
+  { id: "porsche-911-carrera-4s-993", model: "911 Carrera 4S", generation: "993", year: 1996, transmission: "Manual", tags: ["Flat-6", "AWD", "Air-cooled", "Classic"] },
+  { id: "porsche-911-carrera-4s-996", model: "911 Carrera 4S", generation: "996", year: 2003, transmission: "Manual", tags: ["Flat-6", "AWD", "Water-cooled", "Classic"] },
+  { id: "porsche-911-carrera-4s-997-1", model: "911 Carrera 4S", generation: "997.1", year: 2006, transmission: "Manual", tags: ["Flat-6", "AWD", "Sports car", "Analog"] },
+  { id: "porsche-911-carrera-4s-997-2", model: "911 Carrera 4S", generation: "997.2", year: 2011, transmission: "Manual", tags: ["Flat-6", "AWD", "Sports car", "Driver"] },
+  { id: "porsche-911-carrera-4s-991-1", model: "911 Carrera 4S", generation: "991.1", year: 2014, transmission: "Manual", tags: ["Flat-6", "AWD", "Sports car", "Widebody"] },
+  { id: "porsche-911-carrera-4s-991-2", model: "911 Carrera 4S", generation: "991.2", year: 2017, transmission: "Manual", tags: ["Flat-6", "AWD", "Twin-turbo", "Sports car"] },
+  { id: "porsche-911-carrera-4s-992-2", model: "911 Carrera 4S", generation: "992.2", year: 2025, transmission: "Automatic", tags: ["Flat-6", "AWD", "Twin-turbo", "Sports car"] },
   { id: "porsche-911-targa-4s", model: "911 Targa 4S", generation: "992", year: 2022, transmission: "Automatic", tags: ["Flat-6", "AWD", "Targa", "Grand tourer"] },
   { id: "porsche-911-targa-s", model: "911 Targa S", generation: "997.2", year: 2011, transmission: "Manual", tags: ["Flat-6", "RWD", "Targa", "Driver"] },
   { id: "porsche-911-carrera-gts", model: "911 Carrera GTS", generation: "992", year: 2023, transmission: "Automatic", tags: ["Flat-6", "Turbo", "RWD", "Performance"] },
