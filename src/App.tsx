@@ -1194,7 +1194,7 @@ export default function App() {
               {communityRatingsLoading ? (
                 <p className="community-empty">Loading recent ratings…</p>
               ) : displayedCommunityRatings.length ? (
-                <div className="community-carousel">
+                <div className={`community-carousel community-carousel-${communitySlideSize}`}>
                   <button className="community-carousel-arrow previous" type="button" aria-label="Previous reviews" onClick={() => moveCommunitySlide(-1)} disabled={filteredCommunityRatings.length < 2}><ChevronLeft size={22}/></button>
                   <div className="grid community-carousel-grid">{displayedCommunityRatings.map(({ rating, car }) => <CommunityRatingCard key={rating.id} rating={rating} car={displayedCar(car)} onProfile={() => openPublicProfile(rating.username)} onClick={() => { setSelectedGarageExperience(undefined); setSelectedCommunityRating(rating); setSelected(displayedCar(car)); }} />)}</div>
                   <button className="community-carousel-arrow next" type="button" aria-label="Next reviews" onClick={() => moveCommunitySlide(1)} disabled={filteredCommunityRatings.length < 2}><ChevronRight size={22}/></button>
