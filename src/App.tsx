@@ -1160,13 +1160,15 @@ export default function App() {
           <section className="page-section">
             <h1>Explore cars.</h1>
             <div className="catalog-filters">
-              <div className="classification-filters">
-                <MakeFilter value={selectedMake} onChange={make => { setSelectedMake(make); setSelectedModel(""); }} />
-                <div className="model-filter-row">
-                  <ModelFilter make={selectedMake} value={selectedModel} onChange={setSelectedModel} />
-                  <SortFilter value={selectedSort} onChange={setSelectedSort} />
-                  <button className="filter-reset" type="button" aria-label="Reset all car filters" title="Reset filters" disabled={!selectedMake && !selectedModel && !selectedSort} onClick={() => { setSelectedMake(""); setSelectedModel(""); setSelectedSort(""); }}><X size={17}/></button>
+              <div className="catalog-filter-row">
+                <div className="classification-filters">
+                  <MakeFilter value={selectedMake} onChange={make => { setSelectedMake(make); setSelectedModel(""); }} />
+                  <div className="model-filter-row">
+                    <ModelFilter make={selectedMake} value={selectedModel} onChange={setSelectedModel} />
+                    <button className="filter-reset" type="button" aria-label="Reset make and model filters" title="Reset make and model" disabled={!selectedMake && !selectedModel} onClick={() => { setSelectedMake(""); setSelectedModel(""); }}><X size={17}/></button>
+                  </div>
                 </div>
+                <SortFilter value={selectedSort} onChange={setSelectedSort} />
               </div>
             </div>
             <div className="grid">{filtered.map(car => <CarCard key={car.id} car={displayedCar(car)} onClick={() => { setSelectedGarageExperience(undefined); setSelected(displayedCar(car)); }} />)}</div>

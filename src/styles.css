@@ -24,7 +24,8 @@ em { font-family:Georgia,serif; font-weight:400; }
 .hero-copy { font-size:18px; line-height:1.55; max-width:580px; color:#676660; margin:28px 0 42px; }
 .hero-filters,.catalog-filters { display:flex; flex-direction:column; align-items:flex-start; gap:16px; }
 .classification-filters { display:flex; align-items:start; gap:14px; }
-.catalog-filters { margin-bottom:45px; }
+.catalog-filters { width:100%; margin-bottom:45px; }
+.catalog-filter-row { display:flex; justify-content:space-between; align-items:flex-start; width:100%; gap:28px; }
 .make-filter { display:grid; justify-items:center; gap:7px; width:fit-content; max-width:100%; }
 .make-filter > span { font-family:"DM Mono",monospace; font-size:12px; letter-spacing:.09em; text-align:center; text-transform:uppercase; }
 .filter-select { position:relative; width:fit-content; }
@@ -262,6 +263,6 @@ body,.app { background:#0247DD; }
 .rating-save-error { margin-top:14px; }
 @media(max-width:560px){ .profile-start{min-height:560px}.profile-start h1{font-size:50px}.profile-hero{align-items:flex-start;flex-wrap:wrap}.profile-edit{margin-left:96px;margin-top:-12px}.profile-bio{margin:-8px 0 30px}.profile-creator{padding:36px 24px}.profile-creator h2{font-size:35px}.profile-fields{grid-template-columns:1fr} }
 @media(max-width:560px){ .logout-button span{display:none}.logout-button{padding:10px 0} }
-@media(max-width:560px){ .classification-filters{align-items:flex-start;flex-direction:column} }
+@media(max-width:560px){ .classification-filters{align-items:flex-start;flex-direction:column}.catalog-filter-row{flex-direction:column} }
 @media(max-width:850px){ .garage-grid{grid-template-columns:1fr 1fr} }
 @media(max-width:560px){ .garage-car-fields{flex-direction:column}.garage-status-options{grid-template-columns:1fr}.garage-grid{grid-template-columns:1fr} }
