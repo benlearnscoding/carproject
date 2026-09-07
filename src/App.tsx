@@ -48,6 +48,15 @@ type CommunityRatingRow = {
   username: string;
   rated_at: string;
 };
+type CarRatingSummary = {
+  average: number;
+  count: number;
+};
+type CarRatingSummaryRow = {
+  car_id: string;
+  average_rating: number | string;
+  rating_count: number | string;
+};
 type PublicProfile = {
   firstName: string;
   lastName: string;
@@ -190,6 +199,16 @@ async function loadCommunityRatings(): Promise<CommunityRating[]> {
   }));
 
   return ratings;
+}
+
+async function loadCarRatingSummaries(): Promise<Record<string, CarRatingSummary>> {
+  const { data, error } = await supabase.rpc("get_car_rating_summaries");
+  if (error) throw error;
+
+  return Object.fromEntries(((data as CarRatingSummaryRow[] | null) ?? []).map(summary => [summary.car_id, {
+    average: Number(summary.average_rating),
+    count: Number(summary.rating_count),
+  }]));
 }
 
 async function loadPublicProfile(username: string): Promise<PublicProfile> {
@@ -485,11 +504,11 @@ function CommunityRatingCard({ rating, car, onClick, onProfile }: { rating: Comm
     <article className="car-card community-rating-card">
       <button className="community-car-button" onClick={onClick} aria-label={`Open ${car.make} ${car.model}`}><div className="car-image">
           <img src={car.image} alt={`${car.make} ${car.model}`} />
-          <div className="image-score"><Score value={rating.overall} /></div>
+          <div className="image-score"><Score value={car.rating} /></div>
         </div></button>
       <div className="card-body">
         <div className="community-rating-meta"><button className="community-profile-link" type="button" onClick={onProfile}>@{rating.username}</button><span>{car.make}</span></div>
-        <button className="community-car-copy" onClick={onClick}><h3>{car.model}</h3>{rating.review && <p className="review-preview">“{rating.review}”</p>}</button>
+        <button className="community-car-copy" onClick={onClick}><h3>{car.model}</h3><p className="community-rating-count">{car.ratings} {car.ratings === 1 ? "rating" : "ratings"}</p>{rating.review && <p className="review-preview">“{rating.review}”</p>}</button>
       </div>
     </article>
   );
@@ -677,6 +696,7 @@ export default function App() {
   const [ratingCar, setRatingCar] = useState<Car | null>(null);
   const [savedRatings, setSavedRatings] = useState<Record<string, SavedRating>>({});
   const [communityRatings, setCommunityRatings] = useState<CommunityRating[]>([]);
+  const [ratingSummaries, setRatingSummaries] = useState<Record<string, CarRatingSummary> | null>(null);
   const [communityRatingsLoading, setCommunityRatingsLoading] = useState(true);
   const [communitySlideStart, setCommunitySlideStart] = useState(0);
   const [publicProfileUsername, setPublicProfileUsername] = useState<string | null>(null);
@@ -701,6 +721,12 @@ export default function App() {
     } finally {
       if (showLoading) setCommunityRatingsLoading(false);
     }
+  }, []);
+
+  const refreshRatingSummaries = useCallback(async () => {
+    const summaries = await loadCarRatingSummaries();
+    setRatingSummaries(summaries);
+    return summaries;
   }, []);
 
   useEffect(() => {
@@ -743,8 +769,12 @@ export default function App() {
     let active = true;
     const refresh = (showLoading = false) => {
       if (showLoading) setCommunityRatingsLoading(true);
-      loadCommunityRatings()
-        .then(ratings => { if (active) setCommunityRatings(ratings); })
+      Promise.all([loadCommunityRatings(), loadCarRatingSummaries()])
+        .then(([ratings, summaries]) => {
+          if (!active) return;
+          setCommunityRatings(ratings);
+          setRatingSummaries(summaries);
+        })
         .catch(() => { if (active && showLoading) setCommunityRatings([]); })
         .finally(() => { if (active && showLoading) setCommunityRatingsLoading(false); });
     };
@@ -971,14 +1001,21 @@ export default function App() {
     };
     setSavedRatings(current => ({ ...current, [carId]: savedRating }));
     refreshCommunityRatings().catch(() => undefined);
+    try {
+      const summaries = await refreshRatingSummaries();
+      const summary = summaries[carId];
+      if (summary) setSelected(current => current?.id === carId ? { ...current, rating: summary.average, ratings: summary.count } : current);
+    } catch {
+      // The rating is saved even if the public aggregate refresh is temporarily unavailable.
+    }
     const ratedCar = cars.find(car => car.id === carId);
     setAuthNotice(`Your ${savedRating.overall.toFixed(1)} rating for ${ratedCar?.make ?? "this car"} ${ratedCar?.model ?? ""} is saved.`.trim());
   };
 
   const displayedCar = (car: Car): Car => {
-    const submittedScore = savedRatings[car.id]?.overall;
-    if (submittedScore === undefined) return car;
-    return { ...car, rating: (car.rating * car.ratings + submittedScore) / (car.ratings + 1), ratings: car.ratings + 1 };
+    if (!ratingSummaries) return car;
+    const summary = ratingSummaries[car.id];
+    return { ...car, rating: summary?.average ?? 0, ratings: summary?.count ?? 0 };
   };
 
   const filtered = useMemo(() => {
@@ -1235,8 +1272,6 @@ export default function App() {
         } else if (garageEntries.some(entry => entry.carId === ratingCar.id && entry.status === "want") && (rating.experience === "owned" || rating.experience === "driven")) {
           await addCarToGarage(ratingCar.id, rating.experience);
         }
-        const updatedCar = { ...ratingCar, rating: (ratingCar.rating * ratingCar.ratings + rating.overall) / (ratingCar.ratings + 1), ratings: ratingCar.ratings + 1 };
-        setSelected(current => current?.id === ratingCar.id ? updatedCar : current);
       }} />}
       {creatingProfile && <CreateProfile profile={profile} authenticated={Boolean(authUserId)} close={() => setCreatingProfile(false)} save={saveProfile} signIn={signIn} />}
       {addingCar && <AddCarModal initialCarId={garageSeedCarId} initialStatus={garageSeedStatus} close={() => setAddingCar(false)} completeSelection={completeGarageSelection} />}
