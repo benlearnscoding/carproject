@@ -8,8 +8,12 @@ button { cursor:pointer; color:inherit; }
 .app { min-height:100vh; }
 .nav { height:72px; border-bottom:1px solid #dddcd7; display:flex; align-items:center; padding:0 5vw; justify-content:space-between; background:#f7f7f5cc; backdrop-filter:blur(12px); position:sticky; top:0; z-index:5; }
 .logo { position:relative; border:0; background:none; padding:0 0 13px; margin-bottom:-5px; font-weight:700; font-size:25.2px; letter-spacing:-1px; }
-.logo::after { content:""; position:absolute; left:50%; bottom:-6px; width:86px; height:19px; transform:translateX(-53%); background:conic-gradient(from 90deg,#fff 25%,#0035ad 0 50%,#fff 0 75%,#0035ad 0) 0 0/12px 12px; filter:drop-shadow(0 0 1px #fff) drop-shadow(0 1px 1px rgba(0,18,82,.9)); -webkit-mask-image:radial-gradient(ellipse 52% 120% at 50% 0,transparent 0 60%,#000 63% 88%,transparent 91%); mask-image:radial-gradient(ellipse 52% 120% at 50% 0,transparent 0 60%,#000 63% 88%,transparent 91%); }
-.logo span { margin-left:2px; }
+.logo-word { position:relative; z-index:2; display:block; line-height:1; }
+.logo-curb { position:absolute; z-index:1; top:-10px; left:50%; width:116px; height:54px; overflow:visible; pointer-events:none; transform:translateX(-50%); filter:drop-shadow(0 1px 1px rgba(0,18,82,.8)); }
+.logo-curb path { fill:none; stroke-linecap:butt; stroke-linejoin:round; }
+.logo-curb-outline { stroke:#00164d; stroke-width:10; }
+.logo-curb-base { stroke:#fff; stroke-width:7; }
+.logo-curb-blue { stroke:#0247DD; stroke-width:7; stroke-dasharray:13 11; stroke-dashoffset:5; }
 .nav nav { display:flex; gap:8px; }
 .profile-actions { display:flex; align-items:center; gap:8px; }
 .nav nav button,.profile-button { border:0; background:none; padding:10px 14px; color:#74736e; }

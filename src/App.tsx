@@ -1100,7 +1100,14 @@ export default function App() {
   return (
     <div className="app">
       <header className="nav">
-        <button className="logo" onClick={() => setTab("discover")}>DRIVEN<span>•</span></button>
+        <button className="logo" onClick={() => setTab("discover")} aria-label="Driven home">
+          <span className="logo-word">DRIVEN</span>
+          <svg className="logo-curb" viewBox="0 0 112 52" aria-hidden="true">
+            <path className="logo-curb-outline" d="M6 31C22 44 63 47 87 38C105 31 109 19 101 10C95 3 86 3 75 5" />
+            <path className="logo-curb-base" d="M6 31C22 44 63 47 87 38C105 31 109 19 101 10C95 3 86 3 75 5" />
+            <path className="logo-curb-blue" d="M6 31C22 44 63 47 87 38C105 31 109 19 101 10C95 3 86 3 75 5" />
+          </svg>
+        </button>
         <nav>
           <button className={tab === "discover" ? "active" : ""} onClick={() => setTab("discover")}>Discover</button>
           <button className={tab === "cars" ? "active" : ""} onClick={() => setTab("cars")}>Cars</button>
