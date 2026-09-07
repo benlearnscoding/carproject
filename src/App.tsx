@@ -36,6 +36,7 @@ type CommunityRating = {
   id: string;
   carId: string;
   overall: number;
+  scores: Record<string, number>;
   review: string;
   username: string;
   ratedAt: string;
@@ -44,6 +45,7 @@ type CommunityRatingRow = {
   id: string;
   car_id: string;
   overall: number | string;
+  scores: Record<string, number> | null;
   review_preview: string | null;
   username: string;
   rated_at: string;
@@ -85,6 +87,7 @@ type PublicProfileCar = {
   carId: string;
   relationship: GarageStatus | null;
   overall: number | null;
+  scores: Record<string, number>;
   review: string;
   ratedAt: string | null;
 };
@@ -92,6 +95,7 @@ type PublicProfileCarRow = {
   car_id: string;
   relationship: GarageStatus | null;
   overall: number | string | null;
+  scores: Record<string, number> | null;
   review: string | null;
   rated_at: string | null;
 };
@@ -202,6 +206,7 @@ async function loadCommunityRatings(): Promise<CommunityRating[]> {
     id: rating.id,
     carId: rating.car_id,
     overall: Number(rating.overall),
+    scores: rating.scores ?? {},
     review: rating.review_preview ?? "",
     username: rating.username,
     ratedAt: rating.rated_at,
@@ -248,6 +253,7 @@ async function loadPublicProfile(username: string): Promise<PublicProfile> {
       carId: entry.car_id,
       relationship: entry.relationship,
       overall: entry.overall === null ? null : Number(entry.overall),
+      scores: entry.scores ?? {},
       review: entry.review ?? "",
       ratedAt: entry.rated_at,
     })),
@@ -348,6 +354,14 @@ function CarDetail({
       : personalRating?.experience === "want"
         ? "Want"
         : "Passenger";
+  const ratingScores = communityRating?.scores ?? personalRating?.scores;
+  const detailScores = ratingScores
+    ? ratingCategories.map(category => [category, Number(ratingScores[category] ?? 0)] as const)
+    : [
+        ["Driving", 9.4], ["Sound", 9.5], ["Steering", 9.1],
+        ["Performance", 9.0], ["Comfort", 7.7], ["Looks", 9.3],
+        ["Reliability", 8.4], ["Value", 8.6],
+      ] as const;
 
   return (
     <div className="modal-backdrop" onClick={close}>
@@ -366,17 +380,13 @@ function CarDetail({
 
           <div className="tags">{car.tags.map(tag => <span key={tag}>{tag}</span>)}</div>
 
-          {!communityRating && <div className="rating-grid">
-            {[
-              ["Driving", 9.4], ["Sound", 9.5], ["Steering", 9.1],
-              ["Performance", 9.0], ["Comfort", 7.7], ["Looks", 9.3],
-              ["Reliability", 8.4], ["Value", 8.6],
-            ].map(([label, value]) => (
+          <div className="rating-grid">
+            {detailScores.map(([label, value]) => (
               <div className="metric" key={String(label)}>
                 <span>{label}</span><strong>{Number(value).toFixed(1)}</strong>
               </div>
             ))}
-          </div>}
+          </div>
 
           <div className="actions">
             <button className="primary" onClick={onAdd}><Plus size={17}/> Add to garage</button>
@@ -1143,6 +1153,17 @@ export default function App() {
   }) ?? [];
   const publicExperiencedCars = publicProfileCars.filter(({ entry }) => entry.relationship !== "want");
   const publicWantedCars = publicProfileCars.filter(({ entry }) => entry.relationship === "want");
+  const publicRatingFor = (entry: PublicProfileCar): CommunityRating | null => entry.overall === null || !publicProfile
+    ? null
+    : {
+        id: `public-${publicProfile.username}-${entry.carId}`,
+        carId: entry.carId,
+        overall: entry.overall,
+        scores: entry.scores,
+        review: entry.review,
+        username: publicProfile.username,
+        ratedAt: entry.ratedAt ?? "",
+      };
   const publicReviewedCount = publicProfile?.cars.filter(entry => entry.overall !== null).length ?? 0;
   const publicGarageCount = publicProfile?.cars.filter(entry => entry.relationship !== null).length ?? 0;
   const publicGarageBrands = new Set(publicProfileCars.filter(({ entry }) => entry.relationship !== null).map(({ car }) => car.make)).size;
@@ -1249,7 +1270,7 @@ export default function App() {
                 {publicExperiencedCars.length ? (
                   <div className="garage-grid public-garage-grid">
                     {publicExperiencedCars.map(({ entry, car }) => (
-                      <button className="garage-card public-garage-card" key={car.id} onClick={() => { setSelectedGarageExperience(undefined); setSelectedCommunityRating(null); setSelected(displayedCar(car)); }}>
+                      <button className="garage-card public-garage-card" key={car.id} onClick={() => { setSelectedGarageExperience(undefined); setSelectedCommunityRating(publicRatingFor(entry)); setSelected(displayedCar(car)); }}>
                         <img src={car.image} alt={`${car.make} ${car.model}`} />
                         <div>
                           <span className="garage-status">{entry.relationship ? garageStatusLabels[entry.relationship] : "Reviewed"}</span>
@@ -1267,7 +1288,7 @@ export default function App() {
                   {publicWantedCars.length ? (
                     <div className="garage-grid public-garage-grid">
                       {publicWantedCars.map(({ entry, car }) => (
-                        <button className="garage-card public-garage-card" key={car.id} onClick={() => { setSelectedGarageExperience("want"); setSelectedCommunityRating(null); setSelected(displayedCar(car)); }}>
+                        <button className="garage-card public-garage-card" key={car.id} onClick={() => { setSelectedGarageExperience("want"); setSelectedCommunityRating(publicRatingFor(entry)); setSelected(displayedCar(car)); }}>
                           <img src={car.image} alt={`${car.make} ${car.model}`} />
                           <div>
                             <span className="garage-status">Want</span>
