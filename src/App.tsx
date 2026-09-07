@@ -1151,10 +1151,10 @@ export default function App() {
         <button className="logo" onClick={() => setTab("discover")} aria-label="Driven home">
           <span className="logo-word">DRIVEN</span>
           <svg className="logo-curb" viewBox="0 0 112 52" aria-hidden="true">
-            <path className="logo-curb-base" d="M8 37C25 47 63 47 89 38C109 31 113 18 105 9C101 5 96 4 88 4" />
-            <path className="logo-curb-blue" pathLength="96" d="M8 37C25 47 63 47 89 38C109 31 113 18 105 9C101 5 96 4 88 4" />
-            <path className="logo-curb-inner" d="M11 32C29 40 62 41 85 34C101 29 106 19 101 13C98 9 94 8 88 8" />
-            <path className="logo-curb-outer" d="M6 42C23 52 66 52 93 42C115 34 119 18 110 5C106 0 99 0 88 0" />
+            <path className="logo-curb-base" d="M8 37C25 47 63 47 89 38C109 31 113 18 105 9C102 6 99 4 96 4H88" />
+            <path className="logo-curb-blue" pathLength="96" d="M8 37C25 47 63 47 89 38C109 31 113 18 105 9C102 6 99 4 96 4H88" />
+            <path className="logo-curb-inner" d="M11 32C29 40 62 41 85 34C101 29 106 19 101 13C99 10 96 8 94 8H88" />
+            <path className="logo-curb-outer" d="M6 42C23 52 66 52 93 42C115 34 119 18 110 5C107 2 102 0 96 0H88" />
           </svg>
         </button>
         <nav>
