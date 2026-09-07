@@ -290,7 +290,7 @@ function CarCard({ car, onClick }: { car: Car; onClick: () => void }) {
       <div className="card-body">
         <div className="eyebrow">{car.make} · {car.generation}</div>
         <h3>{car.model}</h3>
-        <p>{car.ratings.toLocaleString()} ratings · {car.owners} owners</p>
+        <p>{car.ratings.toLocaleString()} {car.ratings === 1 ? "rating" : "ratings"} · {car.owners} owners</p>
       </div>
     </button>
   );
@@ -335,7 +335,7 @@ function CarDetail({
               <h1>{car.model}</h1>
               <p>{car.driven.toLocaleString()} people have driven one · {car.owners} owners</p>
             </div>
-            <div className="big-score"><Score value={car.rating} /><small>{car.ratings.toLocaleString()} ratings</small></div>
+            <div className="big-score"><Score value={car.rating} /><small>{car.ratings.toLocaleString()} {car.ratings === 1 ? "rating" : "ratings"}</small></div>
           </div>
 
           <div className="tags">{car.tags.map(tag => <span key={tag}>{tag}</span>)}</div>
