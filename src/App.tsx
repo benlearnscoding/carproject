@@ -1154,6 +1154,7 @@ export default function App() {
             <path className="logo-curb-base" d="M8 37C25 47 63 47 89 38C109 31 113 18 105 9C101 5 96 4 88 4" />
             <path className="logo-curb-blue" pathLength="96" d="M8 37C25 47 63 47 89 38C109 31 113 18 105 9C101 5 96 4 88 4" />
             <path className="logo-curb-inner" d="M11 32C29 40 62 41 85 34C101 29 106 19 101 13C98 9 94 8 88 8" />
+            <path className="logo-curb-outer" d="M6 42C23 52 66 52 93 42C115 34 119 18 110 5C106 0 99 0 88 0" />
           </svg>
         </button>
         <nav>
