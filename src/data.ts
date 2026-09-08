@@ -261,7 +261,7 @@ export const cars: Car[] = [
     model: "A110",
     generation: "Pure",
     year: 2022,
-    image: "https://images.unsplash.com/photo-1544829099-b9a0c07fad1a?auto=format&fit=crop&w=1200&q=80",
+    image: alpineA110Image,
     rating: 8.8,
     ratings: 524,
     driven: 810,
