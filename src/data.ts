@@ -10,6 +10,7 @@ import porscheCarrera4s993Image from "./assets/porsche-911-carrera-4s-993.png";
 import porscheCarrera4s9912Image from "./assets/porsche-911-carrera-4s-991-2.png";
 import porscheCarrera4s9911Image from "./assets/porsche-911-carrera-4s-991-1.png";
 import porscheCarrera4s9922Image from "./assets/porsche-911-carrera-4s-992-2.png";
+import mercedesC63BlackSeriesImage from "./assets/mercedes-c63-black-series.png";
 
 export type Car = {
   id: string;
@@ -481,7 +482,7 @@ export const cars: Car[] = [
     model: "C63",
     generation: "W204 Coupé Black Series",
     year: 2013,
-    image: "https://media.fastestlaps.com/mercedes-benz-c-63-amg-coupe-black-series.jpg",
+    image: mercedesC63BlackSeriesImage,
     rating: 9.3,
     ratings: 412,
     driven: 486,
