@@ -452,6 +452,7 @@ function RatingFlow({ car, close, complete, initialExperience, initialRating }: 
   const [scores, setScores] = useState<Record<string, number>>(
     () => Object.fromEntries(ratingCategories.map(category => [category, Number(initialRating?.scores[category] ?? 0)]))
   );
+  const [hoveredScores, setHoveredScores] = useState<Record<string, number>>({});
   const [review, setReview] = useState(initialRating?.review ?? "");
   const [submitted, setSubmitted] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -523,9 +524,9 @@ function RatingFlow({ car, close, complete, initialExperience, initialRating }: 
                 {ratingCategories.map(category => (
                   <div className="score-row" key={category}>
                     <span>{category}</span>
-                    <div className="score-buttons" aria-label={`${category} score`}>
+                    <div className="score-buttons" aria-label={`${category} score`} onMouseLeave={() => setHoveredScores(current => { const next = { ...current }; delete next[category]; return next; })}>
                       {Array.from({ length: 10 }, (_, index) => index + 1).map(value => (
-                        <button key={value} className={value <= scores[category] ? "filled" : ""} onClick={() => updateScore(category, value)} aria-label={`${value} out of 10`} />
+                        <button key={value} className={value <= (hoveredScores[category] ?? scores[category]) ? "filled" : ""} onMouseEnter={() => setHoveredScores(current => ({ ...current, [category]: value }))} onFocus={() => setHoveredScores(current => ({ ...current, [category]: value }))} onBlur={() => setHoveredScores(current => { const next = { ...current }; delete next[category]; return next; })} onClick={() => updateScore(category, value)} aria-label={`${value} out of 10`} />
                       ))}
                     </div>
                     <strong>{scores[category]}.0</strong>
