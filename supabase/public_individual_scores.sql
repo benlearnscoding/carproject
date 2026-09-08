@@ -39,6 +39,7 @@ create function public.get_public_profile_cars(profile_username text)
 returns table (
   car_id text,
   relationship text,
+  transmission text,
   overall numeric,
   scores jsonb,
   review text,
@@ -58,6 +59,7 @@ as $$
   select
     garage.car_id,
     garage.relationship,
+    garage.transmission,
     ratings.overall,
     ratings.scores,
     ratings.review,
@@ -70,6 +72,7 @@ as $$
   select
     ratings.car_id,
     null::text as relationship,
+    null::text as transmission,
     ratings.overall,
     ratings.scores,
     ratings.review,

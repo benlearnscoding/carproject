@@ -3,6 +3,7 @@ create table if not exists public.garage_entries (
   user_id uuid not null references public.profiles(id) on delete cascade,
   car_id text not null,
   relationship text not null check (relationship in ('owned', 'driven', 'want')),
+  transmission text check (transmission in ('Automatic', 'Manual')),
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
   unique (user_id, car_id)

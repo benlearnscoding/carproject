@@ -29,6 +29,7 @@ create or replace function public.get_public_profile_cars(profile_username text)
 returns table (
   car_id text,
   relationship text,
+  transmission text,
   overall numeric,
   review text,
   rated_at timestamptz
@@ -47,6 +48,7 @@ as $$
   select
     garage.car_id,
     garage.relationship,
+    garage.transmission,
     ratings.overall,
     ratings.review,
     ratings.updated_at as rated_at
@@ -58,6 +60,7 @@ as $$
   select
     ratings.car_id,
     null::text as relationship,
+    null::text as transmission,
     ratings.overall,
     ratings.review,
     ratings.updated_at as rated_at

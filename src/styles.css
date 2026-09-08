@@ -253,7 +253,7 @@ body,.app { background:#0247DD; }
 .auth-notice span { flex:1; }
 .auth-notice button { border:0; background:none; color:#fff; font-size:20px; line-height:1; }
 .garage-creator { width:min(680px,100%); }
-.garage-car-fields { display:flex; align-items:flex-start; gap:16px; }
+.garage-car-fields { display:flex; flex-wrap:wrap; align-items:flex-start; gap:16px; }
 .garage-status-fieldset { margin:4px 0 0; padding:0; border:0; }
 .garage-status-fieldset legend { margin-bottom:9px; font-size:13px; font-weight:600; }
 .garage-status-options { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
