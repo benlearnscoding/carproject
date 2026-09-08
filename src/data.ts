@@ -8,6 +8,7 @@ import porscheCarrera4s9972Image from "./assets/porsche-911-carrera-4s-997-2.png
 import porscheCarrera4s996Image from "./assets/porsche-911-carrera-4s-996.png";
 import porscheCarrera4s993Image from "./assets/porsche-911-carrera-4s-993.png";
 import porscheCarrera4s9912Image from "./assets/porsche-911-carrera-4s-991-2.png";
+import porscheCarrera4s9911Image from "./assets/porsche-911-carrera-4s-991-1.png";
 
 export type Car = {
   id: string;
@@ -891,6 +892,8 @@ export const cars: Car[] = [
     make: "Porsche",
     image: car.id === "porsche-911-carrera-4s-997-1"
       ? porscheCarrera4s9971Image
+      : car.id === "porsche-911-carrera-4s-991-1"
+        ? porscheCarrera4s9911Image
       : car.id === "porsche-911-carrera-4s-991-2"
         ? porscheCarrera4s9912Image
       : car.id === "porsche-911-carrera-4s-993"
