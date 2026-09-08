@@ -107,7 +107,7 @@ em { font-family:Georgia,serif; font-weight:400; }
 footer { border-top:1px solid #dddcd7; display:flex; justify-content:space-between; padding:25px 5vw; color:#888; font-size:12px; }
 .modal-backdrop { position:fixed; inset:0; background:#0009; z-index:20; display:grid; place-items:center; padding:25px; }
 .detail { background:#f7f7f5; width:min(1040px,100%); max-height:92vh; overflow:auto; display:grid; grid-template-columns:42% 58%; border-radius:6px; position:relative; }
-.detail-image { width:100%; aspect-ratio:4/3; height:auto; min-height:0; object-fit:cover; align-self:start; }
+.detail-image { width:100%; aspect-ratio:4/3; height:auto; min-height:0; object-fit:cover; object-position:center center; align-self:start; }
 .detail-content { padding:48px; position:relative; }
 .close { position:absolute; right:20px; top:15px; border:0; background:none; font-size:28px; color:#777; }
 .detail-title { display:flex; justify-content:space-between; gap:20px; }
