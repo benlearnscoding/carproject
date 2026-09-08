@@ -744,6 +744,34 @@ function CreateProfile({
   );
 }
 
+function CursorBoostFlame() {
+  useEffect(() => {
+    const supportsFinePointer = window.matchMedia("(hover: hover) and (pointer: fine)");
+    if (!supportsFinePointer.matches) return;
+
+    const flame = document.createElement("span");
+    flame.className = "cursor-boost-flame";
+    document.body.appendChild(flame);
+    let hideTimer = 0;
+    const moveFlame = (event: MouseEvent) => {
+      flame.style.left = `${event.clientX}px`;
+      flame.style.top = `${event.clientY + 18}px`;
+      flame.classList.add("is-visible");
+      window.clearTimeout(hideTimer);
+      hideTimer = window.setTimeout(() => flame.classList.remove("is-visible"), 90);
+    };
+
+    window.addEventListener("mousemove", moveFlame, { passive: true });
+    return () => {
+      window.removeEventListener("mousemove", moveFlame);
+      window.clearTimeout(hideTimer);
+      flame.remove();
+    };
+  }, []);
+
+  return null;
+}
+
 export default function App() {
   const [tab, setTab] = useState<Tab>("discover");
   const [selectedMake, setSelectedMake] = useState("");
@@ -1181,6 +1209,7 @@ export default function App() {
 
   return (
     <div className="app">
+      <CursorBoostFlame />
       <header className="nav">
         <button className="logo" onClick={() => setTab("discover")} aria-label="Driven home">
           <span className="logo-word">DRIVEN</span>

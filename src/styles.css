@@ -8,6 +8,8 @@ button { cursor:pointer; color:inherit; }
 @media (hover:hover) and (pointer:fine) {
   body,body * { cursor:url("/racing-car-cursor.svg") 12 8, auto !important; }
 }
+.cursor-boost-flame { position:fixed; z-index:100; width:8px; height:15px; border-radius:70% 30% 68% 32%; background:linear-gradient(#fff6a8 0 18%,#ffc400 42%,#f04400 100%); box-shadow:0 0 7px rgba(255,103,0,.9); clip-path:polygon(50% 0,88% 46%,69% 100%,50% 78%,28% 100%,12% 46%); pointer-events:none; opacity:0; transform:translate(-50%,-10%) scaleY(.35); transition:opacity .08s ease,transform .12s ease; }
+.cursor-boost-flame.is-visible { opacity:1; transform:translate(-50%,-10%) scaleY(1); }
 .app { min-height:100vh; }
 .nav { height:72px; border-bottom:1px solid #dddcd7; display:flex; align-items:center; padding:0 5vw; justify-content:space-between; background:#f7f7f5cc; backdrop-filter:blur(12px); position:sticky; top:0; z-index:5; }
 .logo { position:relative; border:0; background:none; padding:0 0 13px; margin-bottom:-5px; font-weight:700; font-size:25.2px; letter-spacing:-1px; }
