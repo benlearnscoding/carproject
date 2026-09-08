@@ -586,12 +586,14 @@ function AddCarModal({
   const [step, setStep] = useState<1 | 2>(initialStatus ? 2 : 1);
   const [make, setMake] = useState(initialCar?.make ?? "");
   const [model, setModel] = useState(initialCar?.model ?? "");
+  const [generation, setGeneration] = useState(initialCar?.generation ?? "");
   const [status, setStatus] = useState<GarageStatus | null>(initialStatus ?? null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const makeOptions = Array.from(new Set(cars.map(car => car.make))).sort((a, b) => a.localeCompare(b));
   const modelOptions = Array.from(new Set(cars.filter(car => car.make === make).map(car => car.model))).sort((a, b) => a.localeCompare(b));
-  const selectedCar = cars.find(car => car.make === make && car.model === model);
+  const generationOptions = Array.from(new Set(cars.filter(car => car.make === make && car.model === model).map(car => car.generation))).sort((a, b) => a.localeCompare(b));
+  const selectedCar = cars.find(car => car.make === make && car.model === model && car.generation === generation);
 
   const submit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -615,7 +617,7 @@ function AddCarModal({
         <button className="close" onClick={close} aria-label="Close add car form">×</button>
         <p className="eyebrow">YOUR GARAGE</p>
         <h2>{step === 1 ? "How does this car fit your story?" : "Choose your car."}</h2>
-        <p className="profile-intro">{step === 1 ? "Tell the community about your relationship with the car." : status === "want" ? "Select the make and model to add it to Cars I want." : "Select the make and model, then rate it before adding it to your garage."}</p>
+        <p className="profile-intro">{step === 1 ? "Tell the community about your relationship with the car." : status === "want" ? "Select the make, model, and generation to add it to Cars I want." : "Select the make, model, and generation, then rate it before adding it to your garage."}</p>
         <form onSubmit={submit}>
           {step === 1 ? (
             <fieldset className="garage-status-fieldset">
@@ -635,8 +637,9 @@ function AddCarModal({
           ) : (
             <>
               <div className="garage-car-fields">
-                <FilterDropdown label="Make" value={make} options={makeOptions} onChange={nextMake => { setMake(nextMake); setModel(""); }} />
-                <FilterDropdown label="Model" value={model} options={modelOptions} onChange={setModel} />
+                <FilterDropdown label="Make" value={make} options={makeOptions} onChange={nextMake => { setMake(nextMake); setModel(""); setGeneration(""); }} />
+                <FilterDropdown label="Model" value={model} options={modelOptions} onChange={nextModel => { setModel(nextModel); setGeneration(""); }} />
+                <FilterDropdown label="Generation" value={generation} options={generationOptions} onChange={setGeneration} emptyLabel="Select generation" disabled={!model || !generationOptions.length} />
               </div>
               {selectedCar && <div className="garage-preview"><img src={selectedCar.image} alt="" /><div><span>{selectedCar.make} · {selectedCar.generation}</span><strong>{selectedCar.model}</strong></div></div>}
             </>
