@@ -164,6 +164,24 @@ const mclarenModels: Array<Pick<Car, "id" | "model" | "generation" | "year" | "t
   { id: "mclaren-540c", model: "540C", generation: "Sports Series", year: 2017, transmission: "Automatic", tags: ["V8", "Twin-turbo", "Mid-engine", "Sports car"] },
 ];
 
+const miniCatalogAdditions: Array<Pick<Car, "id" | "model" | "generation" | "year" | "image" | "transmission" | "tags">> = [
+  { id: "mini-cooper-s-r53", model: "Cooper S", generation: "R53", year: 2005, image: "https://www.myminirevolution.com/wp-content/uploads/mini-cooper-s-r53-dark-silver-metalic-2005_mmr-01.jpg", transmission: "Manual", tags: ["Supercharged", "Hot hatch", "Compact", "Classic"] },
+  { id: "mini-cooper-s-r56", model: "Cooper S", generation: "R56", year: 2010, image: "https://www.autocar.co.uk/sites/autocar.co.uk/files/images/car-reviews/first-drives/legacy/b_4105.jpg", transmission: "Manual", tags: ["Turbo", "Hot hatch", "Compact", "Fun"] },
+  { id: "mini-cooper-s-r57", model: "Cooper S", generation: "R57", year: 2012, image: "https://www.auto-data.net/images/f7/file3006138.jpg", transmission: "Manual", tags: ["Turbo", "Convertible", "Compact", "Fun"] },
+  { id: "mini-cooper-s-r59", model: "Cooper S", generation: "R59", year: 2013, image: "https://www.auto-data.net/images/f26/file9509957.jpg", transmission: "Manual", tags: ["Turbo", "Coupé", "Compact", "Fun"] },
+  { id: "mini-cooper-s-f57", model: "Cooper S", generation: "F57", year: 2021, image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS62hkfMthFKUj2s9WPfdH-PSyrs-ldzAst3oysS4daWB9PtBZQxUYRj_RC&s=10", transmission: "Automatic", tags: ["Turbo", "Convertible", "Compact", "Fun"] },
+  { id: "mini-cooper-s-f66", model: "Cooper S", generation: "F66", year: 2025, image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRWUFc5xZaDpv6mJGTnyEcxlhE-QxTqR1KuM7FylKbIT8Q_MQ7y2AZNwCvK&s=10", transmission: "Automatic", tags: ["Turbo", "Hot hatch", "Compact", "Current"] },
+  { id: "mini-cooper-s-f67", model: "Cooper S", generation: "F67", year: 2025, image: "https://www.automobile-sportive.com/images/news/mini-cooper-s-cabriolet-2024.jpg", transmission: "Automatic", tags: ["Turbo", "Convertible", "Compact", "Current"] },
+  { id: "mini-cooper-jcw-r53", model: "Cooper JCW", generation: "R53", year: 2006, image: "https://maessencsc.com/wp-content/uploads/2024/08/mini-cooper-s-r53-16-john-cooper-works-gp-2006-thunder-blue-metallic.jpg", transmission: "Manual", tags: ["Supercharged", "John Cooper Works", "Hot hatch", "Classic"] },
+  { id: "mini-cooper-jcw-r56", model: "Cooper JCW", generation: "R56", year: 2012, image: "https://auto.cdn-rivamedia.com/2414/179200416-ibig.jpg", transmission: "Manual", tags: ["Turbo", "John Cooper Works", "Hot hatch", "Performance"] },
+  { id: "mini-cooper-jcw-r57", model: "Cooper JCW", generation: "R57", year: 2012, image: "https://www.supersprint.com/public/img/MINI%20John%20Cooper%20Works%20Cabrio%20(211%20Hp)%202012%20-%202014-408588.jpg", transmission: "Manual", tags: ["Turbo", "John Cooper Works", "Convertible", "Performance"] },
+  { id: "mini-cooper-jcw-r58", model: "Cooper JCW", generation: "R58", year: 2013, image: "https://images.caradisiac.com/images/6/1/3/8/196138/S1-mini-coupe-roadster-2011-2015-savoureux-coups-de-folie-des-10-000-eur-714730.jpg", transmission: "Manual", tags: ["Turbo", "John Cooper Works", "Coupé", "Performance"] },
+  { id: "mini-cooper-jcw-r59", model: "Cooper JCW", generation: "R59", year: 2013, image: "https://www.myminirevolution.com/wp-content/uploads/mini-roadster-cooper-s-jcw-r59-2013-noir-myminirevolution-01.jpg", transmission: "Manual", tags: ["Turbo", "John Cooper Works", "Roadster", "Performance"] },
+  { id: "mini-cooper-jcw-f57", model: "Cooper JCW", generation: "F57", year: 2021, image: "https://www.supersprint.com/public/img/MINI%20F57%20Cooper%20S%20Cabrio%20JCW%202.0T%20(231%20Hp%20-%20Modelli%20con%20OPF)%202019-423071.jpg", transmission: "Automatic", tags: ["Turbo", "John Cooper Works", "Convertible", "Performance"] },
+  { id: "mini-cooper-jcw-f66", model: "Cooper JCW", generation: "F66", year: 2025, image: "https://www.mini.fr/content/dam/MINI/common/home/mini-after-sales-hub/john-cooper-works-parts/mini-jcw-parts-f66-stage-completely-speed-narrow.webp", transmission: "Automatic", tags: ["Turbo", "John Cooper Works", "Hot hatch", "Current"] },
+  { id: "mini-cooper-jcw-f67", model: "Cooper JCW", generation: "F67", year: 2025, image: "https://medias.espritmini.fr/2025/01/mini-JCW-cab-livraison-1280x720.webp", transmission: "Automatic", tags: ["Turbo", "John Cooper Works", "Convertible", "Current"] },
+];
+
 export const cars: Car[] = [
   {
     id: "r8-v8",
@@ -885,7 +903,7 @@ export const cars: Car[] = [
     model: "Cooper S",
     generation: "F56",
     year: 2023,
-    image: "https://images.unsplash.com/photo-1526069824293-406685e85766?auto=format&fit=crop&w=1200&q=80",
+    image: "https://images.pistonheads.com/nimg/45343/P90144741_highRes_mini-cooper-s-hatch.jpg",
     rating: 8.6,
     ratings: 1248,
     driven: 2186,
@@ -899,7 +917,7 @@ export const cars: Car[] = [
     model: "Cooper JCW",
     generation: "F56",
     year: 2023,
-    image: "https://images.unsplash.com/photo-1526069824293-406685e85766?auto=format&fit=crop&w=1200&q=80",
+    image: "https://www.adwshop.com/5031-thickbox_default/kit-aerodynamique-lci-2-jcw-mini-f56-.jpg",
     rating: 8.8,
     ratings: 936,
     driven: 1482,
@@ -1104,6 +1122,14 @@ export const cars: Car[] = [
     ratings: 340 + index * 58,
     driven: 480 + index * 84,
     owners: 94 + index * 19,
+  })),
+  ...miniCatalogAdditions.map((car, index): Car => ({
+    ...car,
+    make: "Mini",
+    rating: Number((8.2 + ((index * 3) % 9) / 10).toFixed(1)),
+    ratings: 220 + index * 63,
+    driven: 330 + index * 97,
+    owners: 58 + index * 23,
   })),
   ...mclarenModels.map((car, index): Car => ({
     ...car,
