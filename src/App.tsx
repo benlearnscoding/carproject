@@ -374,7 +374,9 @@ function CarDetail({
   return (
     <div className="modal-backdrop" onClick={close}>
       <div className="detail" onClick={(e) => e.stopPropagation()}>
-        <img className="detail-image" src={car.image} alt="" />
+        <div className="detail-image-panel">
+          <img className="detail-image" src={car.image} alt="" />
+        </div>
         <div className="detail-content">
           <button className="close" onClick={close}>×</button>
           <div className="eyebrow">{car.make} · {car.generation} · {car.year}</div>
