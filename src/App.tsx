@@ -691,6 +691,10 @@ function CreateProfile({
   const submit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError("");
+    if (!signingIn && !username.trim().replace(/^@/, "")) {
+      setError("Username is required to create a Driven account.");
+      return;
+    }
     setBusy(true);
 
     try {
@@ -741,7 +745,7 @@ function CreateProfile({
           {!signingIn && <label>First name<input value={firstName} onChange={event => setFirstName(event.target.value)} placeholder="Your first name" autoFocus /></label>}
           {!signingIn && <label>Last name<input value={lastName} onChange={event => setLastName(event.target.value)} placeholder="Your last name" /></label>}
           <label>Email<input type="email" value={email} onChange={event => setEmail(event.target.value)} placeholder="you@example.com" autoComplete="email" autoFocus={signingIn} /></label>
-          {!signingIn && <label>Username<input value={username} onChange={event => setUsername(event.target.value)} placeholder="yourusername" autoComplete="username" /></label>}
+          {!signingIn && <label>Username <small>Required</small><input value={username} onChange={event => setUsername(event.target.value)} placeholder="yourusername" autoComplete="username" required /></label>}
           <label>Password {!passwordRequired && <small>Optional — only enter to change it</small>}<span className="password-field"><input type={showPassword ? "text" : "password"} value={password} onChange={event => setPassword(event.target.value)} placeholder={signingIn ? "Your password" : authenticated ? "Leave blank to keep your password" : "Create a password"} autoComplete={signingIn ? "current-password" : "new-password"} /><button type="button" className="password-toggle" aria-label={showPassword ? "Hide password" : "Show password"} aria-pressed={showPassword} onClick={() => setShowPassword(current => !current)}>{showPassword ? <EyeOff size={17}/> : <Eye size={17}/>}<span>{showPassword ? "Hide" : "Show"}</span></button></span></label>
           {!signingIn && <label>About you <small>Optional</small><textarea value={bio} onChange={event => setBio(event.target.value)} maxLength={180} placeholder="What do you love to drive?" /></label>}
           {error && <p className="auth-error" role="alert">{error}</p>}

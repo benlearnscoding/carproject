@@ -34,12 +34,16 @@ language plpgsql
 security definer set search_path = ''
 as $$
 begin
+  if nullif(trim(coalesce(new.raw_user_meta_data ->> 'username', '')), '') is null then
+    raise exception 'Username is required to create a Driven account.';
+  end if;
+
   insert into public.profiles (id, first_name, last_name, username, bio)
   values (
     new.id,
     coalesce(new.raw_user_meta_data ->> 'first_name', ''),
     coalesce(new.raw_user_meta_data ->> 'last_name', ''),
-    coalesce(nullif(new.raw_user_meta_data ->> 'username', ''), 'driver_' || substr(new.id::text, 1, 8)),
+    trim(new.raw_user_meta_data ->> 'username'),
     coalesce(new.raw_user_meta_data ->> 'bio', '')
   )
   on conflict (id) do update set
