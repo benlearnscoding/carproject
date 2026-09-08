@@ -744,35 +744,6 @@ function CreateProfile({
   );
 }
 
-function CursorFlameTrail() {
-  useEffect(() => {
-    const supportsFinePointer = window.matchMedia("(hover: hover) and (pointer: fine)");
-    if (!supportsFinePointer.matches) return;
-
-    let lastFlameAt = 0;
-    const leaveFlame = (event: MouseEvent) => {
-      const now = performance.now();
-      if (now - lastFlameAt < 34) return;
-      lastFlameAt = now;
-
-      const flame = document.createElement("span");
-      flame.className = "cursor-flame";
-      const size = 4 + Math.random() * 6;
-      flame.style.setProperty("--flame-size", `${size}px`);
-      flame.style.left = `${event.clientX + (Math.random() - .5) * 7}px`;
-      flame.style.top = `${event.clientY + 15 + Math.random() * 7}px`;
-      document.body.appendChild(flame);
-      requestAnimationFrame(() => flame.classList.add("is-visible"));
-      window.setTimeout(() => flame.remove(), 440);
-    };
-
-    window.addEventListener("mousemove", leaveFlame, { passive: true });
-    return () => window.removeEventListener("mousemove", leaveFlame);
-  }, []);
-
-  return null;
-}
-
 export default function App() {
   const [tab, setTab] = useState<Tab>("discover");
   const [selectedMake, setSelectedMake] = useState("");
@@ -1210,7 +1181,6 @@ export default function App() {
 
   return (
     <div className="app">
-      <CursorFlameTrail />
       <header className="nav">
         <button className="logo" onClick={() => setTab("discover")} aria-label="Driven home">
           <span className="logo-word">DRIVEN</span>
