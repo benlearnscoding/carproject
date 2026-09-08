@@ -8,7 +8,7 @@ button { cursor:pointer; color:inherit; }
 .app { min-height:100vh; }
 .nav { height:72px; border-bottom:1px solid #dddcd7; display:flex; align-items:center; padding:0 5vw; justify-content:space-between; background:#f7f7f5cc; backdrop-filter:blur(12px); position:sticky; top:0; z-index:5; }
 .logo { position:relative; border:0; background:none; padding:0 0 13px; margin-bottom:-5px; font-weight:700; font-size:25.2px; letter-spacing:-1px; }
-.logo-word { position:relative; z-index:2; display:block; line-height:1; font-style:italic; }
+.logo-word { position:relative; z-index:2; display:block; line-height:1; font-style:italic; transform:skewX(-12deg); transform-origin:center; }
 .logo-curb { position:absolute; z-index:1; top:-10px; left:calc(50% + 9px); width:126px; height:60px; overflow:visible; pointer-events:none; outline:0; filter:none; transform:translateX(-50%); }
 .logo-curb path { fill:none; stroke-linecap:butt; stroke-linejoin:round; outline:0; filter:none; }
 .logo-curb-base { stroke:#fff; stroke-width:7; }
