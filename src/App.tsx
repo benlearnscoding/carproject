@@ -744,6 +744,35 @@ function CreateProfile({
   );
 }
 
+function CursorSmokeTrail() {
+  useEffect(() => {
+    const supportsFinePointer = window.matchMedia("(hover: hover) and (pointer: fine)");
+    if (!supportsFinePointer.matches) return;
+
+    let lastSmokeAt = 0;
+    const leaveSmoke = (event: MouseEvent) => {
+      const now = performance.now();
+      if (now - lastSmokeAt < 34) return;
+      lastSmokeAt = now;
+
+      const puff = document.createElement("span");
+      puff.className = "cursor-smoke";
+      const size = 5 + Math.random() * 8;
+      puff.style.setProperty("--smoke-size", `${size}px`);
+      puff.style.left = `${event.clientX - 21 - Math.random() * 7}px`;
+      puff.style.top = `${event.clientY + 3 + (Math.random() - .5) * 8}px`;
+      document.body.appendChild(puff);
+      requestAnimationFrame(() => puff.classList.add("is-visible"));
+      window.setTimeout(() => puff.remove(), 620);
+    };
+
+    window.addEventListener("mousemove", leaveSmoke, { passive: true });
+    return () => window.removeEventListener("mousemove", leaveSmoke);
+  }, []);
+
+  return null;
+}
+
 export default function App() {
   const [tab, setTab] = useState<Tab>("discover");
   const [selectedMake, setSelectedMake] = useState("");
@@ -1181,6 +1210,7 @@ export default function App() {
 
   return (
     <div className="app">
+      <CursorSmokeTrail />
       <header className="nav">
         <button className="logo" onClick={() => setTab("discover")} aria-label="Driven home">
           <span className="logo-word">DRIVEN</span>

@@ -5,6 +5,11 @@
 body { margin:0; }
 button,input { font:inherit; }
 button { cursor:pointer; color:inherit; }
+@media (hover:hover) and (pointer:fine) {
+  body,body * { cursor:url("/racing-car-cursor.svg") 12 12, auto !important; }
+}
+.cursor-smoke { position:fixed; z-index:100; width:var(--smoke-size); height:var(--smoke-size); border-radius:50%; background:rgba(245,245,242,.72); box-shadow:0 0 7px rgba(255,255,255,.5); pointer-events:none; opacity:0; transform:translate(-50%,-50%) scale(.25); transition:opacity .48s ease-out,transform .6s ease-out; }
+.cursor-smoke.is-visible { opacity:1; transform:translate(-50%,-50%) scale(1.8); }
 .app { min-height:100vh; }
 .nav { height:72px; border-bottom:1px solid #dddcd7; display:flex; align-items:center; padding:0 5vw; justify-content:space-between; background:#f7f7f5cc; backdrop-filter:blur(12px); position:sticky; top:0; z-index:5; }
 .logo { position:relative; border:0; background:none; padding:0 0 13px; margin-bottom:-5px; font-weight:700; font-size:25.2px; letter-spacing:-1px; }
