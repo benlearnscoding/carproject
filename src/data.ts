@@ -4,6 +4,7 @@ import porscheArcImage from "./assets/porsche-arc-de-triomphe.png";
 import alpineA110Image from "./assets/alpine-a110.webp";
 import porscheCaymanGt4Image from "./assets/porsche-cayman-gt4.png";
 import porscheCarrera4s9971Image from "./assets/porsche-911-carrera-4s-997-1.png";
+import porscheCarrera4s9972Image from "./assets/porsche-911-carrera-4s-997-2.png";
 
 export type Car = {
   id: string;
@@ -887,6 +888,8 @@ export const cars: Car[] = [
     make: "Porsche",
     image: car.id === "porsche-911-carrera-4s-997-1"
       ? porscheCarrera4s9971Image
+      : car.id === "porsche-911-carrera-4s-997-2"
+        ? porscheCarrera4s9972Image
       : car.id === "porsche-911-targa-4s-997-1"
       ? "https://carjager-dev.mo.cloudinary.net/images/production/CJVGT0402251332SBU-exteriors-nYaSzzsf1fM5cX9CPDP3v-911?tx=w_640"
       : car.id === "porsche-cayman-gt4"
