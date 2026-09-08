@@ -1,6 +1,7 @@
 import mclarenEiffelImage from "./assets/mclaren-eiffel.png";
 import mercedesAmgImage from "./assets/mercedes-amg.png";
 import porscheArcImage from "./assets/porsche-arc-de-triomphe.png";
+import alpineA110Image from "./assets/alpine-a110.webp";
 
 export type Car = {
   id: string;
@@ -274,7 +275,7 @@ export const cars: Car[] = [
     model: "A110S",
     generation: "A110",
     year: 2023,
-    image: "https://images.unsplash.com/photo-1544829099-b9a0c07fad1a?auto=format&fit=crop&w=1200&q=80",
+    image: alpineA110Image,
     rating: 9.0,
     ratings: 318,
     driven: 472,
