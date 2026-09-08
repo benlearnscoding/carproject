@@ -1246,7 +1246,7 @@ export default function App() {
           <button className={tab === "profile" ? "active" : ""} onClick={() => setTab("profile")}>My garage</button>
         </nav>
         <div className="profile-actions">
-          <button className="profile-button" onClick={() => authUserId ? setTab("profile") : setCreatingProfile(true)}><UserRound size={18}/><span>{authUserId && profile?.firstName ? profile.firstName : "Create profile"}</span></button>
+          <button className="profile-button" onClick={() => authUserId ? setTab("profile") : setCreatingProfile(true)}><UserRound size={18}/><span>{authUserId && profile?.username ? `@${profile.username}` : "Create profile"}</span></button>
           {authUserId && <button className="logout-button" onClick={logOut}><LogOut size={17}/><span>Log out</span></button>}
         </div>
       </header>
