@@ -11,6 +11,7 @@ import porscheCarrera4s9912Image from "./assets/porsche-911-carrera-4s-991-2.png
 import porscheCarrera4s9911Image from "./assets/porsche-911-carrera-4s-991-1.png";
 import porscheCarrera4s9922Image from "./assets/porsche-911-carrera-4s-992-2.png";
 import mercedesC63BlackSeriesImage from "./assets/mercedes-c63-black-series.png";
+import mercedesC63W206Image from "./assets/mercedes-c63-w206-s-e-performance.png";
 
 export type Car = {
   id: string;
@@ -580,7 +581,7 @@ export const cars: Car[] = [
     model: "C63",
     generation: "W206 S E Performance",
     year: 2024,
-    image: "https://carfans.fr/wp-content/uploads/2022/12/Mercedes-AMG-C-63-S-E-Performance_6.jpg",
+    image: mercedesC63W206Image,
     rating: 8.4,
     ratings: 366,
     driven: 512,
