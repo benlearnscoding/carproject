@@ -18,7 +18,9 @@ button { cursor:pointer; color:inherit; }
 .nav nav { display:flex; gap:8px; }
 .profile-actions { display:flex; align-items:center; gap:8px; }
 .nav nav button,.profile-button { border:0; background:none; padding:10px 14px; color:#74736e; }
-.nav nav button { font-size:19.2px; }
+.nav nav button { position:relative; font-size:19.2px; }
+.nav nav button::after { content:""; position:absolute; right:14px; bottom:5px; left:14px; height:2px; background:currentColor; transform:scaleX(0); transform-origin:center; transition:transform .18s ease; }
+.nav nav button:hover::after,.nav nav button:focus-visible::after { transform:scaleX(1); }
 .nav nav button.active { color:#111; font-weight:700; }
 .profile-button { display:flex; align-items:center; gap:8px; border:1px solid #dddcd7; border-radius:99px; }
 .logout-button { display:inline-flex; align-items:center; gap:7px; border:0; background:none; padding:10px 4px; font-size:13px; color:inherit; }
