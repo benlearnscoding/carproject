@@ -103,6 +103,8 @@ const porscheModels: Array<Pick<Car, "id" | "model" | "generation" | "year" | "t
   { id: "porsche-911-gt2-993", model: "911 GT2", generation: "993", year: 1996, transmission: "Manual", tags: ["Flat-6", "Twin-turbo", "RWD", "Air-cooled"] },
   { id: "porsche-911-gt2-996", model: "911 GT2", generation: "996", year: 2002, transmission: "Manual", tags: ["Flat-6", "Twin-turbo", "RWD", "Analog"] },
   { id: "porsche-911-gt2", model: "911 GT2", generation: "997.1", year: 2008, transmission: "Manual", tags: ["Flat-6", "Twin-turbo", "RWD", "Analog"] },
+  { id: "porsche-911-gt2-rs-997", model: "911 GT2 RS", generation: "997", year: 2011, transmission: "Manual", tags: ["Flat-6", "Twin-turbo", "RWD", "Track"] },
+  { id: "porsche-911-gt2-rs-991", model: "911 GT2 RS", generation: "991", year: 2018, transmission: "Automatic", tags: ["Flat-6", "Twin-turbo", "RWD", "Track"] },
   { id: "porsche-911-gt2-rs", model: "911 GT2 RS", generation: "991.2", year: 2018, transmission: "Automatic", tags: ["Flat-6", "Twin-turbo", "RWD", "Track"] },
   { id: "porsche-911-gt3", model: "911 GT3", generation: "992", year: 2022, transmission: "Automatic", tags: ["Flat-6", "Naturally aspirated", "RWD", "Track"] },
   { id: "porsche-911-gt3-rs", model: "911 GT3 RS", generation: "992", year: 2023, transmission: "Automatic", tags: ["Flat-6", "Naturally aspirated", "RWD", "Track"] },
