@@ -814,6 +814,8 @@ export default function App() {
   const [authUserCreatedAt, setAuthUserCreatedAt] = useState<string | null>(null);
   const [authNotice, setAuthNotice] = useState("");
   const [garageEntries, setGarageEntries] = useState<GarageEntry[]>([]);
+  const [editingGarage, setEditingGarage] = useState(false);
+  const [selectedGarageCarIds, setSelectedGarageCarIds] = useState<Set<string>>(new Set());
   const [addingCar, setAddingCar] = useState(false);
   const [garageSeedCarId, setGarageSeedCarId] = useState<string | undefined>();
   const [garageSeedStatus, setGarageSeedStatus] = useState<GarageStatus | undefined>();
@@ -850,6 +852,8 @@ export default function App() {
       if (!user) {
         setGarageEntries([]);
         setSavedRatings({});
+        setEditingGarage(false);
+        setSelectedGarageCarIds(new Set());
         return;
       }
 
@@ -1003,6 +1007,8 @@ export default function App() {
     setProfile(null);
     setGarageEntries([]);
     setSavedRatings({});
+    setEditingGarage(false);
+    setSelectedGarageCarIds(new Set());
     window.localStorage.removeItem(profileStorageKey);
     setTab("discover");
   };
@@ -1130,6 +1136,35 @@ export default function App() {
     setAuthNotice(`Your ${savedRating.overall.toFixed(1)} rating for ${ratedCar?.make ?? "this car"} ${ratedCar?.model ?? ""} is saved.`.trim());
   };
 
+  const toggleGarageSelection = (carId: string) => {
+    setSelectedGarageCarIds(current => {
+      const next = new Set(current);
+      if (next.has(carId)) next.delete(carId);
+      else next.add(carId);
+      return next;
+    });
+  };
+
+  const deleteSelectedGarageEntries = async () => {
+    if (!authUserId || selectedGarageCarIds.size === 0) return;
+    const carIds = [...selectedGarageCarIds];
+    const label = carIds.length === 1 ? "this car" : `${carIds.length} cars`;
+    if (!window.confirm(`Delete ${label} from your garage? Your ratings will remain saved.`)) return;
+
+    const { error } = await supabase
+      .from("garage_entries")
+      .delete()
+      .eq("user_id", authUserId)
+      .in("car_id", carIds);
+    if (error) throw error;
+
+    setGarageEntries(current => current.filter(entry => !selectedGarageCarIds.has(entry.carId)));
+    setSelectedGarageCarIds(new Set());
+    setEditingGarage(false);
+    refreshExperienceSummaries().catch(() => undefined);
+    setAuthNotice(`${carIds.length === 1 ? "Car" : "Cars"} removed from your garage.`);
+  };
+
   const displayedCar = (car: Car): Car => {
     const ratingSummary = ratingSummaries?.[car.id];
     const experienceSummary = experienceSummaries?.[car.id];
@@ -1178,19 +1213,8 @@ export default function App() {
     const car = cars.find(candidate => candidate.id === rating.carId);
     return car ? [{ rating, car }] : [];
   });
-  const garageCarIds = new Set(garageCars.map(({ car }) => car.id));
-  const experiencedProfileCars = [
-    ...experiencedGarageCars.map(({ entry, car }) => ({ entry, car, rating: savedRatings[car.id] })),
-    ...ratedCars
-      .filter(({ rating, car }) => rating.experience !== "want" && !garageCarIds.has(car.id))
-      .map(({ rating, car }) => ({ entry: null, car, rating })),
-  ];
-  const wantedProfileCars = [
-    ...wantedGarageCars.map(({ entry, car }) => ({ entry, car, rating: savedRatings[car.id] })),
-    ...ratedCars
-      .filter(({ rating, car }) => rating.experience === "want" && !garageCarIds.has(car.id))
-      .map(({ rating, car }) => ({ entry: null, car, rating })),
-  ];
+  const experiencedProfileCars = experiencedGarageCars.map(({ entry, car }) => ({ entry, car, rating: savedRatings[car.id] }));
+  const wantedProfileCars = wantedGarageCars.map(({ entry, car }) => ({ entry, car, rating: savedRatings[car.id] }));
   const averagePersonalRating = ratedCars.length
     ? ratedCars.reduce((sum, { rating }) => sum + rating.overall, 0) / ratedCars.length
     : null;
@@ -1366,7 +1390,8 @@ export default function App() {
               <div className="profile-hero"><div className="avatar big">{profile.firstName.charAt(0).toUpperCase()}</div><div><p className="eyebrow">@{profile.username}</p><h1>{profile.firstName} {profile.lastName}</h1><p>{authUserId ? joinedDateLabel(authUserCreatedAt) : "Saved on this device only"}</p></div><button className="secondary profile-edit" onClick={() => setCreatingProfile(true)}>{authUserId ? "Edit profile" : "Create account"}</button></div>
               {profile.bio && <p className="profile-bio">{profile.bio}</p>}
               <div className="profile-stats"><div><strong>{drivenCount}</strong><span>Driven</span></div><div><strong>{ownedCount}</strong><span>Owned</span></div><div><strong>{garageBrands}</strong><span>Brands</span></div><div><strong>{averagePersonalRating === null ? "—" : averagePersonalRating.toFixed(1)}</strong><span>Avg. rating</span></div></div>
-              <div className="section-head"><div><p className="eyebrow">YOUR GARAGE</p><h2>Cars you've experienced</h2></div><div className="garage-actions"><button className="garage-edit-button" type="button">Edit garage</button><button className="primary" onClick={() => openAddCar()}><Plus size={17}/> Add car</button></div></div>
+              <div className="section-head"><div><p className="eyebrow">YOUR GARAGE</p><h2>Cars you've experienced</h2></div><div className="garage-actions">{editingGarage && selectedGarageCarIds.size > 0 && <button className="primary garage-delete-button" type="button" onClick={() => { void deleteSelectedGarageEntries().catch(error => setAuthNotice(error instanceof Error ? error.message : "We could not delete the selected cars.")); }}>Delete selected ({selectedGarageCarIds.size})</button>}<button className="garage-edit-button" type="button" onClick={() => { setEditingGarage(current => !current); setSelectedGarageCarIds(new Set()); }}>{editingGarage ? "Done" : "Edit garage"}</button><button className="primary" onClick={() => openAddCar()}><Plus size={17}/> Add car</button></div></div>
+              {editingGarage && <p className="garage-edit-hint">Select any garage or wishlist entry to remove it. Your ratings stay saved.</p>}
               {experiencedProfileCars.length ? (
                 <div className="garage-grid">
                   {experiencedProfileCars.map(({ entry, car, rating }) => {
@@ -1377,9 +1402,12 @@ export default function App() {
                         : rating
                           ? garageStatusLabels[rating.experience]
                           : "";
+                    const selectable = editingGarage && Boolean(entry);
+                    const selectedForDeletion = Boolean(entry && selectedGarageCarIds.has(entry.carId));
                     return (
-                      <button className="garage-card" key={entry?.id ?? rating?.id ?? car.id} onClick={() => { setSelectedGarageExperience(entry?.status === "owned" || entry?.status === "driven" ? entry.status : rating?.experience); setSelectedCommunityRating(null); setSelected(displayedCar(car)); }}>
+                      <button className={`garage-card ${selectable ? "garage-card-selectable" : ""} ${selectedForDeletion ? "selected-for-deletion" : ""}`} key={entry?.id ?? rating?.id ?? car.id} onClick={() => { if (selectable && entry) { toggleGarageSelection(entry.carId); return; } setSelectedGarageExperience(entry?.status === "owned" || entry?.status === "driven" ? entry.status : rating?.experience); setSelectedCommunityRating(null); setSelected(displayedCar(car)); }}>
                         <img src={car.image} alt={`${car.make} ${car.model}`} />
+                        {selectable && <span className="garage-selection-indicator" aria-hidden="true">{selectedForDeletion ? <Check size={15}/> : ""}</span>}
                         <div>
                           <span className="garage-status">{relationship}</span>
                           {rating && <span className="garage-rating"><Star size={11} fill="currentColor"/> {rating.overall.toFixed(1)}</span>}
@@ -1397,9 +1425,13 @@ export default function App() {
                 <div className="section-head"><div><p className="eyebrow">WISHLIST</p><h2>Cars I want</h2></div></div>
                 {wantedProfileCars.length ? (
                   <div className="garage-grid">
-                    {wantedProfileCars.map(({ entry, car, rating }) => (
-                      <button className="garage-card" key={entry?.id ?? rating?.id ?? car.id} onClick={() => { setSelectedGarageExperience("want"); setSelectedCommunityRating(null); setSelected(displayedCar(car)); }}>
+                    {wantedProfileCars.map(({ entry, car, rating }) => {
+                      const selectable = editingGarage && Boolean(entry);
+                      const selectedForDeletion = Boolean(entry && selectedGarageCarIds.has(entry.carId));
+                      return (
+                      <button className={`garage-card ${selectable ? "garage-card-selectable" : ""} ${selectedForDeletion ? "selected-for-deletion" : ""}`} key={entry?.id ?? rating?.id ?? car.id} onClick={() => { if (selectable && entry) { toggleGarageSelection(entry.carId); return; } setSelectedGarageExperience("want"); setSelectedCommunityRating(null); setSelected(displayedCar(car)); }}>
                         <img src={car.image} alt={`${car.make} ${car.model}`} />
+                        {selectable && <span className="garage-selection-indicator" aria-hidden="true">{selectedForDeletion ? <Check size={15}/> : ""}</span>}
                         <div>
                           <span className="garage-status">Want</span>
                           {rating && <span className="garage-rating"><Star size={11} fill="currentColor"/> {rating.overall.toFixed(1)}</span>}
@@ -1407,7 +1439,8 @@ export default function App() {
                           <small>{car.year} · {entry?.transmission ?? car.transmission}</small>
                         </div>
                       </button>
-                    ))}
+                      );
+                    })}
                   </div>
                 ) : (
                   <div className="empty-garage wishlist-empty"><Heart size={32}/><h3>No cars saved yet.</h3><p>Use “Want it” on any car to add it here.</p></div>

@@ -227,8 +227,10 @@ body,.app { background:#0247DD; }
 .profile-start > p:last-of-type { max-width:500px; margin:0 0 30px; color:rgba(255,255,255,.72); font-size:18px; line-height:1.55; }
 .profile-edit { margin-left:auto; }
 .garage-actions { display:flex; align-items:center; gap:10px; }
-.garage-edit-button { border:1px solid #fff; background:#0247DD; color:#fff; padding:10px 15px; }
+.garage-edit-button { border:1px solid #fff; border-radius:99px; background:#0247DD; color:#fff; padding:10px 15px; }
 .garage-edit-button:hover,.garage-edit-button:focus-visible { background:#fff; color:#0247DD; }
+.garage-delete-button { color:#fff; background:#0247DD; }
+.garage-edit-hint { margin:-13px 0 20px; color:rgba(255,255,255,.72); font-size:13px; }
 .profile-bio { max-width:600px; margin:-13px 0 36px 96px; color:rgba(255,255,255,.78); line-height:1.55; }
 .profile-backdrop { z-index:35; }
 .profile-creator { width:min(610px,100%); max-height:92vh; overflow:auto; position:relative; border-radius:6px; padding:48px; background:#0247DD; color:#fff; box-shadow:0 24px 80px rgba(0,17,82,.36); }
@@ -281,8 +283,12 @@ body,.app { background:#0247DD; }
 .garage-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:18px; }
 .wishlist-section { margin-top:64px; }
 .wishlist-empty { padding:42px 30px; }
-.garage-card { overflow:hidden; border:1px solid rgba(255,255,255,.3); border-radius:4px; background:rgba(0,0,0,.07); color:#fff; padding:0; text-align:left; transition:transform .18s,border-color .18s; }
+.garage-card { position:relative; overflow:hidden; border:1px solid rgba(255,255,255,.3); border-radius:4px; background:rgba(0,0,0,.07); color:#fff; padding:0; text-align:left; transition:transform .18s,border-color .18s; }
 .garage-card:hover { transform:translateY(-3px); border-color:#fff; }
+.garage-card-selectable { cursor:pointer; }
+.garage-card.selected-for-deletion { border-color:#fff; background:rgba(255,255,255,.14); }
+.garage-selection-indicator { position:absolute; z-index:2; top:10px; left:10px; display:grid; place-items:center; width:24px; height:24px; border:1px solid #fff; border-radius:50%; background:#0247DD; color:#fff; }
+.garage-card.selected-for-deletion .garage-selection-indicator { background:#fff; color:#0247DD; }
 .garage-card > img { display:block; width:100%; aspect-ratio:16/10; object-fit:cover; }
 .garage-card > div { position:relative; padding:18px; }
 .garage-card p { margin:0 0 6px; color:rgba(255,255,255,.68); font-size:11px; text-transform:uppercase; letter-spacing:.05em; }
