@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Plus, Star, ChevronRight, ChevronLeft, ChevronDown, Heart, CarFront, UserRound, ArrowLeft, Check, LogOut, X, Eye, EyeOff } from "lucide-react";
 import type { User } from "@supabase/supabase-js";
 import { cars, type Car } from "./data";
@@ -803,6 +803,7 @@ export default function App() {
   const [ratingSummaries, setRatingSummaries] = useState<Record<string, CarRatingSummary> | null>(null);
   const [experienceSummaries, setExperienceSummaries] = useState<Record<string, CarExperienceSummary> | null>(null);
   const [communityRatingsLoading, setCommunityRatingsLoading] = useState(true);
+  const communityRatingOrder = useRef<string[] | null>(null);
   const [communitySlideStart, setCommunitySlideStart] = useState(0);
   const [publicProfileUsername, setPublicProfileUsername] = useState<string | null>(null);
   const [publicProfile, setPublicProfile] = useState<PublicProfile | null>(null);
@@ -1235,11 +1236,24 @@ export default function App() {
       const car = cars.find(candidate => candidate.id === rating.carId);
       return car ? [{ rating, car }] : [];
     });
-    for (let index = cards.length - 1; index > 0; index -= 1) {
-      const randomIndex = Math.floor(Math.random() * (index + 1));
-      [cards[index], cards[randomIndex]] = [cards[randomIndex], cards[index]];
+
+    if (communityRatingOrder.current === null) {
+      for (let index = cards.length - 1; index > 0; index -= 1) {
+        const randomIndex = Math.floor(Math.random() * (index + 1));
+        [cards[index], cards[randomIndex]] = [cards[randomIndex], cards[index]];
+      }
+      communityRatingOrder.current = cards.map(({ rating }) => rating.id);
+      return cards;
     }
-    return cards;
+
+    const cardsById = new Map(cards.map(card => [card.rating.id, card]));
+    const orderedCards = communityRatingOrder.current
+      .map(id => cardsById.get(id))
+      .filter((card): card is (typeof cards)[number] => Boolean(card));
+    const newCards = cards.filter(card => !communityRatingOrder.current!.includes(card.rating.id));
+
+    communityRatingOrder.current = [...communityRatingOrder.current.filter(id => cardsById.has(id)), ...newCards.map(({ rating }) => rating.id)];
+    return [...orderedCards, ...newCards];
   }, [communityRatings]);
   const communitySlideSize = Math.min(4, randomizedCommunityRatings.length);
   const communitySlideRatings = Array.from({ length: communitySlideSize }, (_, offset) => (
