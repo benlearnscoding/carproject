@@ -585,7 +585,7 @@ function AddCarModal({
   initialStatus,
 }: {
   close: () => void;
-  completeSelection: (car: Car, status: GarageStatus, transmission: Transmission) => Promise<void>;
+  completeSelection: (car: Car, status: GarageStatus, transmission?: Transmission) => Promise<void>;
   initialCarId?: string;
   initialStatus?: GarageStatus;
 }) {
@@ -606,11 +606,11 @@ function AddCarModal({
   const submit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (step === 1) return;
-    if (!selectedCar || !status || !transmission) return;
+    if (!selectedCar || !status) return;
     setBusy(true);
     setError("");
     try {
-      await completeSelection(selectedCar, status, transmission);
+      await completeSelection(selectedCar, status, transmission || undefined);
       close();
     } catch (submitError) {
       setError(submitError instanceof Error ? submitError.message : "We could not save this car. Please try again.");
@@ -625,7 +625,7 @@ function AddCarModal({
         <button className="close" onClick={close} aria-label="Close add car form">×</button>
         <p className="eyebrow">YOUR GARAGE</p>
         <h2>{step === 1 ? "How does this car fit your story?" : "Choose your car."}</h2>
-        <p className="profile-intro">{step === 1 ? "Tell the community about your relationship with the car." : status === "want" ? "Select the make, model, generation, and transmission to add it to Cars I want." : "Select the make, model, generation, and transmission, then rate it before adding it to your garage."}</p>
+        <p className="profile-intro">{step === 1 ? "Tell the community about your relationship with the car." : status === "want" ? "Select the make, model, and generation. Transmission is optional." : "Select the make, model, and generation, then rate it before adding it to your garage. Transmission is optional."}</p>
         <form onSubmit={submit}>
           {step === 1 ? (
             <fieldset className="garage-status-fieldset">
@@ -648,7 +648,7 @@ function AddCarModal({
                 <FilterDropdown label="Make" value={make} options={makeOptions} onChange={nextMake => { setMake(nextMake); setModel(""); setGeneration(""); }} />
                 <FilterDropdown label="Model" value={model} options={modelOptions} onChange={nextModel => { setModel(nextModel); setGeneration(""); }} />
                 <FilterDropdown label="Generation" value={generation} options={generationOptions} onChange={setGeneration} emptyLabel="Select generation" disabled={!model || !generationOptions.length} />
-                <FilterDropdown label="Transmission" value={transmission} options={["Automatic", "Manual"]} onChange={nextTransmission => setTransmission(nextTransmission as Transmission)} emptyLabel="Select transmission" />
+                <FilterDropdown label="Transmission (optional)" value={transmission} options={["Automatic", "Manual"]} onChange={nextTransmission => setTransmission(nextTransmission as Transmission)} emptyLabel="No selection" />
               </div>
               {selectedCar && <div className="garage-preview"><img src={selectedCar.image} alt="" /><div><span>{selectedCar.make} · {selectedCar.generation}</span><strong>{selectedCar.model}</strong></div></div>}
             </>
@@ -656,7 +656,7 @@ function AddCarModal({
           {error && <p className="auth-error" role="alert">{error}</p>}
           <div className="rating-actions garage-form-actions">
             <button type="button" className="secondary" onClick={close}>Cancel</button>
-            {step === 2 && <button className="primary" type="submit" disabled={!selectedCar || !transmission || busy}>{busy ? "Saving…" : status === "want" ? "Add to cars I want" : "Continue to rating"} {status === "want" ? <Heart size={17}/> : <ChevronRight size={17}/>}</button>}
+            {step === 2 && <button className="primary" type="submit" disabled={!selectedCar || busy}>{busy ? "Saving…" : status === "want" ? "Add to cars I want" : "Continue to rating"} {status === "want" ? <Heart size={17}/> : <ChevronRight size={17}/>}</button>}
           </div>
         </form>
       </div>
@@ -819,7 +819,7 @@ export default function App() {
   const [addingCar, setAddingCar] = useState(false);
   const [garageSeedCarId, setGarageSeedCarId] = useState<string | undefined>();
   const [garageSeedStatus, setGarageSeedStatus] = useState<GarageStatus | undefined>();
-  const [pendingGarageAdd, setPendingGarageAdd] = useState<{ carId: string; status: GarageStatus; transmission: Transmission } | null>(null);
+  const [pendingGarageAdd, setPendingGarageAdd] = useState<{ carId: string; status: GarageStatus; transmission?: Transmission } | null>(null);
 
   const refreshCommunityRatings = useCallback(async (showLoading = false) => {
     if (showLoading) setCommunityRatingsLoading(true);
@@ -1037,7 +1037,7 @@ export default function App() {
     setRatingCar(car);
   };
 
-  const completeGarageSelection = async (car: Car, status: GarageStatus, transmission: Transmission) => {
+  const completeGarageSelection = async (car: Car, status: GarageStatus, transmission?: Transmission) => {
     if (status === "want") {
       await addCarToGarage(car.id, status, transmission);
       return;
@@ -1063,7 +1063,7 @@ export default function App() {
       return;
     }
     try {
-      await addCarToGarage(car.id, "want", car.transmission);
+      await addCarToGarage(car.id, "want");
     } catch (error) {
       setAuthNotice(error instanceof Error ? error.message : "We could not save this car. Please try again.");
     }
@@ -1072,9 +1072,7 @@ export default function App() {
   const addCarToGarage = async (carId: string, status: GarageStatus, transmission?: Transmission) => {
     if (!authUserId) throw new Error("Please sign in before adding a car.");
     const existingTransmission = garageEntries.find(entry => entry.carId === carId)?.transmission;
-    const catalogTransmission = cars.find(car => car.id === carId)?.transmission;
-    const selectedTransmission = transmission ?? existingTransmission ?? catalogTransmission;
-    if (!selectedTransmission) throw new Error("Choose a transmission before adding this car.");
+    const selectedTransmission = transmission ?? existingTransmission ?? null;
     const { data, error } = await supabase
       .from("garage_entries")
       .upsert({ user_id: authUserId, car_id: carId, relationship: status, transmission: selectedTransmission }, { onConflict: "user_id,car_id" })
@@ -1374,7 +1372,7 @@ export default function App() {
                           <span className="garage-status">{entry.relationship ? garageStatusLabels[entry.relationship] : "Reviewed"}</span>
                           {entry.overall !== null && <span className="garage-rating"><Star size={11} fill="currentColor"/> {entry.overall.toFixed(1)}</span>}
                           <p>{car.make} · {car.generation}</p><h3>{car.model}</h3>
-                          <small>{car.year} · {entry.transmission ?? car.transmission}</small>
+                          <small>{car.year}{entry.transmission ? ` · ${entry.transmission}` : ""}</small>
                           {entry.review && <blockquote>“{entry.review}”</blockquote>}
                         </div>
                       </button>
@@ -1392,7 +1390,7 @@ export default function App() {
                             <span className="garage-status">Want</span>
                             {entry.overall !== null && <span className="garage-rating"><Star size={11} fill="currentColor"/> {entry.overall.toFixed(1)}</span>}
                             <p>{car.make} · {car.generation}</p><h3>{car.model}</h3>
-                            <small>{car.year} · {entry.transmission ?? car.transmission}</small>
+                            <small>{car.year}{entry.transmission ? ` · ${entry.transmission}` : ""}</small>
                             {entry.review && <blockquote>“{entry.review}”</blockquote>}
                           </div>
                         </button>
@@ -1433,7 +1431,7 @@ export default function App() {
                           <span className="garage-status">{relationship}</span>
                           {rating && <span className="garage-rating"><Star size={11} fill="currentColor"/> {rating.overall.toFixed(1)}</span>}
                           <p>{car.make} · {car.generation}</p><h3>{car.model}</h3>
-                          <small>{car.year} · {entry?.transmission ?? car.transmission}{rating ? " · Your grade" : ""}</small>
+                          <small>{car.year}{entry?.transmission ? ` · ${entry.transmission}` : ""}{rating ? " · Your grade" : ""}</small>
                         </div>
                       </button>
                     );
@@ -1457,7 +1455,7 @@ export default function App() {
                           <span className="garage-status">Want</span>
                           {rating && <span className="garage-rating"><Star size={11} fill="currentColor"/> {rating.overall.toFixed(1)}</span>}
                           <p>{car.make} · {car.generation}</p><h3>{car.model}</h3>
-                          <small>{car.year} · {entry?.transmission ?? car.transmission}</small>
+                          <small>{car.year}{entry?.transmission ? ` · ${entry.transmission}` : ""}</small>
                         </div>
                       </button>
                       );
