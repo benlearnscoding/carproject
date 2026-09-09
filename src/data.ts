@@ -13,6 +13,7 @@ import porscheCarrera4s9922Image from "./assets/porsche-911-carrera-4s-992-2.png
 import mercedesC63BlackSeriesImage from "./assets/mercedes-c63-black-series.png";
 import mercedesC63W206Image from "./assets/mercedes-c63-w206-s-e-performance.png";
 import { bmwCatalogEntries, bmwCatalogImageById } from "./bmwCatalog";
+import { sheetCatalogEntries } from "./sheetCatalog";
 
 export type Car = {
   id: string;
@@ -271,7 +272,7 @@ const miniCatalogAdditions: Array<Pick<Car, "id" | "model" | "generation" | "yea
   { id: "mini-cooper-jcw-f67", model: "Cooper JCW", generation: "F67", year: 2025, image: "https://medias.espritmini.fr/2025/01/mini-JCW-cab-livraison-1280x720.webp", transmission: "Automatic", tags: ["Turbo", "John Cooper Works", "Convertible", "Current"] },
 ];
 
-export const cars: Car[] = [
+const curatedCars: Car[] = [
   {
     id: "r8-v8",
     make: "Audi",
@@ -1253,4 +1254,33 @@ export const cars: Car[] = [
     driven: 410 + index * 104,
     owners: 69 + index * 21,
   })),
+];
+
+const catalogKey = (car: Pick<Car, "make" | "model" | "generation">) =>
+  `${car.make}|${car.model}|${car.generation}`;
+const sheetCatalogMakes = new Set(sheetCatalogEntries.map(car => car.make));
+const curatedCarsBySheetKey = new Map(curatedCars.map(car => [catalogKey(car), car]));
+
+const sheetCars: Car[] = sheetCatalogEntries.map((sheetCar, index) => {
+  const existingCar = curatedCarsBySheetKey.get(catalogKey(sheetCar));
+
+  return {
+    id: existingCar?.id ?? sheetCar.id,
+    make: sheetCar.make,
+    model: sheetCar.model,
+    generation: sheetCar.generation,
+    image: sheetCar.image,
+    year: existingCar?.year ?? 2024,
+    transmission: existingCar?.transmission ?? (sheetCar.generation.startsWith("E") ? "Manual" : "Automatic"),
+    rating: existingCar?.rating ?? Number((8.2 + ((index * 3) % 10) / 10).toFixed(1)),
+    ratings: existingCar?.ratings ?? 220 + index * 61,
+    driven: existingCar?.driven ?? 410 + index * 94,
+    owners: existingCar?.owners ?? 88 + index * 22,
+    tags: existingCar?.tags ?? [sheetCar.make, "Catalog", sheetCar.model],
+  };
+});
+
+export const cars: Car[] = [
+  ...curatedCars.filter(car => !sheetCatalogMakes.has(car.make)),
+  ...sheetCars,
 ];
