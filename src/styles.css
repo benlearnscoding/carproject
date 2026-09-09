@@ -226,6 +226,9 @@ body,.app { background:#0247DD; }
 .profile-start h1 { max-width:600px; margin:0 0 22px; font-size:clamp(48px,6vw,76px); line-height:.96; letter-spacing:-.06em; }
 .profile-start > p:last-of-type { max-width:500px; margin:0 0 30px; color:rgba(255,255,255,.72); font-size:18px; line-height:1.55; }
 .profile-edit { margin-left:auto; }
+.garage-actions { display:flex; align-items:center; gap:10px; }
+.garage-edit-button { border:1px solid #fff; background:#0247DD; color:#fff; padding:10px 15px; }
+.garage-edit-button:hover,.garage-edit-button:focus-visible { background:#fff; color:#0247DD; }
 .profile-bio { max-width:600px; margin:-13px 0 36px 96px; color:rgba(255,255,255,.78); line-height:1.55; }
 .profile-backdrop { z-index:35; }
 .profile-creator { width:min(610px,100%); max-height:92vh; overflow:auto; position:relative; border-radius:6px; padding:48px; background:#0247DD; color:#fff; box-shadow:0 24px 80px rgba(0,17,82,.36); }

@@ -1366,7 +1366,7 @@ export default function App() {
               <div className="profile-hero"><div className="avatar big">{profile.firstName.charAt(0).toUpperCase()}</div><div><p className="eyebrow">@{profile.username}</p><h1>{profile.firstName} {profile.lastName}</h1><p>{authUserId ? joinedDateLabel(authUserCreatedAt) : "Saved on this device only"}</p></div><button className="secondary profile-edit" onClick={() => setCreatingProfile(true)}>{authUserId ? "Edit profile" : "Create account"}</button></div>
               {profile.bio && <p className="profile-bio">{profile.bio}</p>}
               <div className="profile-stats"><div><strong>{drivenCount}</strong><span>Driven</span></div><div><strong>{ownedCount}</strong><span>Owned</span></div><div><strong>{garageBrands}</strong><span>Brands</span></div><div><strong>{averagePersonalRating === null ? "—" : averagePersonalRating.toFixed(1)}</strong><span>Avg. rating</span></div></div>
-              <div className="section-head"><div><p className="eyebrow">YOUR GARAGE</p><h2>Cars you've experienced</h2></div><button className="primary" onClick={() => openAddCar()}><Plus size={17}/> Add car</button></div>
+              <div className="section-head"><div><p className="eyebrow">YOUR GARAGE</p><h2>Cars you've experienced</h2></div><div className="garage-actions"><button className="garage-edit-button" type="button">Edit garage</button><button className="primary" onClick={() => openAddCar()}><Plus size={17}/> Add car</button></div></div>
               {experiencedProfileCars.length ? (
                 <div className="garage-grid">
                   {experiencedProfileCars.map(({ entry, car, rating }) => {
