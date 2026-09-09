@@ -502,7 +502,7 @@ function RatingFlow({ car, close, complete, initialExperience, initialRating }: 
             <div className="rating-heading">
               <p className="eyebrow">RATE · {step} OF 3</p>
               <h2>{step === 1 ? "How do you know this car?" : step === 2 ? "Give it your numbers." : "Leave your mark."}</h2>
-              <p>{step === 1 ? `Your context makes a rating for the ${car.make} ${car.model} more useful.` : step === 2 ? "There is no perfect car. Rate the parts that mattered to you." : "A few honest words are often more useful than a perfect score."}</p>
+              <p>{step === 1 ? `Your context makes a rating for the ${car.make} ${car.model} more useful.` : step === 2 ? "Tell others what you think." : "A few honest words are often more useful than a perfect score."}</p>
             </div>
 
             {step === 1 && (
