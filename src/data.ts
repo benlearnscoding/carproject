@@ -89,7 +89,7 @@ const audiCatalogImages: Record<string, string> = {
   "rsq3-8u": "https://images.caradisiac.com/images/5/3/2/1/205321/S1-audi-rs-q3-2013-2018-petit-suv-au-moteur-fabuleux-des-20-000-eur-777465.jpg",
   "rsq3-f3-sportback": "https://virages-auto.com/wp-content/uploads/2021/08/Essai_Audi_RSQ3_Sportback_ViragesAuto_JulienHuet_3-1600x960.jpg",
   "rs3-8p": "https://carfans.fr/wp-content/uploads/2022/06/Audi-RS3-8P-Sportback-2.5-TFSI_1-scaled.jpg",
-  "rs3-8v": "https://media.fastestlaps.com/audi-rs3-sportback-8v.jpg",
+  "rs3-8v": "https://s1.cdn.autoevolution.com/images/gallery/AUDI-RS3-Sportback-6075_54.jpg",
   "rs3-8v-sedan": "https://www.auto-data.net/images/f27/file5808107.jpg",
   "rs3-8y-sedan": "https://lapmeta.com/storage/vi-images/wQknVOu87D.jpg",
   "rs4-b5": "https://images.caradisiac.com/images/1/0/6/2/221062/S0-sous-la-fonctionnalite-la-folie-la-premiere-audi-rs4-peut-encore-vous-mettre-le-feu-875116.jpg",
