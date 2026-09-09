@@ -1149,18 +1149,32 @@ export default function App() {
     if (!authUserId || selectedGarageCarIds.size === 0) return;
     const carIds = [...selectedGarageCarIds];
     const label = carIds.length === 1 ? "this car" : `${carIds.length} cars`;
-    if (!window.confirm(`Delete ${label} from your garage? Your ratings will remain saved.`)) return;
+    if (!window.confirm(`Delete ${label} from your garage? Any saved ratings for ${label} will also be permanently deleted.`)) return;
 
-    const { error } = await supabase
+    const { error: ratingsError } = await supabase
+      .from("car_ratings")
+      .delete()
+      .eq("user_id", authUserId)
+      .in("car_id", carIds);
+    if (ratingsError) throw ratingsError;
+
+    const { error: garageError } = await supabase
       .from("garage_entries")
       .delete()
       .eq("user_id", authUserId)
       .in("car_id", carIds);
-    if (error) throw error;
+    if (garageError) throw garageError;
 
     setGarageEntries(current => current.filter(entry => !selectedGarageCarIds.has(entry.carId)));
+    setSavedRatings(current => {
+      const next = { ...current };
+      carIds.forEach(carId => delete next[carId]);
+      return next;
+    });
     setSelectedGarageCarIds(new Set());
     setEditingGarage(false);
+    refreshCommunityRatings().catch(() => undefined);
+    refreshRatingSummaries().catch(() => undefined);
     refreshExperienceSummaries().catch(() => undefined);
     setAuthNotice(`${carIds.length === 1 ? "Car" : "Cars"} removed from your garage.`);
   };
@@ -1391,7 +1405,7 @@ export default function App() {
               {profile.bio && <p className="profile-bio">{profile.bio}</p>}
               <div className="profile-stats"><div><strong>{drivenCount}</strong><span>Driven</span></div><div><strong>{ownedCount}</strong><span>Owned</span></div><div><strong>{garageBrands}</strong><span>Brands</span></div><div><strong>{averagePersonalRating === null ? "—" : averagePersonalRating.toFixed(1)}</strong><span>Avg. rating</span></div></div>
               <div className="section-head"><div><p className="eyebrow">YOUR GARAGE</p><h2>Cars you've experienced</h2></div><div className="garage-actions">{editingGarage && selectedGarageCarIds.size > 0 && <button className="primary garage-delete-button" type="button" onClick={() => { void deleteSelectedGarageEntries().catch(error => setAuthNotice(error instanceof Error ? error.message : "We could not delete the selected cars.")); }}>Delete selected ({selectedGarageCarIds.size})</button>}<button className="garage-edit-button" type="button" onClick={() => { setEditingGarage(current => !current); setSelectedGarageCarIds(new Set()); }}>{editingGarage ? "Done" : "Edit garage"}</button><button className="primary" onClick={() => openAddCar()}><Plus size={17}/> Add car</button></div></div>
-              {editingGarage && <p className="garage-edit-hint">Select any garage or wishlist entry to remove it. Your ratings stay saved.</p>}
+              {editingGarage && <p className="garage-edit-hint">Select any garage or wishlist entry to remove it. Its saved rating will be deleted too.</p>}
               {experiencedProfileCars.length ? (
                 <div className="garage-grid">
                   {experiencedProfileCars.map(({ entry, car, rating }) => {
