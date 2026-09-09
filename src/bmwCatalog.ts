@@ -27,7 +27,7 @@ const sourceRows = [
   [
     "330i",
     "G20",
-    "https://media.fastestlaps.com/bmw-330i-xdrive.jpg"
+    "https://mediapool.bmwgroup.com/cache/P9/201812/P90332408/P90332408-the-all-new-bmw-330i-model-m-sport-portimao-blue-metallic-rim-19-styling-791-m-12-2018-2250px.jpg"
   ],
   [
     "330d",
@@ -47,7 +47,7 @@ const sourceRows = [
   [
     "330d",
     "G20",
-    "https://media.fastestlaps.com/bmw-330i-xdrive.jpg"
+    "https://listing-images.autoscout24.ch/773/20264773/1258611993.jpg?q=90&w=1200"
   ],
   [
     "335i",
@@ -262,7 +262,7 @@ const sourceRows = [
   [
     "430i",
     "F36",
-    "https://media.fastestlaps.com/bmw-430i-gran-coupe.jpg"
+    "https://images.caradisiac.com/logos-ref/modele/modele--bmw-serie-4-f36/S8-modele--bmw-serie-4-f36.jpg"
   ],
   [
     "430i",
@@ -292,7 +292,7 @@ const sourceRows = [
   [
     "430d",
     "F36",
-    "https://media.fastestlaps.com/bmw-430i-gran-coupe.jpg"
+    "https://dcmc.b-cdn.net/CarImages/b74024df-f032-4b84-9e49-3f728fa46177.jpg"
   ],
   [
     "430d",
@@ -312,7 +312,7 @@ const sourceRows = [
   [
     "435i",
     "F32",
-    "https://media.fastestlaps.com/bmw-435i.jpg"
+    "https://www.mad4wheels.com/img/free-car-images/mobile/13141/bmw-435i-f32--2013-388105.jpg"
   ],
   [
     "435i",
@@ -327,7 +327,7 @@ const sourceRows = [
   [
     "435d",
     "F32",
-    "https://media.fastestlaps.com/bmw-435i.jpg"
+    "https://mediapool.bmwgroup.com/cache/P9/201601/P90207362/P90207362-the-bmw-435d-xdrive-coupe-12-2015-2249px.jpg"
   ],
   [
     "435d",
@@ -422,7 +422,7 @@ const sourceRows = [
   [
     "M4 CS",
     "G82",
-    "https://media.fastestlaps.com/bmw-m4-cs-g82-facelift.jpg"
+    "https://bmw.scene7.com/is/image/BMW/g82_cs_design-positioning%3A16to7?fit=constrain%2C1&fmt=webp&wid=2560"
   ],
   [
     "M4 CSL",
@@ -652,7 +652,7 @@ const sourceRows = [
   [
     "M6",
     "E64",
-    "https://www.google.com/search?q=M6+E64&sca_esv=64efcf9412f7756f&rlz=1C1CHBF_frFR917FR917&udm=2&biw=2844&bih=1458&sxsrf=APpeQnvMlCuQcTuefZMiawr2b9DTy285tQ%3A1788960949675&ei=tWChatbTKLOL7M8PibW3UQ&ved=2ahUKEwiWgrDvzuGWAxWzBfsDHYnaLQoQ4dUDegQIBhAN&uact=5&oq=M6+E64&gs_lp=Egtnd3Mtd2l6LWltZyIGTTYgRTY0MgUQABiABDIEEAAYHjIEEAAYHjIEEAAYHjIEEAAYHjIEEAAYHjIEEAAYHjIGEAAYBRgeMgYQABgFGB4yBhAAGAUYHki9BFDtAVjtAXABeACQAQCYASqgASqqAQExuAEDyAEA-AEC-AEBmAICoAIwwgIKEAAYgAQYigUYQ8ICBhAAGAcYHpgDAIgGAZIHATKgB8UEsgcBMbgHLcIHAzAuMsgHBIAIAQ&sclient=gws-wiz-img#sv=CAMSURoyKhBlLWltMDRjOThfWFBVdzFNMg5pbTA0Yzk4X1hQVXcxTToOT21kMFowTkJiVzVoTE0gBCoXCgFzEhBlLWltMDRjOThfWFBVdzFNGAEwARgHINiknaAHSggQARgBIAEoAQ"
+    "https://mediapool.bmwgroup.com/download/edown/pressclub/public?actEvent=zoomImage&dokNo=P0024681&filename=P0024681.JPG"
   ],
   [
     "M6",
@@ -682,7 +682,7 @@ const sourceRows = [
   [
     "M6 Competition",
     "F06",
-    "https://media.fastestlaps.com/bmw-m6-gran-coupe-competition.jpg"
+    "https://luxeautomotive.com/wp-content/uploads/2022/01/POP08713-scaled-1.jpg"
   ],
   [
     "750i",
