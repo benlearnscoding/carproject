@@ -48,6 +48,16 @@ const audiModels = [
   { id: "s-tt-8s", model: "S TT", generation: "8S", year: 2020, tags: ["Turbo", "Quattro", "Coupe", "Roadster"] },
 ];
 
+const audiCatalogAdditions = [
+  ["r8-v10-42", "R8", "4.2 V10", 2009], ["r8-v10-plus-42", "R8", "4.2 V10 Plus", 2013], ["r8-gt-42", "R8", "4.2 GT", 2012], ["r8-spyder-v8-42", "R8", "4.2 Spyder V8", 2011], ["r8-spyder-v10-42", "R8", "4.2 Spyder V10", 2012], ["r8-v10-4s", "R8", "4S V10", 2016], ["r8-v10-plus-4s", "R8", "4S V10 Plus", 2017], ["r8-v10-performance-4s", "R8", "4S V10 Performance", 2020], ["r8-spyder-v10-4s", "R8", "4S Spyder V10", 2019], ["r8-spyder-v10-performance-4s", "R8", "4S Spyder V10 Performance", 2020],
+  ["rsq3-8u", "RS Q3", "8U", 2015], ["rsq3-f3-sportback", "RS Q3", "F3 Sportback", 2021], ["rs3-8p", "RS 3", "8P", 2011], ["rs3-8v", "RS 3", "8V", 2016], ["rs3-8v-sedan", "RS 3", "8V Sedan", 2017], ["rs3-8y-sedan", "RS 3", "8Y Sedan", 2022],
+  ["rs4-b5", "RS 4", "B5", 2001], ["rs4-b7", "RS 4", "B7", 2007], ["rs4-b8", "RS 4", "B8", 2014], ["rs4-b9-facelift", "RS 4", "B9 Facelift", 2021], ["rs5-b8", "RS 5", "B8", 2012], ["rs5-b8-facelift", "RS 5", "B8 Facelift", 2015], ["rs5-b9-facelift", "RS 5", "B9 Facelift", 2021],
+  ["rs6-c5", "RS 6", "C5", 2003], ["rs6-c6", "RS 6", "C6", 2009], ["rs6-c7", "RS 6", "C7", 2015], ["rs7-c7", "RS 7", "C7", 2015], ["rsq8-4m-facelift", "RS Q8", "4M Facelift", 2024], ["rs-tt-8j", "RS TT", "8J", 2011], ["rs-tt-8s-facelift", "RS TT", "8S Facelift", 2020], ["s-tt-8j", "S TT", "8J", 2009], ["s-tt-8s-facelift", "S TT", "8S Facelift", 2020],
+  ["tt-8n", "TT", "8N", 2002], ["tt-8j", "TT", "8J", 2008], ["tt-8j-facelift", "TT", "8J Facelift", 2012], ["tt-8s", "TT", "8S", 2018], ["s3-8l", "S 3", "8L", 2001], ["s3-8p", "S 3", "8P", 2008], ["s3-8v", "S 3", "8V", 2015], ["s3-8v-sedan", "S 3", "8V Sedan", 2015], ["s3-8y-sedan", "S 3", "8Y Sedan", 2021],
+  ["s4-b5", "S 4", "B5", 2001], ["s4-b6", "S 4", "B6", 2004], ["s4-b7", "S 4", "B7", 2007], ["s4-b8", "S 4", "B8", 2010], ["s4-b8-facelift", "S 4", "B8 Facelift", 2013], ["s5-b8", "S 5", "B8", 2010], ["s5-b8-facelift", "S 5", "B8 Facelift", 2014], ["s5-b10", "S 5", "B10", 2025],
+  ["s6-c5", "S 6", "C5", 2002], ["s6-c6", "S 6", "C6", 2008], ["s6-c7", "S 6", "C7", 2015], ["s7-c7", "S 7", "C7", 2015], ["s8-d2", "S 8", "D2", 2000], ["s8-d3", "S 8", "D3", 2006], ["s8-d4", "S 8", "D4", 2014], ["sq5-8r", "S Q5", "8R", 2014], ["sq5-fy-facelift", "S Q5", "FY Facelift", 2021],
+] as const;
+
 const ferrariModels: Array<Pick<Car, "id" | "model" | "generation" | "year" | "transmission" | "tags">> = [
   { id: "f12-berlinetta", model: "F12", generation: "Berlinetta", year: 2015, transmission: "Automatic", tags: ["V12", "Grand tourer", "RWD", "Naturally aspirated"] },
   { id: "599-gtb", model: "599", generation: "GTB Fiorano", year: 2008, transmission: "Automatic", tags: ["V12", "Grand tourer", "RWD", "Naturally aspirated"] },
@@ -1060,6 +1070,20 @@ export const cars: Car[] = [
     ratings: 340 + index * 83,
     driven: 520 + index * 115,
     owners: 114 + index * 31,
+  })),
+  ...audiCatalogAdditions.map(([id, model, generation, year], index): Car => ({
+    id,
+    make: "Audi",
+    model,
+    generation,
+    year,
+    transmission: id === "tt-8n" || id === "s3-8l" || id === "rs4-b5" || id === "rs4-b7" || id === "s4-b5" || id === "s4-b6" || id === "s4-b7" ? "Manual" : "Automatic",
+    image: "https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?auto=format&fit=crop&w=1200&q=80",
+    rating: Number((8.2 + ((index * 3) % 10) / 10).toFixed(1)),
+    ratings: 220 + index * 61,
+    driven: 410 + index * 94,
+    owners: 88 + index * 22,
+    tags: ["Audi", "Performance", "Quattro", "Catalog"],
   })),
   ...ferrariModels.map((car, index): Car => ({
     ...car,
