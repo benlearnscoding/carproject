@@ -1232,18 +1232,25 @@ export default function App() {
   const averagePersonalRating = ratedCars.length
     ? ratedCars.reduce((sum, { rating }) => sum + rating.overall, 0) / ratedCars.length
     : null;
-  const filteredCommunityRatings = communityRatings.flatMap(rating => {
-    const car = cars.find(candidate => candidate.id === rating.carId);
-    return car ? [{ rating, car }] : [];
-  });
-  const communitySlideSize = Math.min(4, filteredCommunityRatings.length);
+  const randomizedCommunityRatings = useMemo(() => {
+    const cards = communityRatings.flatMap(rating => {
+      const car = cars.find(candidate => candidate.id === rating.carId);
+      return car ? [{ rating, car }] : [];
+    });
+    for (let index = cards.length - 1; index > 0; index -= 1) {
+      const randomIndex = Math.floor(Math.random() * (index + 1));
+      [cards[index], cards[randomIndex]] = [cards[randomIndex], cards[index]];
+    }
+    return cards;
+  }, [communityRatings]);
+  const communitySlideSize = Math.min(4, randomizedCommunityRatings.length);
   const communitySlideRatings = Array.from({ length: communitySlideSize }, (_, offset) => (
-    filteredCommunityRatings[(communitySlideStart + offset) % filteredCommunityRatings.length]
+    randomizedCommunityRatings[(communitySlideStart + offset) % randomizedCommunityRatings.length]
   ));
   const displayedCommunityRatings = communitySlideRatings;
   const moveCommunitySlide = (direction: -1 | 1) => {
-    if (filteredCommunityRatings.length < 2) return;
-    setCommunitySlideStart(current => (current + direction + filteredCommunityRatings.length) % filteredCommunityRatings.length);
+    if (randomizedCommunityRatings.length < 2) return;
+    setCommunitySlideStart(current => (current + direction + randomizedCommunityRatings.length) % randomizedCommunityRatings.length);
   };
   const publicProfileCars = publicProfile?.cars.flatMap(entry => {
     const car = cars.find(candidate => candidate.id === entry.carId);
@@ -1308,9 +1315,9 @@ export default function App() {
                 <p className="community-empty">Loading recent ratings…</p>
               ) : displayedCommunityRatings.length ? (
                 <div className={`community-carousel community-carousel-${communitySlideSize}`}>
-                  <button className="community-carousel-arrow previous" type="button" aria-label="Previous reviews" onClick={() => moveCommunitySlide(-1)} disabled={filteredCommunityRatings.length < 2}><ChevronLeft size={22}/></button>
+                  <button className="community-carousel-arrow previous" type="button" aria-label="Previous reviews" onClick={() => moveCommunitySlide(-1)} disabled={randomizedCommunityRatings.length < 2}><ChevronLeft size={22}/></button>
                   <div className="grid community-carousel-grid">{displayedCommunityRatings.map(({ rating, car }) => <CommunityRatingCard key={rating.id} rating={rating} car={displayedCar(car)} onProfile={() => openPublicProfile(rating.username)} onClick={() => { setSelectedGarageExperience(undefined); setSelectedCommunityRating(rating); setSelected(displayedCar(car)); }} />)}</div>
-                  <button className="community-carousel-arrow next" type="button" aria-label="Next reviews" onClick={() => moveCommunitySlide(1)} disabled={filteredCommunityRatings.length < 2}><ChevronRight size={22}/></button>
+                  <button className="community-carousel-arrow next" type="button" aria-label="Next reviews" onClick={() => moveCommunitySlide(1)} disabled={randomizedCommunityRatings.length < 2}><ChevronRight size={22}/></button>
                 </div>
               ) : (
                 <p className="community-empty">No recent ratings match these filters yet.</p>
