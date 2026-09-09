@@ -955,6 +955,8 @@ const preservedIds: Record<string, string> = {
   "M4|G82": "bmw-m4-g82",
   "M5|F90": "bmw-m5-f90",
   "Z1|E30 Z1": "bmw-z1",
+  "Z3 Roadster|E36/7": "bmw-z3",
+  "Z4 sDrive20i|G29": "bmw-z4-g29",
 };
 
 const slugify = (value: string) =>

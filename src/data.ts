@@ -541,10 +541,10 @@ export const cars: Car[] = [
   {
     id: "bmw-z3",
     make: "BMW",
-    model: "Z3",
+    model: "Z3 Roadster",
     generation: "E36/7",
     year: 2001,
-    image: "https://images.unsplash.com/photo-1556189250-72ba954cfc2b?auto=format&fit=crop&w=1200&q=80",
+    image: bmwCatalogImageById["bmw-z3"],
     rating: 8.5,
     ratings: 712,
     driven: 1048,
@@ -555,10 +555,10 @@ export const cars: Car[] = [
   {
     id: "bmw-z4-g29",
     make: "BMW",
-    model: "Z4",
+    model: "Z4 sDrive20i",
     generation: "G29",
     year: 2024,
-    image: "https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&w=1200&q=80",
+    image: bmwCatalogImageById["bmw-z4-g29"],
     rating: 8.7,
     ratings: 824,
     driven: 1268,
@@ -1165,7 +1165,7 @@ export const cars: Car[] = [
     tags: ["Audi", "Performance", "Quattro", "Catalog"],
   })),
   ...bmwCatalogEntries
-    .filter((car) => !["m3-e46", "m2-f87", "bmw-m1-e26", "bmw-m4-g82", "bmw-m5-f90", "bmw-z1"].includes(car.id))
+    .filter((car) => !["m3-e46", "m2-f87", "bmw-m1-e26", "bmw-m4-g82", "bmw-m5-f90", "bmw-z1", "bmw-z3", "bmw-z4-g29"].includes(car.id))
     .map((car, index): Car => ({
       ...car,
       make: "BMW",
