@@ -12,6 +12,7 @@ import porscheCarrera4s9911Image from "./assets/porsche-911-carrera-4s-991-1.png
 import porscheCarrera4s9922Image from "./assets/porsche-911-carrera-4s-992-2.png";
 import mercedesC63BlackSeriesImage from "./assets/mercedes-c63-black-series.png";
 import mercedesC63W206Image from "./assets/mercedes-c63-w206-s-e-performance.png";
+import { bmwCatalogEntries, bmwCatalogImageById } from "./bmwCatalog";
 
 export type Car = {
   id: string;
@@ -403,7 +404,7 @@ export const cars: Car[] = [
     model: "M3",
     generation: "E46",
     year: 2004,
-    image: "https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&w=1200&q=80",
+    image: bmwCatalogImageById["m3-e46"],
     rating: 9.2,
     ratings: 2184,
     driven: 3020,
@@ -473,7 +474,7 @@ export const cars: Car[] = [
     model: "M2",
     generation: "F87",
     year: 2018,
-    image: "https://images.unsplash.com/photo-1556189250-72ba954cfc2b?auto=format&fit=crop&w=1200&q=80",
+    image: bmwCatalogImageById["m2-f87"],
     rating: 9.0,
     ratings: 1148,
     driven: 1735,
@@ -487,7 +488,7 @@ export const cars: Car[] = [
     model: "M1",
     generation: "E26",
     year: 1981,
-    image: "https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&w=1200&q=80",
+    image: bmwCatalogImageById["bmw-m1-e26"],
     rating: 9.4,
     ratings: 642,
     driven: 318,
@@ -501,7 +502,7 @@ export const cars: Car[] = [
     model: "M4",
     generation: "G82",
     year: 2024,
-    image: "https://images.unsplash.com/photo-1556189250-72ba954cfc2b?auto=format&fit=crop&w=1200&q=80",
+    image: bmwCatalogImageById["bmw-m4-g82"],
     rating: 8.9,
     ratings: 1356,
     driven: 2041,
@@ -515,7 +516,7 @@ export const cars: Car[] = [
     model: "M5",
     generation: "F90",
     year: 2022,
-    image: "https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&w=1200&q=80",
+    image: bmwCatalogImageById["bmw-m5-f90"],
     rating: 9.1,
     ratings: 1684,
     driven: 2460,
@@ -527,9 +528,9 @@ export const cars: Car[] = [
     id: "bmw-z1",
     make: "BMW",
     model: "Z1",
-    generation: "E30 Z",
+    generation: "E30 Z1",
     year: 1991,
-    image: "https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&w=1200&q=80",
+    image: bmwCatalogImageById["bmw-z1"],
     rating: 8.8,
     ratings: 274,
     driven: 192,
@@ -1163,6 +1164,16 @@ export const cars: Car[] = [
     owners: 88 + index * 22,
     tags: ["Audi", "Performance", "Quattro", "Catalog"],
   })),
+  ...bmwCatalogEntries
+    .filter((car) => !["m3-e46", "m2-f87", "bmw-m1-e26", "bmw-m4-g82", "bmw-m5-f90", "bmw-z1"].includes(car.id))
+    .map((car, index): Car => ({
+      ...car,
+      make: "BMW",
+      rating: Number((8.2 + ((index * 3) % 10) / 10).toFixed(1)),
+      ratings: 220 + index * 61,
+      driven: 410 + index * 94,
+      owners: 88 + index * 22,
+    })),
   ...ferrariModels.map((car, index): Car => ({
     ...car,
     make: "Ferrari",
