@@ -190,7 +190,8 @@ body,.app { background:#0247DD; }
 .nav { background:#0247DDEB; border-color:rgba(255,255,255,.28); }
 .nav nav button,.profile-button,.nav nav button.active { color:#fff; }
 .profile-button { border-color:rgba(255,255,255,.45); }
-.eyebrow,.hero-copy,.card-body p,.statement > p:last-child,.profile-hero p:last-child,.profile-stats span,.empty-garage,.empty-garage h3,footer,.text-button { color:rgba(255,255,255,.72); }
+.eyebrow,.card-body p,.statement > p:last-child,.profile-hero p:last-child,.profile-stats span,.empty-garage,.empty-garage h3,footer,.text-button { color:rgba(255,255,255,.72); }
+.hero-copy { color:#fff; font-weight:700; }
 .image-score { background:#0247DDF2; color:#fff; }
 .tags span,.statement,.profile-stats,.profile-stats div,footer { border-color:rgba(255,255,255,.28); }
 .primary,.secondary { border-color:#fff; }
