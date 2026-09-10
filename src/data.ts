@@ -14,6 +14,7 @@ import mercedesC63BlackSeriesImage from "./assets/mercedes-c63-black-series.png"
 import mercedesC63W206Image from "./assets/mercedes-c63-w206-s-e-performance.png";
 import { bmwCatalogEntries, bmwCatalogImageById } from "./bmwCatalog";
 import { sheetCatalogEntries } from "./sheetCatalog";
+import { latestSheetCatalogEntries } from "./latestSheetCatalog";
 
 export type Car = {
   id: string;
@@ -1260,6 +1261,7 @@ const catalogKey = (car: Pick<Car, "make" | "model" | "generation">) =>
   `${car.make}|${car.model}|${car.generation}`;
 const sheetCatalogMakes = new Set(sheetCatalogEntries.map(car => car.make));
 const curatedCarsBySheetKey = new Map(curatedCars.map(car => [catalogKey(car), car]));
+const latestSheetCatalogKeys = new Set(latestSheetCatalogEntries.map(catalogKey));
 
 const sheetCars: Car[] = sheetCatalogEntries.map((sheetCar, index) => {
   const existingCar = curatedCarsBySheetKey.get(catalogKey(sheetCar));
@@ -1280,7 +1282,28 @@ const sheetCars: Car[] = sheetCatalogEntries.map((sheetCar, index) => {
   };
 });
 
+const allExistingCatalogCarsByKey = new Map([...curatedCars, ...sheetCars].map(car => [catalogKey(car), car]));
+const latestSheetCars: Car[] = latestSheetCatalogEntries.map((sheetCar, index) => {
+  const existingCar = allExistingCatalogCarsByKey.get(catalogKey(sheetCar));
+
+  return {
+    id: existingCar?.id ?? sheetCar.id,
+    make: sheetCar.make,
+    model: sheetCar.model,
+    generation: sheetCar.generation,
+    image: sheetCar.image,
+    year: existingCar?.year ?? 2024,
+    transmission: existingCar?.transmission ?? (sheetCar.generation.startsWith("E") ? "Manual" : "Automatic"),
+    rating: existingCar?.rating ?? Number((8.4 + ((index * 3) % 9) / 10).toFixed(1)),
+    ratings: existingCar?.ratings ?? 250 + index * 57,
+    driven: existingCar?.driven ?? 430 + index * 87,
+    owners: existingCar?.owners ?? 92 + index * 20,
+    tags: existingCar?.tags ?? [sheetCar.make, "Catalog", sheetCar.model],
+  };
+});
+
 export const cars: Car[] = [
-  ...curatedCars.filter(car => !sheetCatalogMakes.has(car.make)),
-  ...sheetCars,
+  ...curatedCars.filter(car => !sheetCatalogMakes.has(car.make) && !latestSheetCatalogKeys.has(catalogKey(car))),
+  ...sheetCars.filter(car => !latestSheetCatalogKeys.has(catalogKey(car))),
+  ...latestSheetCars,
 ];
