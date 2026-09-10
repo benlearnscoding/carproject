@@ -1216,6 +1216,8 @@ const curatedCars: Car[] = [
 ];
 
 const normalizedCatalogValue = (value: string) => value.trim().toLocaleLowerCase();
+const catalogMakeLabel = (make: string) =>
+  normalizedCatalogValue(make) === "aston martin" ? "Aston Martin" : make;
 const catalogKey = (car: Pick<Car, "make" | "model" | "generation">) =>
   `${normalizedCatalogValue(car.make)}|${normalizedCatalogValue(car.model)}|${normalizedCatalogValue(car.generation)}`;
 const catalogModelKey = (car: Pick<Car, "make" | "model">) =>
@@ -1229,7 +1231,7 @@ const sheetCars: Car[] = sheetCatalogEntries.map((sheetCar, index) => {
 
   return {
     id: existingCar?.id ?? sheetCar.id,
-    make: sheetCar.make,
+    make: catalogMakeLabel(sheetCar.make),
     model: sheetCar.model,
     generation: sheetCar.generation,
     image: sheetCar.image,
@@ -1239,7 +1241,7 @@ const sheetCars: Car[] = sheetCatalogEntries.map((sheetCar, index) => {
     ratings: existingCar?.ratings ?? 220 + index * 61,
     driven: existingCar?.driven ?? 410 + index * 94,
     owners: existingCar?.owners ?? 88 + index * 22,
-    tags: existingCar?.tags ?? [sheetCar.make, "Catalog", sheetCar.model],
+    tags: existingCar?.tags ?? [catalogMakeLabel(sheetCar.make), "Catalog", sheetCar.model],
   };
 });
 
@@ -1249,7 +1251,7 @@ const latestSheetCars: Car[] = latestSheetCatalogEntries.map((sheetCar, index) =
 
   return {
     id: existingCar?.id ?? sheetCar.id,
-    make: sheetCar.make,
+    make: catalogMakeLabel(sheetCar.make),
     model: sheetCar.model,
     generation: sheetCar.generation,
     image: sheetCar.image,
@@ -1259,7 +1261,7 @@ const latestSheetCars: Car[] = latestSheetCatalogEntries.map((sheetCar, index) =
     ratings: existingCar?.ratings ?? 250 + index * 57,
     driven: existingCar?.driven ?? 430 + index * 87,
     owners: existingCar?.owners ?? 92 + index * 20,
-    tags: existingCar?.tags ?? [sheetCar.make, "Catalog", sheetCar.model],
+    tags: existingCar?.tags ?? [catalogMakeLabel(sheetCar.make), "Catalog", sheetCar.model],
   };
 });
 
