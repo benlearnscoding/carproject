@@ -1259,11 +1259,14 @@ const curatedCars: Car[] = [
   })),
 ];
 
+const normalizedCatalogValue = (value: string) => value.trim().toLocaleLowerCase();
 const catalogKey = (car: Pick<Car, "make" | "model" | "generation">) =>
-  `${car.make}|${car.model}|${car.generation}`;
+  `${normalizedCatalogValue(car.make)}|${normalizedCatalogValue(car.model)}|${normalizedCatalogValue(car.generation)}`;
+const catalogModelKey = (car: Pick<Car, "make" | "model">) =>
+  `${normalizedCatalogValue(car.make)}|${normalizedCatalogValue(car.model)}`;
 const sheetCatalogMakes = new Set(sheetCatalogEntries.map(car => car.make));
 const curatedCarsBySheetKey = new Map(curatedCars.map(car => [catalogKey(car), car]));
-const latestSheetCatalogKeys = new Set(latestSheetCatalogEntries.map(catalogKey));
+const latestSheetCatalogModelKeys = new Set(latestSheetCatalogEntries.map(catalogModelKey));
 
 const sheetCars: Car[] = sheetCatalogEntries.map((sheetCar, index) => {
   const existingCar = curatedCarsBySheetKey.get(catalogKey(sheetCar));
@@ -1305,7 +1308,7 @@ const latestSheetCars: Car[] = latestSheetCatalogEntries.map((sheetCar, index) =
 });
 
 export const cars: Car[] = [
-  ...curatedCars.filter(car => !sheetCatalogMakes.has(car.make) && !latestSheetCatalogKeys.has(catalogKey(car))),
-  ...sheetCars.filter(car => !latestSheetCatalogKeys.has(catalogKey(car))),
+  ...curatedCars.filter(car => !sheetCatalogMakes.has(car.make) && !latestSheetCatalogModelKeys.has(catalogModelKey(car))),
+  ...sheetCars.filter(car => !latestSheetCatalogModelKeys.has(catalogModelKey(car))),
   ...latestSheetCars,
 ];
