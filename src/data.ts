@@ -154,6 +154,24 @@ const ferrariModels: Array<Pick<Car, "id" | "model" | "generation" | "year" | "t
   { id: "f50", model: "F50", generation: "Type F130", year: 1997, transmission: "Manual", tags: ["V12", "Manual", "Mid-engine", "Icon"] },
 ];
 
+const ferrariSheetImage = (model: string, generation?: string) =>
+  latestSheetCatalogEntries.find(
+    (car) => car.make === "Ferrari" && car.model === model && (!generation || car.generation === generation),
+  )?.image;
+
+const ferrariImageById: Record<string, string | undefined> = {
+  "f12-berlinetta": ferrariSheetImage("F12", "Berlinetta"),
+  "599-gtb": ferrariSheetImage("599", "GTB"),
+  f430: ferrariSheetImage("F430"),
+  "812-superfast": ferrariSheetImage("812", "Superfast"),
+  "488-gtb": ferrariSheetImage("488", "GTB"),
+  "296-gtb": ferrariSheetImage("296", "GTB"),
+  "360-modena": ferrariSheetImage("360", "Modena"),
+  "california-t": ferrariSheetImage("California", "T"),
+  f40: ferrariSheetImage("F40"),
+  f50: ferrariSheetImage("F50"),
+};
+
 const astonMartinModels: Array<Pick<Car, "id" | "model" | "generation" | "year" | "transmission" | "tags">> = [
   { id: "aston-v8-vantage", model: "V8 Vantage", generation: "AM6", year: 2016, transmission: "Manual", tags: ["V8", "Grand tourer", "RWD", "British"] },
   { id: "aston-v12-vantage", model: "V12 Vantage", generation: "AM6", year: 2017, transmission: "Manual", tags: ["V12", "Grand tourer", "RWD", "British"] },
@@ -1179,7 +1197,7 @@ const curatedCars: Car[] = [
   ...ferrariModels.map((car, index): Car => ({
     ...car,
     make: "Ferrari",
-    image: "https://images.unsplash.com/photo-1542282088-72c9c27ed0cd?auto=format&fit=crop&w=1200&q=80",
+    image: ferrariImageById[car.id] ?? "https://images.unsplash.com/photo-1542282088-72c9c27ed0cd?auto=format&fit=crop&w=1200&q=80",
     rating: Number((8.8 + ((index * 2) % 8) / 10).toFixed(1)),
     ratings: 285 + index * 67,
     driven: 390 + index * 92,
