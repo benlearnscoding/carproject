@@ -270,7 +270,7 @@ const sourceRows = [
     "Ferrari",
     "F430",
     "",
-    "https://cdn.ferrari.com/cms/network/media/img/resize/5dc441333378a829c0098637-ferrari-f430-2004-intro(mobile)?width=768&height=1024"
+    "https://cdn.prod.website-files.com/662e6423ff88861916362956/69afa20f703bfef4e215567f_jRk2TaaqZiHRSprA3lr0iL_cHifgAP9JAHzlMK7QMTc.jpeg"
   ],
   [
     "Ferrari",
