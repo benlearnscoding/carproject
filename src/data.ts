@@ -147,9 +147,7 @@ const ferrariModels: Array<Pick<Car, "id" | "model" | "generation" | "year" | "t
   { id: "488-gtb", model: "488", generation: "GTB", year: 2017, transmission: "Automatic", tags: ["V8", "Twin-turbo", "Mid-engine", "RWD"] },
   { id: "296-gtb", model: "296", generation: "GTB", year: 2023, transmission: "Automatic", tags: ["V6", "Hybrid", "Mid-engine", "RWD"] },
   { id: "360-modena", model: "360", generation: "Modena", year: 2001, transmission: "Manual", tags: ["V8", "Mid-engine", "RWD", "Analog"] },
-  { id: "roma", model: "Roma", generation: "F169", year: 2022, transmission: "Automatic", tags: ["V8", "Twin-turbo", "Grand tourer", "RWD"] },
   { id: "california-t", model: "California", generation: "T", year: 2016, transmission: "Automatic", tags: ["V8", "Convertible", "Grand tourer", "RWD"] },
-  { id: "daytona-sp3", model: "Daytona", generation: "SP3", year: 2023, transmission: "Automatic", tags: ["V12", "Icona", "Mid-engine", "Limited"] },
   { id: "f40", model: "F40", generation: "Type F120", year: 1990, transmission: "Manual", tags: ["V8", "Twin-turbo", "Manual", "Icon"] },
   { id: "f50", model: "F50", generation: "Type F130", year: 1997, transmission: "Manual", tags: ["V12", "Manual", "Mid-engine", "Icon"] },
 ];
