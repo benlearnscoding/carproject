@@ -264,8 +264,6 @@ const mercedesCatalogAdditions: Array<Pick<Car, "id" | "model" | "generation" | 
 
 const mclarenModels: Array<Pick<Car, "id" | "model" | "generation" | "year" | "transmission" | "tags">> = [
   { id: "mclaren-720s", model: "720S", generation: "Super Series", year: 2021, transmission: "Automatic", tags: ["V8", "Twin-turbo", "Mid-engine", "Supercar"] },
-  { id: "mclaren-mp4-12c", model: "MP4-12C", generation: "12C", year: 2013, transmission: "Automatic", tags: ["V8", "Twin-turbo", "Mid-engine", "Supercar"] },
-  { id: "mclaren-570s", model: "570S", generation: "Sports Series", year: 2018, transmission: "Automatic", tags: ["V8", "Twin-turbo", "Mid-engine", "Sports car"] },
   { id: "mclaren-600lt", model: "600LT", generation: "Sports Series", year: 2019, transmission: "Automatic", tags: ["V8", "Twin-turbo", "Longtail", "Track"] },
   { id: "mclaren-675lt", model: "675LT", generation: "Super Series", year: 2016, transmission: "Automatic", tags: ["V8", "Twin-turbo", "Longtail", "Track"] },
   { id: "mclaren-540c", model: "540C", generation: "Sports Series", year: 2017, transmission: "Automatic", tags: ["V8", "Twin-turbo", "Mid-engine", "Sports car"] },
