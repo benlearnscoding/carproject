@@ -1284,9 +1284,9 @@ export default function App() {
           </svg>
         </button>
         <nav>
-          <button className={tab === "discover" ? "active" : ""} onClick={() => setTab("discover")}>Discover</button>
-          <button className={tab === "cars" ? "active" : ""} onClick={() => setTab("cars")}>Cars</button>
-          <button className={tab === "profile" ? "active" : ""} onClick={() => setTab("profile")}>My garage</button>
+          <button className={tab === "discover" ? "active" : ""} onClick={() => setTab("discover")}>DISCOVER</button>
+          <button className={tab === "cars" ? "active" : ""} onClick={() => setTab("cars")}>CARS</button>
+          <button className={tab === "profile" ? "active" : ""} onClick={() => setTab("profile")}>MY GARAGE</button>
         </nav>
         <div className="profile-actions">
           <button className="profile-button" onClick={() => authUserId ? setTab("profile") : setCreatingProfile(true)}><UserRound size={18}/><span>{authUserId && profile?.username ? profile.username : "Create profile"}</span></button>
