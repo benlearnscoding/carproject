@@ -83,6 +83,12 @@ const sourceRows = [
   [
     "Ferrari",
     "458",
+    "Italia",
+    "https://carjager-dev.mo.cloudinary.net/https://public.carjager.com/production/cms/2fd69c92_fed0_4b38_beab_db6b931baf9e_6ae028f5db.jpg?tx=f_auto,q_auto,w_768"
+  ],
+  [
+    "Ferrari",
+    "458",
     "Spider",
     "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSodqW6t1czt2-vXIfAmmIWS-s1jaDkv1uQaALFvdr1H_RMGRuzkUB9xBAo&s=10"
   ],
