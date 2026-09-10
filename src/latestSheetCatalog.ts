@@ -2981,7 +2981,7 @@ const sourceRows = [
     "McLaren",
     "12C",
     "12C Spider",
-    "https://www.themilliardaire.com/wp-content/uploads/2013/01/McLaren-MP4-12C-Spider.jpg"
+    "https://www.challenges.fr/_ipx/f_webp&enlarge_true&fit_cover&s_1360x840/cha/static/s3fs-public/2012-07/mclaren-mp4-12c-spider-2012.jpg%3FVersionId=YY9TFjNjItMZT36dsuCWhvLa76hmSD_M"
   ],
   [
     "McLaren",
