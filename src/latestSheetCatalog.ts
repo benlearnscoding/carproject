@@ -3545,7 +3545,7 @@ const sourceRows = [
     "Porsche",
     "911 Turbo",
     "991.2",
-    "https://media.fastestlaps.com/porsche-911-turbo-991-facelift.jpg"
+    "https://s1.cdn.autoevolution.com/images/gallery/PORSCHE-911-Turbo-5558_13.jpg"
   ],
   [
     "Porsche",
@@ -3593,7 +3593,7 @@ const sourceRows = [
     "Porsche",
     "911 Turbo S",
     "991.2",
-    "https://media.fastestlaps.com/porsche-911-turbo-991-facelift.jpg"
+    "https://s1.cdn.autoevolution.com/images/gallery/PORSCHE-911-Turbo-S--991-2--5560_26.jpeg"
   ],
   [
     "Porsche",
@@ -3966,4 +3966,3 @@ export const latestSheetCatalogEntries: LatestSheetCatalogEntry[] = sourceRows.m
   generation,
   image,
 }));
-
