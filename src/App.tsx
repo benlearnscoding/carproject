@@ -370,7 +370,7 @@ function CarDetail({
         </div>
         <div className="detail-content">
           <button className="close" onClick={close}>×</button>
-          <div className="eyebrow">{car.make} · {car.generation} · {car.year}</div>
+          <div className="eyebrow">{car.make} · {car.generation}</div>
           <div className="detail-title">
             <div>
               <h1>{car.model}</h1>
@@ -1371,7 +1371,7 @@ export default function App() {
                           <span className="garage-status">{entry.relationship ? garageStatusLabels[entry.relationship] : "Reviewed"}</span>
                           {entry.overall !== null && <span className="garage-rating"><Star size={11} fill="currentColor"/> {entry.overall.toFixed(1)}</span>}
                           <p>{car.make} · {car.generation}</p><h3>{car.model}</h3>
-                          <small>{car.year}{entry.transmission ? ` · ${entry.transmission}` : ""}</small>
+                          {entry.transmission && <small>{entry.transmission}</small>}
                           {entry.review && <blockquote>“{entry.review}”</blockquote>}
                         </div>
                       </button>
@@ -1389,7 +1389,7 @@ export default function App() {
                             <span className="garage-status">Want</span>
                             {entry.overall !== null && <span className="garage-rating"><Star size={11} fill="currentColor"/> {entry.overall.toFixed(1)}</span>}
                             <p>{car.make} · {car.generation}</p><h3>{car.model}</h3>
-                            <small>{car.year}{entry.transmission ? ` · ${entry.transmission}` : ""}</small>
+                            {entry.transmission && <small>{entry.transmission}</small>}
                             {entry.review && <blockquote>“{entry.review}”</blockquote>}
                           </div>
                         </button>
@@ -1430,7 +1430,7 @@ export default function App() {
                           <span className="garage-status">{relationship}</span>
                           {rating && <span className="garage-rating"><Star size={11} fill="currentColor"/> {rating.overall.toFixed(1)}</span>}
                           <p>{car.make} · {car.generation}</p><h3>{car.model}</h3>
-                          <small>{car.year}{entry?.transmission ? ` · ${entry.transmission}` : ""}{rating ? " · Your grade" : ""}</small>
+                          {(entry?.transmission || rating) && <small>{[entry?.transmission, rating ? "Your grade" : null].filter(Boolean).join(" · ")}</small>}
                         </div>
                       </button>
                     );
@@ -1454,7 +1454,7 @@ export default function App() {
                           <span className="garage-status">Want</span>
                           {rating && <span className="garage-rating"><Star size={11} fill="currentColor"/> {rating.overall.toFixed(1)}</span>}
                           <p>{car.make} · {car.generation}</p><h3>{car.model}</h3>
-                          <small>{car.year}{entry?.transmission ? ` · ${entry.transmission}` : ""}</small>
+                          {entry?.transmission && <small>{entry.transmission}</small>}
                         </div>
                       </button>
                       );
