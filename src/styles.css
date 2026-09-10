@@ -229,7 +229,7 @@ body,.app { background:#0247DD; }
 .profile-edit { margin-left:auto; }
 .profile-edit:hover,.profile-edit:focus-visible { background:#fff; color:#0247DD; }
 .garage-actions { display:flex; align-items:center; gap:10px; }
-.garage-edit-button { border:1px solid #fff; border-radius:99px; background:#0247DD; color:#fff; padding:10px 15px; }
+.garage-edit-button { border:1px solid #fff; border-radius:99px; background:#0247DD; color:#fff; padding:10px 15px; font-weight:700; }
 .garage-edit-button:hover,.garage-edit-button:focus-visible { background:#fff; color:#0247DD; }
 .garage-delete-button { color:#fff; background:#0247DD; }
 .garage-edit-hint { margin:-13px 0 20px; color:rgba(255,255,255,.72); font-size:13px; }
