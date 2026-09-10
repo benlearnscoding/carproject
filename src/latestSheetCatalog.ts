@@ -2888,6 +2888,30 @@ const sourceRows = [
     "https://www.tomhartleyjnr.com/wp-content/uploads/2024/10/Lotus-Emira-V6-019.jpg"
   ],
   [
+    "Mazda",
+    "MX-5",
+    "NA",
+    "https://www.motorlegend.com/images-voiture/large/mazda-mx-5-na-autre-134553.jpg"
+  ],
+  [
+    "Mazda",
+    "MX-5",
+    "NB",
+    "https://images.caradisiac.com/images/3/4/9/3/183493/S1-mazda-mx-5-na-et-nb-1989-2005-un-roadster-neo-retro-mais-deja-classique-des-5-000-eur-631598.jpg"
+  ],
+  [
+    "Mazda",
+    "MX-5",
+    "NC",
+    "https://i.gaw.to/content/photos/67/94/679489-la-mazda-mx-5-nc-c-etait-il-y-a-vingt-ans.jpeg"
+  ],
+  [
+    "Mazda",
+    "MX-5",
+    "ND",
+    "https://mx5global.com/wp-content/uploads/2025/11/Mazda-MX-5-ND-rouge-roulant-au-bord-de-la-mer-sur-une-route-sinueuse-au-coucher-du-soleil.jpg"
+  ],
+  [
     "Maserati",
     "3200 GT",
     "338",
