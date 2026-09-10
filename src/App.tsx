@@ -104,25 +104,10 @@ type PublicProfileCarRow = {
   rated_at: string | null;
 };
 
-const makes = [
-  "Alpine",
-  "Aston Martin",
-  "Audi",
-  "BMW",
-  "Bugatti",
-  "Chevrolet",
-  "Ferrari",
-  "Lamborghini",
-  "Lotus",
-  "Maserati",
-  "McLaren",
-  "Mercedes",
-  "Mini",
-  "Nissan",
-  "Porsche",
-  "Toyota",
-  "Volkswagen",
-];
+const alphabeticalSort = (first: string, second: string) =>
+  first.trim().localeCompare(second.trim(), undefined, { sensitivity: "base", numeric: true });
+
+const makes = Array.from(new Set(cars.map(car => car.make))).sort(alphabeticalSort);
 
 const profileStorageKey = "driven.profile";
 
@@ -307,7 +292,7 @@ function MakeFilter({ value, onChange }: { value: string; onChange: (value: stri
 function ModelFilter({ make, value, onChange }: { make: string; value: string; onChange: (value: string) => void }) {
   const models = Array.from(new Set(
     cars.filter(car => !make || car.make === make).map(car => car.model)
-  )).sort((a, b) => a.localeCompare(b));
+  )).sort(alphabeticalSort);
 
   return <FilterDropdown label="Model" value={value} options={models} onChange={onChange} />;
 }
@@ -315,7 +300,7 @@ function ModelFilter({ make, value, onChange }: { make: string; value: string; o
 function GenerationFilter({ make, model, value, onChange }: { make: string; model: string; value: string; onChange: (value: string) => void }) {
   const generations = Array.from(new Set(
     cars.filter(car => car.model === model && (!make || car.make === make)).map(car => car.generation)
-  )).sort((a, b) => a.localeCompare(b));
+  )).sort(alphabeticalSort);
 
   return <FilterDropdown label="Generation" value={value} options={generations} onChange={onChange} emptyLabel={model ? "All" : "Select model"} disabled={!model || !generations.length} />;
 }
@@ -598,9 +583,9 @@ function AddCarModal({
   const [status, setStatus] = useState<GarageStatus | null>(initialStatus ?? null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
-  const makeOptions = Array.from(new Set(cars.map(car => car.make))).sort((a, b) => a.localeCompare(b));
-  const modelOptions = Array.from(new Set(cars.filter(car => car.make === make).map(car => car.model))).sort((a, b) => a.localeCompare(b));
-  const generationOptions = Array.from(new Set(cars.filter(car => car.make === make && car.model === model).map(car => car.generation))).sort((a, b) => a.localeCompare(b));
+  const makeOptions = Array.from(new Set(cars.map(car => car.make))).sort(alphabeticalSort);
+  const modelOptions = Array.from(new Set(cars.filter(car => car.make === make).map(car => car.model))).sort(alphabeticalSort);
+  const generationOptions = Array.from(new Set(cars.filter(car => car.make === make && car.model === model).map(car => car.generation))).sort(alphabeticalSort);
   const selectedCar = cars.find(car => car.make === make && car.model === model && car.generation === generation);
 
   const submit = async (event: React.FormEvent<HTMLFormElement>) => {
