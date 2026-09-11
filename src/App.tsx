@@ -843,6 +843,9 @@ export default function App() {
   const [garageEntries, setGarageEntries] = useState<GarageEntry[]>([]);
   const [editingGarage, setEditingGarage] = useState(false);
   const [selectedGarageCarIds, setSelectedGarageCarIds] = useState<Set<string>>(new Set());
+  const [garageListLimit, setGarageListLimit] = useState(() => window.innerWidth <= 560 ? 3 : window.innerWidth <= 850 ? 6 : 9);
+  const [showAllDrivenCars, setShowAllDrivenCars] = useState(false);
+  const [showAllNextDrives, setShowAllNextDrives] = useState(false);
   const [addingCar, setAddingCar] = useState(false);
   const [garageSeedCarId, setGarageSeedCarId] = useState<string | undefined>();
   const [garageSeedStatus, setGarageSeedStatus] = useState<GarageStatus | undefined>();
@@ -946,6 +949,13 @@ export default function App() {
       refreshCommunityRatings().catch(() => undefined);
     }
   }, [tab, communityRatingsLoading, refreshCommunityRatings]);
+
+  useEffect(() => {
+    const updateGarageListLimit = () => setGarageListLimit(window.innerWidth <= 560 ? 3 : window.innerWidth <= 850 ? 6 : 9);
+    updateGarageListLimit();
+    window.addEventListener("resize", updateGarageListLimit);
+    return () => window.removeEventListener("resize", updateGarageListLimit);
+  }, []);
 
   useEffect(() => {
     setCommunitySlideStart(0);
@@ -1288,6 +1298,8 @@ export default function App() {
   });
   const experiencedProfileCars = experiencedGarageCars.map(({ entry, car }) => ({ entry, car, rating: savedRatings[car.id] }));
   const wantedProfileCars = wantedGarageCars.map(({ entry, car }) => ({ entry, car, rating: savedRatings[car.id] }));
+  const displayedExperiencedProfileCars = editingGarage || showAllDrivenCars ? experiencedProfileCars : experiencedProfileCars.slice(0, garageListLimit);
+  const displayedWantedProfileCars = editingGarage || showAllNextDrives ? wantedProfileCars : wantedProfileCars.slice(0, garageListLimit);
   const averagePersonalRating = ratedCars.length
     ? ratedCars.reduce((sum, { rating }) => sum + rating.overall, 0) / ratedCars.length
     : null;
@@ -1508,8 +1520,9 @@ export default function App() {
               <div className="section-head"><div><h2>Driven by {profile.username}</h2></div><div className="garage-actions">{editingGarage && selectedGarageCarIds.size > 0 && <button className="primary garage-delete-button" type="button" onClick={() => { void deleteSelectedGarageEntries().catch(error => setAuthNotice(error instanceof Error ? error.message : "We could not delete the selected cars.")); }}>Delete selected ({selectedGarageCarIds.size})</button>}<button className="garage-edit-button" type="button" onClick={() => { setEditingGarage(current => !current); setSelectedGarageCarIds(new Set()); }}>{editingGarage ? "Done" : "Edit garage"}</button><button className="primary" onClick={() => openAddCar()}><Plus size={17}/> Add car</button></div></div>
               {editingGarage && <p className="garage-edit-hint">Select any garage or wishlist entry to remove it. Its saved rating will be deleted too.</p>}
               {experiencedProfileCars.length ? (
+                <>
                 <div className="garage-grid">
-                  {experiencedProfileCars.map(({ entry, car, rating }) => {
+                  {displayedExperiencedProfileCars.map(({ entry, car, rating }) => {
                     const relationship = entry
                       ? garageStatusLabels[entry.status]
                       : rating?.experience === "passenger"
@@ -1533,14 +1546,17 @@ export default function App() {
                     );
                   })}
                 </div>
+                {experiencedProfileCars.length > garageListLimit && !editingGarage && <button className="secondary garage-list-toggle" type="button" onClick={() => setShowAllDrivenCars(current => !current)}>{showAllDrivenCars ? "Show less" : "View more"}</button>}
+                </>
               ) : (
                 <div className="empty-garage"><CarFront size={32}/><h3>Your garage starts here.</h3><p>Add cars you've owned or driven and start building your automotive identity.</p><button className="secondary" onClick={() => openAddCar()}><Plus size={17}/> Add your first car</button></div>
               )}
               <div className="wishlist-section">
                 <div className="section-head"><div><h2>Next Drives</h2></div></div>
                 {wantedProfileCars.length ? (
+                  <>
                   <div className="garage-grid">
-                    {wantedProfileCars.map(({ entry, car, rating }) => {
+                    {displayedWantedProfileCars.map(({ entry, car, rating }) => {
                       const selectable = editingGarage && Boolean(entry);
                       const selectedForDeletion = Boolean(entry && selectedGarageCarIds.has(entry.carId));
                       return (
@@ -1557,6 +1573,8 @@ export default function App() {
                       );
                     })}
                   </div>
+                  {wantedProfileCars.length > garageListLimit && !editingGarage && <button className="secondary garage-list-toggle" type="button" onClick={() => setShowAllNextDrives(current => !current)}>{showAllNextDrives ? "Show less" : "View more"}</button>}
+                  </>
                 ) : (
                   <div className="empty-garage wishlist-empty"><Heart size={32}/><h3>No cars saved yet.</h3><p>Use “Want it” on any car to add it here.</p></div>
                 )}
