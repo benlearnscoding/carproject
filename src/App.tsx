@@ -1391,7 +1391,7 @@ export default function App() {
             <section className="hero">
               <div>
                 <h1>Your automotive taste,<br/><em>documented.</em></h1>
-                <p className="hero-copy">Rate the cars you've owned.<br/>Log the ones you've driven.<br/>Build your garage.<br/>Discover what other enthusiasts actually think.</p>
+                <p className="hero-copy">Rate the cars you've owned. Log the ones you've driven.<br/>Build your garage. Discover what other enthusiasts actually think.</p>
               </div>
             </section>
 
