@@ -302,6 +302,7 @@ body,.app { background:#0247DD; }
 .page-section :is(h1,h2,h3,p,span,small) { color:#fff !important; }
 .page-section .card-body .eyebrow { color:#fff; }
 .page-section .card-body p { color:rgba(255,255,255,.62) !important; }
+.community-rating-card .review-preview { color:rgba(255,255,255,.72) !important; }
 .garage-status { position:absolute; right:14px; top:-14px; padding:6px 9px; border:1px solid rgba(255,255,255,.75); border-radius:99px; background:#0247DD; color:#fff; font-size:10px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; }
 .garage-rating { position:absolute; left:14px; top:-15px; display:flex; align-items:center; gap:5px; padding:6px 9px; border:1px solid rgba(255,255,255,.75); border-radius:99px; background:#fff; color:#0247DD; font-size:12px; font-weight:800; }
 .rating-save-error { margin-top:14px; }
