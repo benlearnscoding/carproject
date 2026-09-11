@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { Plus, Star, ChevronRight, ChevronLeft, ChevronDown, Heart, CarFront, UserRound, ArrowLeft, Check, LogOut, X, Eye, EyeOff, Menu } from "lucide-react";
 import type { User } from "@supabase/supabase-js";
 import { cars, type Car } from "./data";
@@ -824,6 +824,11 @@ export default function App() {
   const [ratingSummaries, setRatingSummaries] = useState<Record<string, CarRatingSummary> | null>(null);
   const [experienceSummaries, setExperienceSummaries] = useState<Record<string, CarExperienceSummary> | null>(null);
   const [communityRatingsLoading, setCommunityRatingsLoading] = useState(true);
+  const [contactName, setContactName] = useState("");
+  const [contactEmail, setContactEmail] = useState("");
+  const [contactMessage, setContactMessage] = useState("");
+  const [contactSubmitting, setContactSubmitting] = useState(false);
+  const [contactNotice, setContactNotice] = useState("");
   const communityRatingOrder = useRef<string[] | null>(null);
   const [communitySlideStart, setCommunitySlideStart] = useState(0);
   const [publicProfileUsername, setPublicProfileUsername] = useState<string | null>(null);
@@ -1069,6 +1074,38 @@ export default function App() {
     setPendingGarageAdd({ carId: car.id, status, transmission });
     setSelectedGarageExperience(status);
     setRatingCar(car);
+  };
+
+  const submitContactMessage = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setContactNotice("");
+    const name = contactName.trim();
+    const email = contactEmail.trim();
+    const message = contactMessage.trim();
+    if (!name || !email || !message) {
+      setContactNotice("Please complete your name, email, and message.");
+      return;
+    }
+    setContactSubmitting(true);
+
+    try {
+      const { error } = await supabase.from("contact_messages").insert({
+        name,
+        email,
+        message,
+        user_id: authUserId,
+      });
+      if (error) throw error;
+
+      setContactName("");
+      setContactEmail("");
+      setContactMessage("");
+      setContactNotice("Thanks — your message has been sent.");
+    } catch (error) {
+      setContactNotice(error instanceof Error ? error.message : "We could not send your message. Please try again.");
+    } finally {
+      setContactSubmitting(false);
+    }
   };
 
   const wantCar = async (car: Car) => {
@@ -1369,6 +1406,24 @@ export default function App() {
               <p className="eyebrow">THE IDEA</p>
               <h2>Not a car magazine.<br/><em>A record of experience.</em></h2>
               <p>Whether you own, drive, dream about cars your point of view is worth the share. Welcome to Driven, the one stop shop for car fanatics.</p>
+            </section>
+
+            <section className="contact-section" aria-labelledby="contact-heading">
+              <div className="contact-copy">
+                <p className="eyebrow">CONTACT</p>
+                <h2 id="contact-heading">Let&apos;s talk cars.</h2>
+                <p>Got petrol in your veins? Send us a message.</p>
+              </div>
+              <form className="contact-form" onSubmit={submitContactMessage}>
+                <label>Name<input value={contactName} onChange={event => setContactName(event.target.value)} autoComplete="name" maxLength={100} required /></label>
+                <label>Email<input type="email" value={contactEmail} onChange={event => setContactEmail(event.target.value)} autoComplete="email" maxLength={255} required /></label>
+                <label>Message<textarea value={contactMessage} onChange={event => setContactMessage(event.target.value)} maxLength={2000} required /></label>
+                <div className="contact-form-footer">
+                  <span>{contactMessage.length}/2000</span>
+                  <button className="primary" type="submit" disabled={contactSubmitting}>{contactSubmitting ? "Sending…" : "Send message"}<ChevronRight size={17}/></button>
+                </div>
+                {contactNotice && <p className="contact-notice" role="status">{contactNotice}</p>}
+              </form>
             </section>
           </>
         )}
