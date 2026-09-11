@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Plus, Star, ChevronRight, ChevronLeft, ChevronDown, Heart, CarFront, UserRound, ArrowLeft, Check, LogOut, X, Eye, EyeOff } from "lucide-react";
+import { Plus, Star, ChevronRight, ChevronLeft, ChevronDown, Heart, CarFront, UserRound, ArrowLeft, Check, LogOut, X, Eye, EyeOff, Menu } from "lucide-react";
 import type { User } from "@supabase/supabase-js";
 import { cars, type Car } from "./data";
 import { supabase } from "./supabase";
@@ -810,6 +810,7 @@ function CursorBoostFlame() {
 
 export default function App() {
   const [tab, setTab] = useState<Tab>("discover");
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [selectedMake, setSelectedMake] = useState("");
   const [selectedModel, setSelectedModel] = useState("");
   const [selectedGeneration, setSelectedGeneration] = useState("");
@@ -1325,6 +1326,12 @@ export default function App() {
           <button className={tab === "cars" ? "active" : ""} onClick={() => setTab("cars")}>CARS</button>
           <button className={tab === "profile" ? "active" : ""} onClick={() => setTab("profile")}>MY GARAGE</button>
         </nav>
+        <button className="mobile-menu-toggle" type="button" aria-label={mobileMenuOpen ? "Close navigation menu" : "Open navigation menu"} aria-expanded={mobileMenuOpen} aria-controls="mobile-navigation" onClick={() => setMobileMenuOpen(open => !open)}>{mobileMenuOpen ? <X size={23}/> : <Menu size={25}/>}</button>
+        {mobileMenuOpen && <nav className="mobile-navigation" id="mobile-navigation" aria-label="Mobile navigation">
+          <button className={tab === "discover" ? "active" : ""} onClick={() => { setTab("discover"); setMobileMenuOpen(false); }}>DISCOVER</button>
+          <button className={tab === "cars" ? "active" : ""} onClick={() => { setTab("cars"); setMobileMenuOpen(false); }}>CARS</button>
+          <button className={tab === "profile" ? "active" : ""} onClick={() => { setTab("profile"); setMobileMenuOpen(false); }}>MY GARAGE</button>
+        </nav>}
         <div className="profile-actions">
           <button className="profile-button" onClick={() => authUserId ? setTab("profile") : setCreatingProfile(true)}><UserRound size={18}/><span>{authUserId && profile?.username ? profile.username : "Create profile"}</span></button>
           {authUserId && <button className="logout-button" onClick={logOut}><LogOut size={17}/><span>Log out</span></button>}
