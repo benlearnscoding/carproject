@@ -104,10 +104,11 @@ em { font-family:Georgia,serif; font-weight:400; }
 .statement { border-top:1px solid #d9d8d3; border-bottom:1px solid #d9d8d3; padding:100px 0; margin:60px 0; }
 .statement h2 { font-size:56px; line-height:1; letter-spacing:-.05em; margin:0 0 25px; }
 .statement > p:last-child { max-width:520px; color:#72716b; line-height:1.6; }
-.contact-section { display:grid; grid-template-columns:minmax(0,.8fr) minmax(320px,1fr); gap:72px; align-items:start; padding:30px 0 120px; }
+.contact-section { display:grid; justify-items:center; gap:28px; padding:30px 0 120px; }
+.contact-copy { text-align:center; }
 .contact-copy h2 { margin:8px 0 16px; font-size:clamp(40px,4.2vw,60px); line-height:.98; letter-spacing:-.055em; }
-.contact-copy > p:last-child { max-width:340px; margin:0; line-height:1.55; }
-.contact-form { display:grid; gap:15px; padding:28px; border:1px solid rgba(255,255,255,.45); border-radius:6px; background:rgba(255,255,255,.06); }
+.contact-copy > p:last-child { max-width:340px; margin:0 auto; line-height:1.55; }
+.contact-form { display:grid; width:min(100%,620px); gap:15px; padding:28px; border:1px solid rgba(255,255,255,.45); border-radius:6px; background:rgba(255,255,255,.06); }
 .contact-form label { display:grid; gap:8px; color:#fff; font-size:12px; font-weight:600; letter-spacing:.04em; text-transform:uppercase; }
 .contact-form input,.contact-form textarea { width:100%; box-sizing:border-box; border:1px solid rgba(255,255,255,.54); border-radius:3px; padding:12px 13px; background:transparent; color:#fff; font:inherit; font-size:15px; letter-spacing:normal; text-transform:none; }
 .contact-form textarea { min-height:120px; resize:vertical; }
