@@ -313,7 +313,7 @@ function CarCard({ car, onClick }: { car: Car; onClick: () => void }) {
   return (
     <button className="car-card" onClick={onClick}>
       <div className="car-image">
-        <img src={car.image} alt={`${car.make} ${car.model}`} />
+        <img src={car.image} alt={`${car.make} ${car.model}`} referrerPolicy="no-referrer" />
         <div className="image-score"><Score value={car.rating} /></div>
       </div>
       <div className="card-body">
@@ -366,7 +366,7 @@ function CarDetail({
     <div className="modal-backdrop" onClick={close}>
       <div className="detail" onClick={(e) => e.stopPropagation()}>
         <div className="detail-image-panel">
-          <img className="detail-image" src={car.image} alt="" />
+          <img className="detail-image" src={car.image} alt="" referrerPolicy="no-referrer" />
         </div>
         <div className="detail-content">
           <button className="close" onClick={close}>×</button>
@@ -552,7 +552,7 @@ function CommunityRatingCard({ rating, car, onClick, onProfile }: { rating: Comm
   return (
     <article className="car-card community-rating-card">
       <button className="community-car-button" onClick={onClick} aria-label={`Open ${car.make} ${car.model}`}><div className="car-image">
-          <img src={car.image} alt={`${car.make} ${car.model}`} />
+          <img src={car.image} alt={`${car.make} ${car.model}`} referrerPolicy="no-referrer" />
           <div className="image-score"><Score value={rating.overall} /></div>
         </div></button>
       <div className="card-body">
@@ -635,7 +635,7 @@ function AddCarModal({
                 <FilterDropdown label="Generation" value={generation} options={generationOptions} onChange={setGeneration} emptyLabel="Select generation" disabled={!model || !generationOptions.length} />
                 <FilterDropdown label="Transmission (optional)" value={transmission} options={["Automatic", "Manual"]} onChange={nextTransmission => setTransmission(nextTransmission as Transmission)} emptyLabel="No selection" />
               </div>
-              {selectedCar && <div className="garage-preview"><img src={selectedCar.image} alt="" /><div><span>{selectedCar.make} · {selectedCar.generation}</span><strong>{selectedCar.model}</strong></div></div>}
+              {selectedCar && <div className="garage-preview"><img src={selectedCar.image} alt="" referrerPolicy="no-referrer" /><div><span>{selectedCar.make} · {selectedCar.generation}</span><strong>{selectedCar.model}</strong></div></div>}
             </>
           )}
           {error && <p className="auth-error" role="alert">{error}</p>}
@@ -1366,7 +1366,7 @@ export default function App() {
                   <div className="garage-grid public-garage-grid">
                     {publicExperiencedCars.map(({ entry, car }) => (
                       <button className="garage-card public-garage-card" key={car.id} onClick={() => { setSelectedGarageExperience(undefined); setSelectedCommunityRating(publicRatingFor(entry)); setSelected(displayedCar(car)); }}>
-                        <img src={car.image} alt={`${car.make} ${car.model}`} />
+                        <img src={car.image} alt={`${car.make} ${car.model}`} referrerPolicy="no-referrer" />
                         <div>
                           <span className="garage-status">{entry.relationship ? garageStatusLabels[entry.relationship] : "Reviewed"}</span>
                           {entry.overall !== null && <span className="garage-rating"><Star size={11} fill="currentColor"/> {entry.overall.toFixed(1)}</span>}
@@ -1384,7 +1384,7 @@ export default function App() {
                     <div className="garage-grid public-garage-grid">
                       {publicWantedCars.map(({ entry, car }) => (
                         <button className="garage-card public-garage-card" key={car.id} onClick={() => { setSelectedGarageExperience("want"); setSelectedCommunityRating(publicRatingFor(entry)); setSelected(displayedCar(car)); }}>
-                          <img src={car.image} alt={`${car.make} ${car.model}`} />
+                          <img src={car.image} alt={`${car.make} ${car.model}`} referrerPolicy="no-referrer" />
                           <div>
                             <span className="garage-status">Want</span>
                             {entry.overall !== null && <span className="garage-rating"><Star size={11} fill="currentColor"/> {entry.overall.toFixed(1)}</span>}
@@ -1424,7 +1424,7 @@ export default function App() {
                     const selectedForDeletion = Boolean(entry && selectedGarageCarIds.has(entry.carId));
                     return (
                       <button className={`garage-card ${selectable ? "garage-card-selectable" : ""} ${selectedForDeletion ? "selected-for-deletion" : ""}`} key={entry?.id ?? rating?.id ?? car.id} onClick={() => { if (selectable && entry) { toggleGarageSelection(entry.carId); return; } setSelectedGarageExperience(entry?.status === "owned" || entry?.status === "driven" ? entry.status : rating?.experience); setSelectedCommunityRating(null); setSelected(displayedCar(car)); }}>
-                        <img src={car.image} alt={`${car.make} ${car.model}`} />
+                        <img src={car.image} alt={`${car.make} ${car.model}`} referrerPolicy="no-referrer" />
                         {selectable && <span className="garage-selection-indicator" aria-hidden="true">{selectedForDeletion ? <Check size={15}/> : ""}</span>}
                         <div>
                           <span className="garage-status">{relationship}</span>
@@ -1448,7 +1448,7 @@ export default function App() {
                       const selectedForDeletion = Boolean(entry && selectedGarageCarIds.has(entry.carId));
                       return (
                       <button className={`garage-card ${selectable ? "garage-card-selectable" : ""} ${selectedForDeletion ? "selected-for-deletion" : ""}`} key={entry?.id ?? rating?.id ?? car.id} onClick={() => { if (selectable && entry) { toggleGarageSelection(entry.carId); return; } setSelectedGarageExperience("want"); setSelectedCommunityRating(null); setSelected(displayedCar(car)); }}>
-                        <img src={car.image} alt={`${car.make} ${car.model}`} />
+                        <img src={car.image} alt={`${car.make} ${car.model}`} referrerPolicy="no-referrer" />
                         {selectable && <span className="garage-selection-indicator" aria-hidden="true">{selectedForDeletion ? <Check size={15}/> : ""}</span>}
                         <div>
                           <span className="garage-status">Want</span>
