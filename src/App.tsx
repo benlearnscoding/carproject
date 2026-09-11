@@ -1403,7 +1403,7 @@ export default function App() {
             </section>
 
             <section className="statement">
-              <h2>For those who can&apos;t stop <em>thinking about cars.</em></h2>
+              <h2>For those who can&apos;t stop<br/><em>thinking about cars.</em></h2>
               <p>Whether you own, drive, dream about cars your point of view is worth the share. Welcome to Driven, the one stop shop for car fanatics.</p>
             </section>
 
