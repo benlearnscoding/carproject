@@ -1467,7 +1467,7 @@ export default function App() {
                 <div className="profile-hero"><div className="avatar big">{(publicProfile.firstName || publicProfile.username).charAt(0).toUpperCase()}</div><div><p className="eyebrow">@{publicProfile.username}</p><h1>{`${publicProfile.firstName} ${publicProfile.lastName}`.trim() || publicProfile.username}</h1><p>{joinedDateLabel(publicProfile.joinedAt)}</p></div></div>
                 {publicProfile.bio && <p className="profile-bio">{publicProfile.bio}</p>}
                 <div className="profile-stats"><div><strong>{publicGarageCount}</strong><span>Garage</span></div><div><strong>{publicReviewedCount}</strong><span>Reviewed</span></div><div><strong>{publicGarageBrands}</strong><span>Brands</span></div></div>
-                <div className="section-head"><div><p className="eyebrow">MEMBER GARAGE</p><h2>Cars and reviews</h2></div></div>
+                <div className="section-head"><div><h2>Driven by {publicProfile.username}</h2></div></div>
                 {publicExperiencedCars.length ? (
                   <div className="garage-grid public-garage-grid">
                     {publicExperiencedCars.map(({ entry, car }) => (
