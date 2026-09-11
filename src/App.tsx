@@ -640,7 +640,6 @@ function AddCarModal({
     <div className="modal-backdrop profile-backdrop">
       <div className="profile-creator garage-creator" onClick={event => event.stopPropagation()}>
         <button className="close" onClick={close} aria-label="Close add car form">×</button>
-        {step === 2 && <p className="eyebrow">YOUR GARAGE</p>}
         <h2>{step === 1 ? "How does this car fit your story?" : "Choose your car."}</h2>
         <p className="profile-intro">{step === 1 ? "Tell the community about your relationship with the car." : status === "want" ? "Select the make, model, and generation. Transmission is optional." : "Select the make, model, and generation, then rate it before adding it to your garage. Transmission is optional."}</p>
         <form onSubmit={submit}>
