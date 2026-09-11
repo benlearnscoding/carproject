@@ -1476,7 +1476,7 @@ export default function App() {
                   </div>
                 ) : <div className="empty-garage"><CarFront size={32}/><h3>No cars shared yet.</h3></div>}
                 <div className="wishlist-section">
-                  <div className="section-head"><div><p className="eyebrow">WISHLIST</p><h2>Cars I want</h2></div></div>
+                  <div className="section-head"><div><h2>Next Drives</h2></div></div>
                   {publicWantedCars.length ? (
                     <div className="garage-grid public-garage-grid">
                       {publicWantedCars.map(({ entry, car }) => (
@@ -1537,7 +1537,7 @@ export default function App() {
                 <div className="empty-garage"><CarFront size={32}/><h3>Your garage starts here.</h3><p>Add cars you've owned or driven and start building your automotive identity.</p><button className="secondary" onClick={() => openAddCar()}><Plus size={17}/> Add your first car</button></div>
               )}
               <div className="wishlist-section">
-                <div className="section-head"><div><p className="eyebrow">WISHLIST</p><h2>Cars I want</h2></div></div>
+                <div className="section-head"><div><h2>Next Drives</h2></div></div>
                 {wantedProfileCars.length ? (
                   <div className="garage-grid">
                     {wantedProfileCars.map(({ entry, car, rating }) => {
