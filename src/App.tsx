@@ -291,7 +291,7 @@ function Score({ value }: { value: number }) {
   return (
     <span className="score" aria-label={hasRatings ? `${value.toFixed(1)} average rating` : "No ratings yet"}>
       <Star size={15} fill="currentColor" />
-      {hasRatings && value.toFixed(1)}
+      {hasRatings ? value.toFixed(1) : "–"}
     </span>
   );
 }
@@ -389,13 +389,10 @@ function CarDetail({
         ? "Want"
         : "Passenger";
   const ratingScores = communityRating?.scores ?? personalRating?.scores;
-  const detailScores = ratingScores
-    ? ratingCategories.map(category => [category, Number(ratingScores[category] ?? 0)] as const)
-    : [
-        ["Driving", 9.4], ["Sound", 9.5], ["Steering", 9.1],
-        ["Performance", 9.0], ["Comfort", 7.7], ["Looks", 9.3],
-        ["Reliability", 8.4], ["Value", 8.6],
-      ] as const;
+  const detailScores = ratingCategories.map(category => [
+    category,
+    ratingScores ? Number(ratingScores[category] ?? 0) : null,
+  ] as const);
 
   return (
     <div className="modal-backdrop" onClick={close}>
@@ -419,7 +416,7 @@ function CarDetail({
           <div className="rating-grid">
             {detailScores.map(([label, value]) => (
               <div className="metric" key={String(label)}>
-                <span>{label}</span><strong>{Number(value).toFixed(1)}</strong>
+                <span>{label}</span><strong>{value && value > 0 ? value.toFixed(1) : "–"}</strong>
               </div>
             ))}
           </div>
@@ -1253,10 +1250,10 @@ export default function App() {
     const experienceSummary = experienceSummaries?.[car.id];
     return {
       ...car,
-      rating: ratingSummaries ? ratingSummary?.average ?? 0 : car.rating,
-      ratings: ratingSummaries ? ratingSummary?.count ?? 0 : car.ratings,
-      driven: experienceSummaries ? experienceSummary?.driven ?? 0 : car.driven,
-      owners: experienceSummaries ? experienceSummary?.owners ?? 0 : car.owners,
+      rating: ratingSummary?.average ?? 0,
+      ratings: ratingSummary?.count ?? 0,
+      driven: experienceSummary?.driven ?? 0,
+      owners: experienceSummary?.owners ?? 0,
     };
   };
 
