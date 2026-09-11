@@ -1467,7 +1467,7 @@ export default function App() {
                           <span className="garage-status">{relationship}</span>
                           {rating && <span className="garage-rating"><Star size={11} fill="currentColor"/> {rating.overall.toFixed(1)}</span>}
                           <p>{car.make} · {car.generation}</p><h3>{car.model}</h3>
-                          {(entry?.transmission || rating) && <small>{[entry?.transmission, rating ? "Your grade" : null].filter(Boolean).join(" · ")}</small>}
+                          {entry?.transmission && <small>{entry.transmission}</small>}
                         </div>
                       </button>
                     );
