@@ -1403,14 +1403,12 @@ export default function App() {
             </section>
 
             <section className="statement">
-              <p className="eyebrow">THE IDEA</p>
               <h2>Not a car magazine.<br/><em>A record of experience.</em></h2>
               <p>Whether you own, drive, dream about cars your point of view is worth the share. Welcome to Driven, the one stop shop for car fanatics.</p>
             </section>
 
             <section className="contact-section" aria-labelledby="contact-heading">
               <div className="contact-copy">
-                <p className="eyebrow">CONTACT</p>
                 <h2 id="contact-heading">Let&apos;s talk cars.</h2>
                 <p>Got petrol in your veins? Send us a message.</p>
               </div>
