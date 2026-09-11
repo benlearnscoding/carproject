@@ -188,6 +188,41 @@ async function loadRatings(userId: string): Promise<Record<string, SavedRating>>
   }]));
 }
 
+async function syncRatedCarsToGarage(userId: string, garage: GarageEntry[], ratings: Record<string, SavedRating>): Promise<GarageEntry[]> {
+  const garageByCarId = new Map(garage.map(entry => [entry.carId, entry]));
+  const missingEntries = Object.values(ratings).flatMap(rating => {
+    if (rating.experience !== "owned" && rating.experience !== "driven") return [];
+    const existingEntry = garageByCarId.get(rating.carId);
+    if (existingEntry && existingEntry.status !== "want") return [];
+
+    return [{
+      user_id: userId,
+      car_id: rating.carId,
+      relationship: rating.experience,
+      transmission: existingEntry?.transmission ?? null,
+    }];
+  });
+
+  if (!missingEntries.length) return garage;
+
+  const { data, error } = await supabase
+    .from("garage_entries")
+    .upsert(missingEntries, { onConflict: "user_id,car_id" })
+    .select("id,car_id,relationship,transmission,created_at");
+  if (error) throw error;
+
+  const syncedEntries: GarageEntry[] = (data ?? []).map(entry => ({
+    id: entry.id,
+    carId: entry.car_id,
+    status: entry.relationship as GarageStatus,
+    transmission: entry.transmission as Transmission | null,
+    createdAt: entry.created_at,
+  }));
+  const syncedCarIds = new Set(syncedEntries.map(entry => entry.carId));
+
+  return [...syncedEntries, ...garage.filter(entry => !syncedCarIds.has(entry.carId))];
+}
+
 async function loadCommunityRatings(): Promise<CommunityRating[]> {
   const { data, error } = await supabase.rpc("get_recent_community_ratings", { result_limit: 500 });
   if (error) throw error;
@@ -845,9 +880,10 @@ export default function App() {
 
       try {
         const [remoteProfile, remoteGarage, remoteRatings] = await Promise.all([loadRemoteProfile(user), loadGarage(user.id), loadRatings(user.id)]);
+        const syncedGarage = await syncRatedCarsToGarage(user.id, remoteGarage, remoteRatings);
         if (!active) return;
         setProfile(remoteProfile);
-        setGarageEntries(remoteGarage);
+        setGarageEntries(syncedGarage);
         setSavedRatings(remoteRatings);
         window.localStorage.removeItem(profileStorageKey);
       } catch (profileError) {
@@ -976,10 +1012,11 @@ export default function App() {
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) throw error;
     const [remoteProfile, remoteGarage, remoteRatings] = await Promise.all([loadRemoteProfile(data.user), loadGarage(data.user.id), loadRatings(data.user.id)]);
+    const syncedGarage = await syncRatedCarsToGarage(data.user.id, remoteGarage, remoteRatings);
     setAuthUserId(data.user.id);
     setAuthUserCreatedAt(data.user.created_at);
     setProfile(remoteProfile);
-    setGarageEntries(remoteGarage);
+    setGarageEntries(syncedGarage);
     setSavedRatings(remoteRatings);
     window.localStorage.removeItem(profileStorageKey);
     setAuthNotice("Welcome back to Driven.");
@@ -1495,8 +1532,11 @@ export default function App() {
         if (pendingGarageAdd?.carId === ratingCar.id) {
           await addCarToGarage(ratingCar.id, pendingGarageAdd.status, pendingGarageAdd.transmission);
           setPendingGarageAdd(null);
-        } else if (garageEntries.some(entry => entry.carId === ratingCar.id && entry.status === "want") && (rating.experience === "owned" || rating.experience === "driven")) {
-          await addCarToGarage(ratingCar.id, rating.experience);
+        } else if (rating.experience === "owned" || rating.experience === "driven") {
+          const existingEntry = garageEntries.find(entry => entry.carId === ratingCar.id);
+          if (!existingEntry || existingEntry.status === "want") {
+            await addCarToGarage(ratingCar.id, rating.experience);
+          }
         }
       }} />}
       {creatingProfile && <CreateProfile profile={profile} authenticated={Boolean(authUserId)} close={() => setCreatingProfile(false)} save={saveProfile} signIn={signIn} />}
