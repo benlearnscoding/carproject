@@ -1367,15 +1367,15 @@ export default function App() {
           </svg>
         </button>
         <nav>
-          <button className={tab === "discover" ? "active" : ""} onClick={() => setTab("discover")}>DISCOVER</button>
-          <button className={tab === "cars" ? "active" : ""} onClick={() => setTab("cars")}>CARS</button>
-          <button className={tab === "profile" ? "active" : ""} onClick={() => setTab("profile")}>MY GARAGE</button>
+          <button className={tab === "discover" ? "active" : ""} onClick={() => setTab("discover")}>PADDOCK</button>
+          <button className={tab === "cars" ? "active" : ""} onClick={() => setTab("cars")}>GRID</button>
+          <button className={tab === "profile" ? "active" : ""} onClick={() => setTab("profile")}>GARAGE</button>
         </nav>
         <button className="mobile-menu-toggle" type="button" aria-label={mobileMenuOpen ? "Close navigation menu" : "Open navigation menu"} aria-expanded={mobileMenuOpen} aria-controls="mobile-navigation" onClick={() => setMobileMenuOpen(open => !open)}>{mobileMenuOpen ? <X size={23}/> : <Menu size={25}/>}</button>
         {mobileMenuOpen && <nav className="mobile-navigation" id="mobile-navigation" aria-label="Mobile navigation">
-          <button className={tab === "discover" ? "active" : ""} onClick={() => { setTab("discover"); setMobileMenuOpen(false); }}>DISCOVER</button>
-          <button className={tab === "cars" ? "active" : ""} onClick={() => { setTab("cars"); setMobileMenuOpen(false); }}>CARS</button>
-          <button className={tab === "profile" ? "active" : ""} onClick={() => { setTab("profile"); setMobileMenuOpen(false); }}>MY GARAGE</button>
+          <button className={tab === "discover" ? "active" : ""} onClick={() => { setTab("discover"); setMobileMenuOpen(false); }}>PADDOCK</button>
+          <button className={tab === "cars" ? "active" : ""} onClick={() => { setTab("cars"); setMobileMenuOpen(false); }}>GRID</button>
+          <button className={tab === "profile" ? "active" : ""} onClick={() => { setTab("profile"); setMobileMenuOpen(false); }}>GARAGE</button>
         </nav>}
         <div className="profile-actions">
           <button className="profile-button" aria-label={authUserId ? "Open your profile" : "Log in or create an account"} onClick={() => authUserId ? setTab("profile") : setCreatingProfile(true)}><UserRound size={18}/>{authUserId && <span>{profile?.username ?? "Account"}</span>}</button>
