@@ -1404,7 +1404,7 @@ export default function App() {
 
             <section className="statement">
               <h2>For those who can&apos;t stop<br/><em>thinking about cars.</em></h2>
-              <p>Whether you own, drive, dream about cars your point of view is worth the share. Welcome to <strong>Driven</strong>, the one stop shop for car fanatics.</p>
+              <p>Whether you own, drive, dream about cars your point of view is worth the share. Welcome to <strong>Driven</strong>, the all-in-one community for car fanatics.</p>
             </section>
 
             <section className="contact-section" aria-labelledby="contact-heading">
