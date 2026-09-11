@@ -2462,6 +2462,12 @@ const sourceRows = [
     "https://cdn.ferrari.com/cms/network/media/img/resize/5faa6cf240911d0b8c7a7e13-ferrari-sf90-spider-social-card-intro?width=1080"
   ],
   [
+    "Ferrari",
+    "Luce",
+    "",
+    "https://www.electrifying.com/files/PWqbuLTuZra7wDoJ/Ferrari%20Luce%20Meme%20(1).jpg"
+  ],
+  [
     "Lamborghini",
     "Miura",
     "",
