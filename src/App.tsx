@@ -1378,7 +1378,7 @@ export default function App() {
           <button className={tab === "profile" ? "active" : ""} onClick={() => { setTab("profile"); setMobileMenuOpen(false); }}>MY GARAGE</button>
         </nav>}
         <div className="profile-actions">
-          <button className="profile-button" onClick={() => authUserId ? setTab("profile") : setCreatingProfile(true)}><UserRound size={18}/><span>{authUserId && profile?.username ? profile.username : "Create profile"}</span></button>
+          <button className="profile-button" aria-label={authUserId ? "Open your profile" : "Log in or create an account"} onClick={() => authUserId ? setTab("profile") : setCreatingProfile(true)}><UserRound size={18}/>{authUserId && <span>{profile?.username ?? "Account"}</span>}</button>
           {authUserId && <button className="logout-button" onClick={logOut}><LogOut size={17}/><span>Log out</span></button>}
         </div>
       </header>
