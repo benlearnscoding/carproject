@@ -3436,12 +3436,6 @@ const sourceRows = [
   [
     "Porsche",
     "911 GT3",
-    "991.2",
-    "https://images.pistonheads.com/nimg/48427/9911.jpg"
-  ],
-  [
-    "Porsche",
-    "911 GT3",
     "992.1",
     "https://cdn.prod.website-files.com/637dd83cd93444d7a965962c/6a3512ba8cb733c985d5b27a_6935b32c77699d0383c06215_DSC02088-p-2000.webp"
   ],
@@ -3480,12 +3474,6 @@ const sourceRows = [
     "911 GT3 RS",
     "997.1",
     "https://carjager-dev.mo.cloudinary.net/images/production/CJVYT1209251518RQJ-exteriors-l1lnWYXD6c84xgbWNatgp-911?tx=f_auto,q_auto,w_640"
-  ],
-  [
-    "Porsche",
-    "911 GT3 RS",
-    "997.2",
-    "https://images.pistonheads.com/nimg/47255/blobid0.jpg"
   ],
   [
     "Porsche",
@@ -3552,12 +3540,6 @@ const sourceRows = [
     "911 Turbo",
     "991.2",
     "https://s1.cdn.autoevolution.com/images/gallery/PORSCHE-911-Turbo-5558_13.jpg"
-  ],
-  [
-    "Porsche",
-    "911 Turbo",
-    "992.1",
-    "https://images.pistonheads.com/nimg/49417/mceu_93654531111737125285115.jpg"
   ],
   [
     "Porsche",
@@ -3840,12 +3822,6 @@ const sourceRows = [
     "Cayenne Turbo / S",
     "958.2",
     "https://www.stuttcars.com/wp-content/uploads/2021/09/958.2-turbo-s-4-copyright-porsche-downloaded-from-stuttcars_com.jpg"
-  ],
-  [
-    "Porsche",
-    "Cayenne Turbo",
-    "9Y0",
-    "https://images.pistonheads.com/nimg/45426/PCGB18_0311_fine.jpg"
   ],
   [
     "Porsche",
