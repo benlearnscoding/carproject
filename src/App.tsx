@@ -607,7 +607,7 @@ function AddCarModal({
   initialStatus?: GarageStatus;
 }) {
   const initialCar = cars.find(car => car.id === initialCarId);
-  const [step, setStep] = useState<1 | 2>(initialStatus ? 2 : 1);
+  const [step, setStep] = useState<1 | 2>(1);
   const [make, setMake] = useState(initialCar?.make ?? "");
   const [model, setModel] = useState(initialCar?.model ?? "");
   const [generation, setGeneration] = useState(initialCar?.generation ?? "");
@@ -622,7 +622,10 @@ function AddCarModal({
 
   const submit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (step === 1) return;
+    if (step === 1) {
+      if (selectedCar) setStep(2);
+      return;
+    }
     if (!selectedCar || !status) return;
     setBusy(true);
     setError("");
@@ -640,25 +643,10 @@ function AddCarModal({
     <div className="modal-backdrop profile-backdrop">
       <div className="profile-creator garage-creator" onClick={event => event.stopPropagation()}>
         <button className="close" onClick={close} aria-label="Close add car form">×</button>
-        <h2>{step === 1 ? "How does this car fit your story?" : "Choose your car."}</h2>
-        <p className="profile-intro">{step === 1 ? "Tell the community about your relationship with the car." : status === "want" ? "Select the make, model, and generation. Transmission is optional." : "Select the make, model, and generation, then rate it before adding it to your garage. Transmission is optional."}</p>
+        <h2>{step === 1 ? "Choose your car." : "How does this car fit your story?"}</h2>
+        <p className="profile-intro">{step === 1 ? "Select the make, model, and generation. Transmission is optional." : "Tell the community about your relationship with the car."}</p>
         <form onSubmit={submit}>
           {step === 1 ? (
-            <fieldset className="garage-status-fieldset">
-              <legend>Relationship</legend>
-              <div className="garage-status-options">
-                {([
-                  ["owned", "Owned", "It was or is yours."],
-                  ["driven", "Driven", "You spent time behind the wheel."],
-                  ["want", "Want", "It belongs on your shortlist."],
-                ] as const).map(([value, label, description]) => (
-                  <button type="button" key={value} className={status === value ? "selected" : ""} onClick={() => { setStatus(value); setStep(2); }}>
-                    <span className="option-dot" /><span><strong>{label}</strong><small>{description}</small></span>
-                  </button>
-                ))}
-              </div>
-            </fieldset>
-          ) : (
             <>
               <div className="garage-car-fields">
                 <FilterDropdown label="Make" value={make} options={makeOptions} onChange={nextMake => { setMake(nextMake); setModel(""); setGeneration(""); }} />
@@ -668,11 +656,26 @@ function AddCarModal({
               </div>
               {selectedCar && <div className="garage-preview"><img src={selectedCar.image} alt="" referrerPolicy="no-referrer" /><div><span>{selectedCar.make} · {selectedCar.generation}</span><strong>{selectedCar.model}</strong></div></div>}
             </>
+          ) : (
+            <fieldset className="garage-status-fieldset">
+              <legend>Relationship</legend>
+              <div className="garage-status-options">
+                {([
+                  ["owned", "Owned", "It was or is yours."],
+                  ["driven", "Driven", "You spent time behind the wheel."],
+                  ["want", "Want", "It belongs on your shortlist."],
+                ] as const).map(([value, label, description]) => (
+                  <button type="button" key={value} className={status === value ? "selected" : ""} onClick={() => setStatus(value)}>
+                    <span className="option-dot" /><span><strong>{label}</strong><small>{description}</small></span>
+                  </button>
+                ))}
+              </div>
+            </fieldset>
           )}
           {error && <p className="auth-error" role="alert">{error}</p>}
           <div className="rating-actions garage-form-actions">
-            <button type="button" className="secondary" onClick={close}>Cancel</button>
-            {step === 2 && <button className="primary" type="submit" disabled={!selectedCar || busy}>{busy ? "Saving…" : status === "want" ? "Add to cars I want" : "Continue to rating"} {status === "want" ? <Heart size={17}/> : <ChevronRight size={17}/>}</button>}
+            {step === 1 ? <button type="button" className="secondary" onClick={close}>Cancel</button> : <button type="button" className="secondary" onClick={() => setStep(1)}>Back</button>}
+            {step === 1 ? <button className="primary" type="submit" disabled={!selectedCar}>Continue <ChevronRight size={17}/></button> : <button className="primary" type="submit" disabled={!status || busy}>{busy ? "Saving…" : status === "want" ? "Add to cars I want" : "Continue to rating"} {status === "want" ? <Heart size={17}/> : <ChevronRight size={17}/>}</button>}
           </div>
         </form>
       </div>
@@ -1431,6 +1434,7 @@ export default function App() {
               <div>
                 <h1>Your automotive taste,<br/><em>documented.</em></h1>
                 <p className="hero-copy">Rate the cars you've owned. Log the ones you've driven.<br/>Build your garage. Discover what other enthusiasts actually think.</p>
+                <button className="primary hero-garage-cta" type="button" onClick={() => openAddCar()}><Plus size={17}/> Start my garage</button>
               </div>
             </section>
 
