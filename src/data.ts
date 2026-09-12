@@ -1266,7 +1266,7 @@ const latestSheetCars: Car[] = latestSheetCatalogEntries.map((sheetCar, index) =
 });
 
 export const cars: Car[] = [
-  ...curatedCars.filter(car => car.make !== "Aston Martin" && !sheetCatalogMakes.has(car.make) && !latestSheetCatalogModelKeys.has(catalogModelKey(car))),
+  ...curatedCars.filter(car => car.make !== "Aston Martin" && !(car.make === "Porsche" && porscheModels.some(legacyCar => legacyCar.id === car.id) && car.image === porscheArcImage) && !sheetCatalogMakes.has(car.make) && !latestSheetCatalogModelKeys.has(catalogModelKey(car))),
   ...sheetCars.filter(car => !latestSheetCatalogModelKeys.has(catalogModelKey(car))),
   ...latestSheetCars,
 ];
