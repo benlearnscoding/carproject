@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from "react";
-import { Plus, Star, ChevronRight, ChevronLeft, ChevronDown, Heart, CarFront, UserRound, ArrowLeft, Check, LogOut, X, Eye, EyeOff } from "lucide-react";
+import { Plus, Star, ChevronRight, ChevronLeft, ChevronDown, Heart, CarFront, UserRound, ArrowLeft, Check, LogOut, X, Eye, EyeOff, Menu } from "lucide-react";
 import type { User } from "@supabase/supabase-js";
 import { cars, type Car } from "./data";
 import { supabase } from "./supabase";
@@ -806,6 +806,7 @@ function CursorBoostFlame() {
 
 export default function App() {
   const [tab, setTab] = useState<Tab>("discover");
+  const [siteMenuOpen, setSiteMenuOpen] = useState(false);
   const [selectedMake, setSelectedMake] = useState("");
   const [selectedModel, setSelectedModel] = useState("");
   const [selectedGeneration, setSelectedGeneration] = useState("");
@@ -845,6 +846,22 @@ export default function App() {
   const [garageSeedCarId, setGarageSeedCarId] = useState<string | undefined>();
   const [garageSeedStatus, setGarageSeedStatus] = useState<GarageStatus | undefined>();
   const [pendingGarageAdd, setPendingGarageAdd] = useState<{ carId: string; status: GarageStatus; transmission?: Transmission } | null>(null);
+
+  useEffect(() => {
+    document.body.style.overflow = siteMenuOpen ? "hidden" : "";
+    return () => { document.body.style.overflow = ""; };
+  }, [siteMenuOpen]);
+
+  const openMenuDestination = (destination: "discover" | "cars" | "profile" | "contact") => {
+    setSiteMenuOpen(false);
+    if (destination === "contact") {
+      setTab("discover");
+      window.setTimeout(() => document.getElementById("contact")?.scrollIntoView({ behavior: "smooth", block: "start" }), 0);
+      return;
+    }
+    setTab(destination);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   const refreshCommunityRatings = useCallback(async (showLoading = false) => {
     if (showLoading) setCommunityRatingsLoading(true);
@@ -1363,10 +1380,22 @@ export default function App() {
           </span>
         </button>
         <div className="profile-actions">
-          <button className="profile-button" aria-label={authUserId ? "Open your profile" : "Log in or create an account"} onClick={() => authUserId ? setTab("profile") : setCreatingProfile(true)}><UserRound size={18}/>{authUserId && <span>{profile?.username ?? "Account"}</span>}</button>
+          <button className="profile-button" aria-label={authUserId ? "Open your profile" : "Log in or create an account"} onClick={() => { setSiteMenuOpen(false); authUserId ? setTab("profile") : setCreatingProfile(true); }}><UserRound size={18}/>{authUserId && <span>{profile?.username ?? "Account"}</span>}</button>
           {authUserId && <button className="logout-button" onClick={logOut}><LogOut size={17}/><span>Log out</span></button>}
         </div>
+        <button className="site-menu-toggle" type="button" aria-label={siteMenuOpen ? "Close site menu" : "Open site menu"} aria-expanded={siteMenuOpen} aria-controls="site-menu" onClick={() => setSiteMenuOpen(open => !open)}><Menu size={28}/></button>
       </header>
+
+      {siteMenuOpen && (
+        <div className="site-menu-overlay" id="site-menu" role="dialog" aria-modal="true" aria-label="Site navigation">
+          <nav>
+            <button type="button" onClick={() => openMenuDestination("discover")}>PADDOCK</button>
+            <button type="button" onClick={() => openMenuDestination("cars")}>GRID</button>
+            <button type="button" onClick={() => openMenuDestination("profile")}>GARAGE</button>
+            <button type="button" onClick={() => openMenuDestination("contact")}>CONTACT</button>
+          </nav>
+        </div>
+      )}
 
       {authNotice && <div className="auth-notice" role="status"><span>{authNotice}</span><button type="button" aria-label="Dismiss message" onClick={() => setAuthNotice("")}>×</button></div>}
 
@@ -1400,7 +1429,7 @@ export default function App() {
               <p>Whether you own, drive, dream about cars your point of view is worth the share. Welcome to <strong>Driven</strong>, the all-in-one community for car fanatics.</p>
             </section>
 
-            <section className="contact-section" aria-labelledby="contact-heading">
+            <section className="contact-section" id="contact" aria-labelledby="contact-heading">
               <div className="contact-copy">
                 <h2 id="contact-heading">Let&apos;s talk cars.</h2>
                 <p>Got petrol in your veins? Send us a message.</p>
