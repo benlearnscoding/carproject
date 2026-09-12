@@ -18,8 +18,8 @@ button { cursor:pointer; color:inherit; }
 .logo-loop-track > span { display:block; text-align:center; font-size:25.2px; font-weight:700; font-style:italic; line-height:1; letter-spacing:-1px; transform:skewX(-12deg); }
 @keyframes driven-logo-loop { from { transform:translateX(-50%); } to { transform:translateX(0); } }
 .profile-actions { position:relative; display:flex; align-items:center; gap:8px; }
-.account-menu { position:absolute; z-index:7; top:calc(100% + 10px); right:0; display:grid; width:160px; overflow:hidden; border:1px solid rgba(255,255,255,.55); border-radius:5px; background:#023bb9; box-shadow:0 16px 34px rgba(0,24,94,.35); }
-.account-menu button { display:flex; align-items:center; gap:9px; width:100%; border:0; background:transparent; padding:12px 14px; color:#fff; text-align:left; }
+.account-menu { position:absolute; z-index:7; top:calc(100% + 10px); right:0; display:grid; width:max-content; overflow:hidden; border:1px solid rgba(255,255,255,.55); border-radius:5px; background:#023bb9; box-shadow:0 16px 34px rgba(0,24,94,.35); }
+.account-menu button { display:block; width:100%; border:0; background:transparent; padding:12px 14px; color:#fff; text-align:left; white-space:nowrap; }
 .account-menu button + button { border-top:1px solid rgba(255,255,255,.22); }
 .account-menu button:hover,.account-menu button:focus-visible { background:rgba(255,255,255,.14); outline:0; }
 .site-menu-toggle { position:relative; z-index:2; display:flex; align-items:center; justify-content:center; gap:10px; width:57px; min-width:57px; height:57px; margin-left:18px; padding:0; border:0; background:transparent; color:#fff; }

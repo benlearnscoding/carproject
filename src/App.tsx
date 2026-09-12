@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from "react";
-import { Plus, Star, ChevronRight, ChevronLeft, ChevronDown, Heart, CarFront, UserRound, ArrowLeft, Check, LogOut, X, Eye, EyeOff, Menu } from "lucide-react";
+import { Plus, Star, ChevronRight, ChevronLeft, ChevronDown, Heart, CarFront, UserRound, ArrowLeft, Check, X, Eye, EyeOff, Menu } from "lucide-react";
 import type { User } from "@supabase/supabase-js";
 import { cars, type Car } from "./data";
 import { supabase } from "./supabase";
@@ -1394,8 +1394,8 @@ export default function App() {
           <button className="profile-button" aria-label={authUserId ? "Open account menu" : "Log in or create an account"} aria-haspopup={authUserId ? "menu" : undefined} aria-expanded={authUserId ? accountMenuOpen : undefined} onClick={() => { setSiteMenuOpen(false); authUserId ? setAccountMenuOpen(open => !open) : setCreatingProfile(true); }}><UserRound size={18}/>{authUserId && <span>{profile?.username ?? "Account"}</span>}</button>
           {authUserId && accountMenuOpen && (
             <div className="account-menu" role="menu">
-              <button type="button" role="menuitem" onClick={() => { setAccountMenuOpen(false); setTab("profile"); window.scrollTo({ top: 0, behavior: "smooth" }); }}><CarFront size={16}/> My Garage</button>
-              <button type="button" role="menuitem" onClick={() => { setAccountMenuOpen(false); void logOut(); }}><LogOut size={16}/> Log out</button>
+              <button type="button" role="menuitem" onClick={() => { setAccountMenuOpen(false); setTab("profile"); window.scrollTo({ top: 0, behavior: "smooth" }); }}>My Garage</button>
+              <button type="button" role="menuitem" onClick={() => { setAccountMenuOpen(false); void logOut(); }}>Log Out</button>
             </div>
           )}
         </div>
