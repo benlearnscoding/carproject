@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from "react";
-import { Plus, Star, ChevronRight, ChevronLeft, ChevronDown, Heart, CarFront, UserRound, ArrowLeft, Check, LogOut, X, Eye, EyeOff, Menu } from "lucide-react";
+import { Plus, Star, ChevronRight, ChevronLeft, ChevronDown, Heart, CarFront, UserRound, ArrowLeft, Check, LogOut, X, Eye, EyeOff } from "lucide-react";
 import type { User } from "@supabase/supabase-js";
 import { cars, type Car } from "./data";
 import { supabase } from "./supabase";
@@ -806,7 +806,6 @@ function CursorBoostFlame() {
 
 export default function App() {
   const [tab, setTab] = useState<Tab>("discover");
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [selectedMake, setSelectedMake] = useState("");
   const [selectedModel, setSelectedModel] = useState("");
   const [selectedGeneration, setSelectedGeneration] = useState("");
@@ -1357,26 +1356,12 @@ export default function App() {
     <div className="app">
       <CursorBoostFlame />
       <header className="nav">
-        <button className="logo" onClick={() => setTab("discover")} aria-label="Driven home">
-          <span className="logo-word">DRIVEN</span>
-          <svg className="logo-curb" viewBox="0 0 112 52" aria-hidden="true">
-            <path className="logo-curb-base" d="M8 37C25 47 63 47 89 38C109 31 113 18 105 9C102 6 99 4 96 4H88" />
-            <path className="logo-curb-blue" pathLength="96" d="M8 37C25 47 63 47 89 38C109 31 113 18 105 9C102 6 99 4 96 4H88" />
-            <path className="logo-curb-inner" d="M11 32C29 40 62 41 85 34C101 29 106 19 101 13C99 10 96 8 94 8H88" />
-            <path className="logo-curb-outer" d="M6 42C23 52 66 52 93 42C115 34 119 18 110 5C107 2 102 0 96 0H88" />
-          </svg>
+        <button className="logo-loop" onClick={() => setTab("discover")} aria-label="Driven home">
+          <span className="logo-loop-track" aria-hidden="true">
+            <span className="logo-loop-set"><span>DRIVEN</span><span>DRIVEN</span><span>DRIVEN</span></span>
+            <span className="logo-loop-set"><span>DRIVEN</span><span>DRIVEN</span><span>DRIVEN</span></span>
+          </span>
         </button>
-        <nav>
-          <button className={tab === "discover" ? "active" : ""} onClick={() => setTab("discover")}>PADDOCK</button>
-          <button className={tab === "cars" ? "active" : ""} onClick={() => setTab("cars")}>GRID</button>
-          <button className={tab === "profile" ? "active" : ""} onClick={() => setTab("profile")}>GARAGE</button>
-        </nav>
-        <button className="mobile-menu-toggle" type="button" aria-label={mobileMenuOpen ? "Close navigation menu" : "Open navigation menu"} aria-expanded={mobileMenuOpen} aria-controls="mobile-navigation" onClick={() => setMobileMenuOpen(open => !open)}>{mobileMenuOpen ? <X size={23}/> : <Menu size={25}/>}</button>
-        {mobileMenuOpen && <nav className="mobile-navigation" id="mobile-navigation" aria-label="Mobile navigation">
-          <button className={tab === "discover" ? "active" : ""} onClick={() => { setTab("discover"); setMobileMenuOpen(false); }}>PADDOCK</button>
-          <button className={tab === "cars" ? "active" : ""} onClick={() => { setTab("cars"); setMobileMenuOpen(false); }}>GRID</button>
-          <button className={tab === "profile" ? "active" : ""} onClick={() => { setTab("profile"); setMobileMenuOpen(false); }}>GARAGE</button>
-        </nav>}
         <div className="profile-actions">
           <button className="profile-button" aria-label={authUserId ? "Open your profile" : "Log in or create an account"} onClick={() => authUserId ? setTab("profile") : setCreatingProfile(true)}><UserRound size={18}/>{authUserId && <span>{profile?.username ?? "Account"}</span>}</button>
           {authUserId && <button className="logout-button" onClick={logOut}><LogOut size={17}/><span>Log out</span></button>}
