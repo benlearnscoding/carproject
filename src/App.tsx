@@ -807,6 +807,8 @@ function CursorBoostFlame() {
 export default function App() {
   const [tab, setTab] = useState<Tab>("discover");
   const [siteMenuOpen, setSiteMenuOpen] = useState(false);
+  const [accountMenuOpen, setAccountMenuOpen] = useState(false);
+  const accountMenuRef = useRef<HTMLDivElement>(null);
   const [selectedMake, setSelectedMake] = useState("");
   const [selectedModel, setSelectedModel] = useState("");
   const [selectedGeneration, setSelectedGeneration] = useState("");
@@ -851,6 +853,15 @@ export default function App() {
     document.body.style.overflow = siteMenuOpen ? "hidden" : "";
     return () => { document.body.style.overflow = ""; };
   }, [siteMenuOpen]);
+
+  useEffect(() => {
+    if (!accountMenuOpen) return;
+    const closeAccountMenu = (event: PointerEvent) => {
+      if (!accountMenuRef.current?.contains(event.target as Node)) setAccountMenuOpen(false);
+    };
+    document.addEventListener("pointerdown", closeAccountMenu);
+    return () => document.removeEventListener("pointerdown", closeAccountMenu);
+  }, [accountMenuOpen]);
 
   const openMenuDestination = (destination: "discover" | "cars" | "profile" | "contact") => {
     setSiteMenuOpen(false);
@@ -1379,11 +1390,16 @@ export default function App() {
             <span>DRIVEN</span><span>DRIVEN</span><span>DRIVEN</span>
           </span>
         </button>
-        <div className="profile-actions">
-          <button className="profile-button" aria-label={authUserId ? "Open your profile" : "Log in or create an account"} onClick={() => { setSiteMenuOpen(false); authUserId ? setTab("profile") : setCreatingProfile(true); }}><UserRound size={18}/>{authUserId && <span>{profile?.username ?? "Account"}</span>}</button>
-          {authUserId && <button className="logout-button" onClick={logOut}><LogOut size={17}/><span>Log out</span></button>}
+        <div className="profile-actions" ref={accountMenuRef}>
+          <button className="profile-button" aria-label={authUserId ? "Open account menu" : "Log in or create an account"} aria-haspopup={authUserId ? "menu" : undefined} aria-expanded={authUserId ? accountMenuOpen : undefined} onClick={() => { setSiteMenuOpen(false); authUserId ? setAccountMenuOpen(open => !open) : setCreatingProfile(true); }}><UserRound size={18}/>{authUserId && <span>{profile?.username ?? "Account"}</span>}</button>
+          {authUserId && accountMenuOpen && (
+            <div className="account-menu" role="menu">
+              <button type="button" role="menuitem" onClick={() => { setAccountMenuOpen(false); setTab("profile"); window.scrollTo({ top: 0, behavior: "smooth" }); }}><CarFront size={16}/> My Garage</button>
+              <button type="button" role="menuitem" onClick={() => { setAccountMenuOpen(false); void logOut(); }}><LogOut size={16}/> Log out</button>
+            </div>
+          )}
         </div>
-        <button className="site-menu-toggle" type="button" aria-label={siteMenuOpen ? "Close site menu" : "Open site menu"} aria-expanded={siteMenuOpen} aria-controls="site-menu" onClick={() => setSiteMenuOpen(open => !open)}><Menu size={28}/></button>
+        <button className="site-menu-toggle" type="button" aria-label={siteMenuOpen ? "Close site menu" : "Open site menu"} aria-expanded={siteMenuOpen} aria-controls="site-menu" onClick={() => { setAccountMenuOpen(false); setSiteMenuOpen(open => !open); }}><Menu size={28}/></button>
       </header>
 
       {siteMenuOpen && (
