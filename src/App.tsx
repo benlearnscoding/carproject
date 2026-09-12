@@ -1358,8 +1358,8 @@ export default function App() {
       <header className="nav">
         <button className="logo-loop" onClick={() => setTab("discover")} aria-label="Driven home">
           <span className="logo-loop-track" aria-hidden="true">
-            <span className="logo-loop-set"><span>DRIVEN</span><span>DRIVEN</span><span>DRIVEN</span></span>
-            <span className="logo-loop-set"><span>DRIVEN</span><span>DRIVEN</span><span>DRIVEN</span></span>
+            <span>DRIVEN</span><span>DRIVEN</span><span>DRIVEN</span>
+            <span>DRIVEN</span><span>DRIVEN</span><span>DRIVEN</span>
           </span>
         </button>
         <div className="profile-actions">
