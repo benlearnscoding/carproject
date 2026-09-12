@@ -1399,7 +1399,7 @@ export default function App() {
             </div>
           )}
         </div>
-        <button className="site-menu-toggle" type="button" aria-label={siteMenuOpen ? "Close site menu" : "Open site menu"} aria-expanded={siteMenuOpen} aria-controls="site-menu" onClick={() => { setAccountMenuOpen(false); setSiteMenuOpen(open => !open); }}><Menu size={36}/></button>
+        <button className={`site-menu-toggle ${siteMenuOpen ? "open" : ""}`} type="button" aria-label={siteMenuOpen ? "Close site menu" : "Open site menu"} aria-expanded={siteMenuOpen} aria-controls="site-menu" onClick={() => { setAccountMenuOpen(false); setSiteMenuOpen(open => !open); }}>{siteMenuOpen && <span className="site-menu-close-label">CLOSE</span>}<Menu size={36}/></button>
       </header>
 
       {siteMenuOpen && (
