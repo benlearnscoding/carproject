@@ -1384,6 +1384,15 @@ export default function App() {
     <div className="app">
       <CursorBoostFlame />
       <header className="nav">
+        <button className="corner-logo" onClick={() => { setSiteMenuOpen(false); setTab("discover"); window.scrollTo({ top: 0, behavior: "smooth" }); }} aria-label="Driven home">
+          <span className="corner-logo-letter">D</span>
+          <svg className="corner-logo-curb" viewBox="0 0 74 68" aria-hidden="true">
+            <path className="corner-logo-curb-base" d="M3 51C17 65 45 65 63 48C77 35 75 17 59 8C53 5 46 4 40 7" />
+            <path className="corner-logo-curb-tiles" pathLength="96" d="M3 51C17 65 45 65 63 48C77 35 75 17 59 8C53 5 46 4 40 7" />
+            <path className="corner-logo-curb-inner" d="M5 49C18 62 44 62 61 46C74 34 72 19 58 11C52 8 46 8 41 10" />
+            <path className="corner-logo-curb-outer" d="M1 53C16 67 46 68 65 50C80 36 78 15 60 5C54 2 45 2 39 5" />
+          </svg>
+        </button>
         <button className="logo-loop" onClick={() => setTab("discover")} aria-label="Driven home">
           <span className="logo-loop-track" aria-hidden="true">
             <span>DRIVEN</span><span>DRIVEN</span><span>DRIVEN</span>
