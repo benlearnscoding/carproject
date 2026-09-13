@@ -70,6 +70,27 @@ type CarExperienceSummaryRow = {
   driven_count: number | string;
   owner_count: number | string;
 };
+type LeaderboardCategory = "reviewers" | "garage" | "driven";
+type LeaderboardEntry = {
+  category: LeaderboardCategory;
+  rank: number;
+  username: string | null;
+  carId: string | null;
+  reviewCount: number;
+  ownedCount: number;
+  drivenCount: number;
+  ownerCount: number;
+};
+type LeaderboardEntryRow = {
+  category: LeaderboardCategory;
+  rank: number | string;
+  username: string | null;
+  car_id: string | null;
+  review_count: number | string | null;
+  owned_count: number | string | null;
+  driven_count: number | string | null;
+  owner_count: number | string | null;
+};
 type PublicProfile = {
   firstName: string;
   lastName: string;
@@ -258,6 +279,22 @@ async function loadCarExperienceSummaries(): Promise<Record<string, CarExperienc
     driven: Number(summary.driven_count),
     owners: Number(summary.owner_count),
   }]));
+}
+
+async function loadLeaderboards(): Promise<LeaderboardEntry[]> {
+  const { data, error } = await supabase.rpc("get_leaderboards");
+  if (error) throw error;
+
+  return ((data as LeaderboardEntryRow[] | null) ?? []).map(entry => ({
+    category: entry.category,
+    rank: Number(entry.rank),
+    username: entry.username,
+    carId: entry.car_id,
+    reviewCount: Number(entry.review_count ?? 0),
+    ownedCount: Number(entry.owned_count ?? 0),
+    drivenCount: Number(entry.driven_count ?? 0),
+    ownerCount: Number(entry.owner_count ?? 0),
+  }));
 }
 
 async function loadPublicProfile(username: string): Promise<PublicProfile> {
@@ -824,6 +861,7 @@ export default function App() {
   const [communityRatings, setCommunityRatings] = useState<CommunityRating[]>([]);
   const [ratingSummaries, setRatingSummaries] = useState<Record<string, CarRatingSummary> | null>(null);
   const [experienceSummaries, setExperienceSummaries] = useState<Record<string, CarExperienceSummary> | null>(null);
+  const [leaderboards, setLeaderboards] = useState<LeaderboardEntry[]>([]);
   const [communityRatingsLoading, setCommunityRatingsLoading] = useState(true);
   const [contactName, setContactName] = useState("");
   const [contactEmail, setContactEmail] = useState("");
@@ -898,6 +936,12 @@ export default function App() {
     return summaries;
   }, []);
 
+  const refreshLeaderboards = useCallback(async () => {
+    const leaderboardEntries = await loadLeaderboards();
+    setLeaderboards(leaderboardEntries);
+    return leaderboardEntries;
+  }, []);
+
   useEffect(() => {
     let active = true;
 
@@ -941,12 +985,13 @@ export default function App() {
     let active = true;
     const refresh = (showLoading = false) => {
       if (showLoading) setCommunityRatingsLoading(true);
-      Promise.all([loadCommunityRatings(), loadCarRatingSummaries(), loadCarExperienceSummaries()])
-        .then(([ratings, summaries, experiences]) => {
+      Promise.all([loadCommunityRatings(), loadCarRatingSummaries(), loadCarExperienceSummaries(), loadLeaderboards()])
+        .then(([ratings, summaries, experiences, leaderboardEntries]) => {
           if (!active) return;
           setCommunityRatings(ratings);
           setRatingSummaries(summaries);
           setExperienceSummaries(experiences);
+          setLeaderboards(leaderboardEntries);
         })
         .catch(() => { if (active && showLoading) setCommunityRatings([]); })
         .finally(() => { if (active && showLoading) setCommunityRatingsLoading(false); });
@@ -1186,6 +1231,7 @@ export default function App() {
     };
     setGarageEntries(current => [savedEntry, ...current.filter(entry => entry.carId !== carId)]);
     refreshExperienceSummaries().catch(() => undefined);
+    refreshLeaderboards().catch(() => undefined);
     const savedCar = cars.find(car => car.id === carId);
     setAuthNotice(status === "want"
       ? `${savedCar?.make ?? "Car"} ${savedCar?.model ?? ""} added to Cars I want.`.trim()
@@ -1220,6 +1266,7 @@ export default function App() {
     };
     setSavedRatings(current => ({ ...current, [carId]: savedRating }));
     refreshCommunityRatings().catch(() => undefined);
+    refreshLeaderboards().catch(() => undefined);
     try {
       const summaries = await refreshRatingSummaries();
       const summary = summaries[carId];
@@ -1358,6 +1405,13 @@ export default function App() {
     randomizedCommunityRatings[(communitySlideStart + offset) % randomizedCommunityRatings.length]
   ));
   const displayedCommunityRatings = communitySlideRatings;
+  const topReviewers = leaderboards.filter(entry => entry.category === "reviewers").slice(0, 3);
+  const biggestGarages = leaderboards.filter(entry => entry.category === "garage").slice(0, 3);
+  const mostDrivenCars = leaderboards.flatMap(entry => {
+    if (entry.category !== "driven" || !entry.carId) return [];
+    const car = cars.find(candidate => candidate.id === entry.carId);
+    return car ? [{ entry, car }] : [];
+  }).slice(0, 3);
   const moveCommunitySlide = (direction: -1 | 1) => {
     if (randomizedCommunityRatings.length < 2) return;
     setCommunitySlideStart(current => (current + direction + randomizedCommunityRatings.length) % randomizedCommunityRatings.length);
@@ -1451,6 +1505,54 @@ export default function App() {
               ) : (
                 <p className="community-empty">No recent ratings match these filters yet.</p>
               )}
+            </section>
+
+            <section className="section leaderboard-section" aria-labelledby="leaderboard-heading">
+              <div className="section-head"><div><h2 id="leaderboard-heading">Leaderboard</h2></div></div>
+              <div className="leaderboard-grid">
+                <article className="leaderboard-card">
+                  <h3>Top Reviewers</h3>
+                  <p>Most reviews shared</p>
+                  <ol className="leaderboard-list">
+                    {topReviewers.length ? topReviewers.map((entry, index) => (
+                      <li key={`reviewer-${entry.username}`}>
+                        <span className="leaderboard-rank">{index + 1}</span>
+                        <button className="leaderboard-user" type="button" onClick={() => entry.username && openPublicProfile(entry.username)}>{entry.username}</button>
+                        <span className="leaderboard-value">{entry.reviewCount} {entry.reviewCount === 1 ? "review" : "reviews"}</span>
+                      </li>
+                    )) : <li className="leaderboard-empty">No reviews yet.</li>}
+                  </ol>
+                </article>
+                <article className="leaderboard-card">
+                  <h3>Biggest Garage</h3>
+                  <p>Most cars owned</p>
+                  <ol className="leaderboard-list">
+                    {biggestGarages.length ? biggestGarages.map((entry, index) => (
+                      <li key={`garage-${entry.username}`}>
+                        <span className="leaderboard-rank">{index + 1}</span>
+                        <button className="leaderboard-user" type="button" onClick={() => entry.username && openPublicProfile(entry.username)}>{entry.username}</button>
+                        <span className="leaderboard-value">{entry.ownedCount} {entry.ownedCount === 1 ? "car" : "cars"}</span>
+                      </li>
+                    )) : <li className="leaderboard-empty">No owned cars yet.</li>}
+                  </ol>
+                </article>
+                <article className="leaderboard-card">
+                  <h3>Most Driven</h3>
+                  <p>Most driven and owned</p>
+                  <ol className="leaderboard-list">
+                    {mostDrivenCars.length ? mostDrivenCars.map(({ entry, car }, index) => {
+                      const totalExperiences = entry.drivenCount + entry.ownerCount;
+                      return (
+                        <li key={`driven-${entry.carId}`}>
+                          <span className="leaderboard-rank">{index + 1}</span>
+                          <button className="leaderboard-car" type="button" onClick={() => { setSelectedGarageExperience(undefined); setSelectedCommunityRating(null); setSelected(displayedCar(car)); }}>{car.make} {car.model}</button>
+                          <span className="leaderboard-value">{totalExperiences} {totalExperiences === 1 ? "drive" : "drives"}</span>
+                        </li>
+                      );
+                    }) : <li className="leaderboard-empty">No drives yet.</li>}
+                  </ol>
+                </article>
+              </div>
             </section>
 
             <section className="statement">
