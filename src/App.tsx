@@ -863,6 +863,7 @@ function CursorBoostFlame() {
 
 export default function App() {
   const [tab, setTab] = useState<Tab>(() => pageFromPath(window.location.pathname).tab);
+  const [landingOpen, setLandingOpen] = useState(true);
   const [siteMenuOpen, setSiteMenuOpen] = useState(false);
   const [siteMenuClosing, setSiteMenuClosing] = useState(false);
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
@@ -910,9 +911,9 @@ export default function App() {
   const [pendingGarageAdd, setPendingGarageAdd] = useState<{ carId: string; status: GarageStatus; transmission?: Transmission } | null>(null);
 
   useEffect(() => {
-    document.body.style.overflow = siteMenuOpen ? "hidden" : "";
+    document.body.style.overflow = siteMenuOpen || landingOpen ? "hidden" : "";
     return () => { document.body.style.overflow = ""; };
-  }, [siteMenuOpen]);
+  }, [landingOpen, siteMenuOpen]);
 
   useEffect(() => {
     const applyBrowserRoute = () => {
@@ -1495,6 +1496,17 @@ export default function App() {
 
   return (
     <div className="app">
+      {landingOpen && (
+        <section className="landing-screen" aria-label="Welcome to Driven">
+          <video className="landing-video" autoPlay loop muted playsInline preload="auto" aria-hidden="true">
+            <source src="/driven-launch.mp4" type="video/mp4" />
+          </video>
+          <div className="landing-screen-copy">
+            <h1>Welcome to Driven</h1>
+            <button type="button" className="landing-enter-button" onClick={() => setLandingOpen(false)}>Let&apos;s Drive</button>
+          </div>
+        </section>
+      )}
       <CursorBoostFlame />
       <header className="nav">
         <button className="corner-logo" onClick={() => { setSiteMenuOpen(false); navigateToPage("discover"); }} aria-label="Driven home">
