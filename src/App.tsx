@@ -5,6 +5,23 @@ import { cars, type Car } from "./data";
 import { supabase } from "./supabase";
 
 type Tab = "discover" | "cars" | "profile" | "member";
+type SiteDestination = "discover" | "cars" | "profile" | "contact";
+
+const pageFromPath = (pathname: string): { tab: Tab; contact: boolean } => {
+  const path = pathname.replace(/\/+$/, "") || "/";
+  if (path === "/grid") return { tab: "cars", contact: false };
+  if (path === "/garage") return { tab: "profile", contact: false };
+  if (path === "/contact") return { tab: "discover", contact: true };
+  return { tab: "discover", contact: false };
+};
+
+const pathForDestination: Record<SiteDestination, string> = {
+  discover: "/",
+  cars: "/grid",
+  profile: "/garage",
+  contact: "/contact",
+};
+
 type UserProfile = {
   firstName: string;
   lastName: string;
@@ -845,7 +862,7 @@ function CursorBoostFlame() {
 }
 
 export default function App() {
-  const [tab, setTab] = useState<Tab>("discover");
+  const [tab, setTab] = useState<Tab>(() => pageFromPath(window.location.pathname).tab);
   const [siteMenuOpen, setSiteMenuOpen] = useState(false);
   const [siteMenuClosing, setSiteMenuClosing] = useState(false);
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
@@ -897,6 +914,19 @@ export default function App() {
     return () => { document.body.style.overflow = ""; };
   }, [siteMenuOpen]);
 
+  useEffect(() => {
+    const applyBrowserRoute = () => {
+      const page = pageFromPath(window.location.pathname);
+      setTab(page.tab);
+      if (page.contact) window.setTimeout(() => document.getElementById("contact")?.scrollIntoView({ behavior: "smooth", block: "start" }), 0);
+      else window.scrollTo({ top: 0, behavior: "smooth" });
+    };
+
+    window.addEventListener("popstate", applyBrowserRoute);
+    if (pageFromPath(window.location.pathname).contact) applyBrowserRoute();
+    return () => window.removeEventListener("popstate", applyBrowserRoute);
+  }, []);
+
   useEffect(() => () => {
     if (siteMenuCloseTimer.current !== null) window.clearTimeout(siteMenuCloseTimer.current);
   }, []);
@@ -920,20 +950,25 @@ export default function App() {
     }, 520);
   };
 
-  const openMenuDestination = (destination: "discover" | "cars" | "profile" | "contact") => {
+  const navigateToPage = (destination: SiteDestination) => {
+    const path = pathForDestination[destination];
+    if (window.location.pathname !== path) window.history.pushState({}, "", path);
+    setTab(destination === "cars" ? "cars" : destination === "profile" ? "profile" : "discover");
+    if (destination === "contact") {
+      window.setTimeout(() => document.getElementById("contact")?.scrollIntoView({ behavior: "smooth", block: "start" }), 0);
+      return;
+    }
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const openMenuDestination = (destination: SiteDestination) => {
     if (siteMenuCloseTimer.current !== null) {
       window.clearTimeout(siteMenuCloseTimer.current);
       siteMenuCloseTimer.current = null;
     }
     setSiteMenuClosing(false);
     setSiteMenuOpen(false);
-    if (destination === "contact") {
-      setTab("discover");
-      window.setTimeout(() => document.getElementById("contact")?.scrollIntoView({ behavior: "smooth", block: "start" }), 0);
-      return;
-    }
-    setTab(destination);
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    navigateToPage(destination);
   };
 
   const refreshCommunityRatings = useCallback(async (showLoading = false) => {
@@ -1141,7 +1176,7 @@ export default function App() {
     setEditingGarage(false);
     setSelectedGarageCarIds(new Set());
     window.localStorage.removeItem(profileStorageKey);
-    setTab("discover");
+    navigateToPage("discover");
   };
 
   const openAddCar = (carId?: string) => {
@@ -1462,7 +1497,7 @@ export default function App() {
     <div className="app">
       <CursorBoostFlame />
       <header className="nav">
-        <button className="corner-logo" onClick={() => { setSiteMenuOpen(false); setTab("discover"); window.scrollTo({ top: 0, behavior: "smooth" }); }} aria-label="Driven home">
+        <button className="corner-logo" onClick={() => { setSiteMenuOpen(false); navigateToPage("discover"); }} aria-label="Driven home">
           <span className="corner-logo-letter">D</span>
           <svg className="corner-logo-curb" viewBox="0 0 74 68" aria-hidden="true">
             <path className="corner-logo-curb-base" d="M3 51C17 65 45 65 63 48C77 35 75 17 59 8C53 5 46 4 40 7" />
@@ -1471,7 +1506,7 @@ export default function App() {
             <path className="corner-logo-curb-outer" d="M1 53C16 67 46 68 65 50C80 36 78 15 60 5C54 2 45 2 39 5" />
           </svg>
         </button>
-        <button className="logo-loop" onClick={() => setTab("discover")} aria-label="Driven home">
+        <button className="logo-loop" onClick={() => navigateToPage("discover")} aria-label="Driven home">
           <span className="logo-loop-track" aria-hidden="true">
             <span>DRIVEN</span><span>DRIVEN</span><span>DRIVEN</span>
             <span>DRIVEN</span><span>DRIVEN</span><span>DRIVEN</span>
@@ -1481,7 +1516,7 @@ export default function App() {
           <button className="profile-button" aria-label={authUserId ? "Open account menu" : "Log in or create an account"} aria-haspopup={authUserId ? "menu" : undefined} aria-expanded={authUserId ? accountMenuOpen : undefined} onClick={() => { setSiteMenuOpen(false); authUserId ? setAccountMenuOpen(open => !open) : setCreatingProfile(true); }}><UserRound size={18}/>{authUserId && <span>{profile?.username ?? "Account"}</span>}</button>
           {authUserId && accountMenuOpen && (
             <div className="account-menu" role="menu">
-              <button type="button" role="menuitem" onClick={() => { setAccountMenuOpen(false); setTab("profile"); window.scrollTo({ top: 0, behavior: "smooth" }); }}>My Garage</button>
+              <button type="button" role="menuitem" onClick={() => { setAccountMenuOpen(false); navigateToPage("profile"); }}>My Garage</button>
               <button type="button" role="menuitem" onClick={() => { setAccountMenuOpen(false); void logOut(); }}>Log Out</button>
             </div>
           )}
@@ -1622,7 +1657,7 @@ export default function App() {
 
         {tab === "member" && (
           <section className="profile-page public-profile-page">
-            <button className="text-button public-profile-back" onClick={() => setTab("discover")}><ArrowLeft size={16}/> Back to Discover</button>
+            <button className="text-button public-profile-back" onClick={() => navigateToPage("discover")}><ArrowLeft size={16}/> Back to Discover</button>
             {publicProfileLoading ? (
               <p className="public-profile-state">Loading profile…</p>
             ) : publicProfileError ? (
