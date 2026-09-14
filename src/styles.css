@@ -36,7 +36,7 @@ button { cursor:pointer; color:inherit; }
 .site-menu-close-label { font-size:18px; font-weight:400; line-height:1; letter-spacing:.06em; }
 .site-menu-toggle:hover,.site-menu-toggle:focus-visible { opacity:.7; outline:0; }
 .site-menu-overlay { position:fixed; z-index:4; inset:72px 0 0; display:grid; place-items:center; overflow:hidden; transform-origin:top center; background:repeating-linear-gradient(to bottom,rgba(255,255,255,.1) 0 1px,transparent 1px 92px),#0247DD; animation:garage-door-open .62s cubic-bezier(.2,.82,.22,1) both; }
-.site-menu-overlay nav { display:flex; flex-direction:column; align-items:center; gap:12.5px; animation:garage-door-content-in .34s .22s ease-out both; }
+.site-menu-overlay nav { display:flex; flex-direction:column; align-items:center; gap:18.75px; animation:garage-door-content-in .34s .22s ease-out both; }
 .site-menu-overlay nav button { position:relative; display:flex; align-items:baseline; justify-content:center; gap:.22em; border:0; background:transparent; padding:9px 24px; color:#fff; font-size:clamp(42px,6vw,76px); font-weight:700; line-height:1; letter-spacing:-.045em; }
 .site-menu-overlay nav button em { font-size:.5em; font-weight:400; letter-spacing:-.025em; white-space:nowrap; }
 .site-menu-overlay nav button::after { content:""; position:absolute; right:24px; bottom:2px; left:24px; height:3px; background:#fff; transform:scaleX(0); transition:transform .2s ease; }
