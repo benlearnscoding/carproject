@@ -642,7 +642,7 @@ function CommunityRatingCard({ rating, car, onClick, onProfile }: { rating: Comm
           <div className="image-score"><Score value={rating.overall} /></div>
         </div></button>
       <div className="card-body">
-        <div className="community-rating-meta"><button className="community-profile-link" type="button" onClick={onProfile}>@{rating.username}</button><span>{car.make}</span></div>
+        <div className="community-rating-meta"><button className="community-profile-link" type="button" onClick={onProfile}>@{rating.username}</button><span>{car.make}{car.generation ? ` · ${car.generation}` : ""}</span></div>
         <button className="community-car-copy" onClick={onClick}><h3>{car.model}</h3><p className="community-rating-count">Rated {rating.overall.toFixed(1)} out of 10</p>{rating.review && <p className="review-preview">“{rating.review}”</p>}</button>
       </div>
     </article>
