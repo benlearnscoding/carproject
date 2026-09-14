@@ -35,7 +35,7 @@ button { cursor:pointer; color:inherit; }
 .site-menu-toggle.open { width:auto; }
 .site-menu-close-label { font-size:18px; font-weight:400; line-height:1; letter-spacing:.06em; }
 .site-menu-toggle:hover,.site-menu-toggle:focus-visible { opacity:.7; outline:0; }
-.site-menu-overlay { position:fixed; z-index:4; inset:0; display:grid; place-items:center; overflow:hidden; transform-origin:top center; background:repeating-linear-gradient(to bottom,rgba(255,255,255,.1) 0 1px,transparent 1px 92px),#0247DD; animation:garage-door-open .62s cubic-bezier(.2,.82,.22,1) both; }
+.site-menu-overlay { position:fixed; z-index:4; inset:0; display:grid; place-items:center; overflow:hidden; transform-origin:top center; background:#0247DD; animation:garage-door-open .62s cubic-bezier(.2,.82,.22,1) both; }
 .site-menu-overlay nav { display:flex; flex-direction:column; align-items:stretch; width:min(100%,1120px); gap:18.75px; animation:garage-door-content-in .34s .22s ease-out both; }
 .site-menu-overlay.closing { pointer-events:none; animation:garage-door-close .52s cubic-bezier(.58,0,.82,.2) both; }
 .site-menu-overlay.closing nav { animation:garage-door-content-out .18s ease-in both; }
