@@ -847,8 +847,10 @@ function CursorBoostFlame() {
 export default function App() {
   const [tab, setTab] = useState<Tab>("discover");
   const [siteMenuOpen, setSiteMenuOpen] = useState(false);
+  const [siteMenuClosing, setSiteMenuClosing] = useState(false);
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
   const accountMenuRef = useRef<HTMLDivElement>(null);
+  const siteMenuCloseTimer = useRef<number | null>(null);
   const [selectedMake, setSelectedMake] = useState("");
   const [selectedModel, setSelectedModel] = useState("");
   const [selectedGeneration, setSelectedGeneration] = useState("");
@@ -895,6 +897,10 @@ export default function App() {
     return () => { document.body.style.overflow = ""; };
   }, [siteMenuOpen]);
 
+  useEffect(() => () => {
+    if (siteMenuCloseTimer.current !== null) window.clearTimeout(siteMenuCloseTimer.current);
+  }, []);
+
   useEffect(() => {
     if (!accountMenuOpen) return;
     const closeAccountMenu = (event: PointerEvent) => {
@@ -904,7 +910,22 @@ export default function App() {
     return () => document.removeEventListener("pointerdown", closeAccountMenu);
   }, [accountMenuOpen]);
 
+  const closeSiteMenu = () => {
+    if (!siteMenuOpen || siteMenuClosing) return;
+    setSiteMenuClosing(true);
+    siteMenuCloseTimer.current = window.setTimeout(() => {
+      setSiteMenuOpen(false);
+      setSiteMenuClosing(false);
+      siteMenuCloseTimer.current = null;
+    }, 520);
+  };
+
   const openMenuDestination = (destination: "discover" | "cars" | "profile" | "contact") => {
+    if (siteMenuCloseTimer.current !== null) {
+      window.clearTimeout(siteMenuCloseTimer.current);
+      siteMenuCloseTimer.current = null;
+    }
+    setSiteMenuClosing(false);
     setSiteMenuOpen(false);
     if (destination === "contact") {
       setTab("discover");
@@ -1465,11 +1486,11 @@ export default function App() {
             </div>
           )}
         </div>
-        <button className={`site-menu-toggle ${siteMenuOpen ? "open" : ""}`} type="button" aria-label={siteMenuOpen ? "Close site menu" : "Open site menu"} aria-expanded={siteMenuOpen} aria-controls="site-menu" onClick={() => { setAccountMenuOpen(false); setSiteMenuOpen(open => !open); }}><Menu size={36}/>{siteMenuOpen && <span className="site-menu-close-label">CLOSE</span>}</button>
+        <button className={`site-menu-toggle ${siteMenuOpen ? "open" : ""}`} type="button" aria-label={siteMenuOpen ? "Close site menu" : "Open site menu"} aria-expanded={siteMenuOpen} aria-controls="site-menu" onClick={() => { setAccountMenuOpen(false); if (siteMenuOpen) closeSiteMenu(); else { setSiteMenuClosing(false); setSiteMenuOpen(true); } }}><Menu size={36}/>{siteMenuOpen && <span className="site-menu-close-label">CLOSE</span>}</button>
       </header>
 
       {siteMenuOpen && (
-        <div className="site-menu-overlay" id="site-menu" role="dialog" aria-modal="true" aria-label="Site navigation">
+        <div className={`site-menu-overlay ${siteMenuClosing ? "closing" : ""}`} id="site-menu" role="dialog" aria-modal="true" aria-label="Site navigation" aria-hidden={siteMenuClosing}>
           <nav>
             <button type="button" onClick={() => openMenuDestination("discover")}><span>PADDOCK</span><em>— Home of Driven</em></button>
             <button type="button" onClick={() => openMenuDestination("cars")}><span>GRID</span><em>— Pick your Drive</em></button>
