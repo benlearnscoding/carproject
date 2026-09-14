@@ -1471,10 +1471,10 @@ export default function App() {
       {siteMenuOpen && (
         <div className="site-menu-overlay" id="site-menu" role="dialog" aria-modal="true" aria-label="Site navigation">
           <nav>
-            <button type="button" onClick={() => openMenuDestination("discover")}>PADDOCK</button>
-            <button type="button" onClick={() => openMenuDestination("cars")}>GRID</button>
-            <button type="button" onClick={() => openMenuDestination("profile")}>GARAGE</button>
-            <button type="button" onClick={() => openMenuDestination("contact")}>CONTACT</button>
+            <button type="button" onClick={() => openMenuDestination("discover")}><span>PADDOCK</span><em>— Home of Driven</em></button>
+            <button type="button" onClick={() => openMenuDestination("cars")}><span>GRID</span><em>— Pick your Drive</em></button>
+            <button type="button" onClick={() => openMenuDestination("profile")}><span>GARAGE</span><em>— Manage your Cars</em></button>
+            <button type="button" onClick={() => openMenuDestination("contact")}><span>CONTACT</span><em>— Say hi</em></button>
           </nav>
         </div>
       )}
