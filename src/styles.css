@@ -40,10 +40,10 @@ button { cursor:pointer; color:inherit; }
 .site-menu-overlay.closing { pointer-events:none; animation:garage-door-close .52s cubic-bezier(.58,0,.82,.2) both; }
 .site-menu-overlay.closing nav { animation:garage-door-content-out .18s ease-in both; }
 .site-menu-overlay nav button { position:relative; display:grid; grid-template-columns:minmax(0,1fr) auto minmax(0,1fr); align-items:center; width:100%; border:0; background:transparent; padding:9px 24px; color:#fff; font-size:clamp(42px,6vw,76px); font-weight:700; line-height:1; letter-spacing:-.045em; }
-.site-menu-overlay nav button span { grid-column:2; }
+.site-menu-overlay nav button span { position:relative; grid-column:2; }
 .site-menu-overlay nav button em { grid-column:3; justify-self:start; margin-left:.22em; font-size:.5em; font-weight:400; letter-spacing:-.025em; white-space:nowrap; }
-.site-menu-overlay nav button::after { content:""; position:absolute; right:24px; bottom:2px; left:24px; height:3px; background:#fff; transform:scaleX(0); transition:transform .2s ease; }
-.site-menu-overlay nav button:hover::after,.site-menu-overlay nav button:focus-visible::after { transform:scaleX(1); }
+.site-menu-overlay nav button span::after { content:""; position:absolute; right:0; bottom:-7px; left:0; height:3px; background:#fff; transform:scaleX(0); transition:transform .2s ease; }
+.site-menu-overlay nav button:hover span::after,.site-menu-overlay nav button:focus-visible span::after { transform:scaleX(1); }
 @keyframes garage-door-open { from { clip-path:inset(0 0 100% 0); } to { clip-path:inset(0 0 0 0); } }
 @keyframes garage-door-content-in { from { opacity:0; transform:translateY(-28px); } to { opacity:1; transform:translateY(0); } }
 @keyframes garage-door-close { from { clip-path:inset(0 0 0 0); } to { clip-path:inset(0 0 100% 0); } }
