@@ -1510,7 +1510,7 @@ export default function App() {
       <CursorBoostFlame />
       <header className="nav">
         <button className="brand-logo" onClick={() => { setSiteMenuOpen(false); navigateToPage("discover"); }} aria-label="Driven home">
-          <img src="/driven-logo.png" alt="Driven" />
+          <img src="/driven-metallic-logo.png" alt="Driven" />
         </button>
         <button className="logo-loop" onClick={() => navigateToPage("discover")} aria-label="Driven home">
           <span className="logo-loop-track" aria-hidden="true">
