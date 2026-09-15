@@ -24,7 +24,7 @@ button { cursor:pointer; color:inherit; }
 .brand-logo img { position:absolute; top:-75px; left:0; display:block; width:214px; max-width:none; height:auto; }
 .brand-logo::before,.brand-logo::after { content:"✦"; position:absolute; z-index:1; top:4px; color:#fff; font-size:19px; line-height:1; opacity:0; pointer-events:none; text-shadow:0 0 5px #fff,0 0 12px rgba(255,255,255,.9); transform:scale(.2) rotate(-20deg); animation:logo-sparkle 10s ease-in-out infinite; }
 .brand-logo::before { left:15px; animation-delay:5s; }
-.brand-logo::after { right:15px; }
+.brand-logo::after { right:15px; animation-fill-mode:both; }
 .brand-logo:hover,.brand-logo:focus-visible { transform:scale(1.04); outline:0; }
 @keyframes logo-sparkle { 0% { opacity:1; transform:scale(1.35) rotate(12deg); } 3% { opacity:.75; transform:scale(.8) rotate(30deg); } 7%,100% { opacity:0; transform:scale(.2) rotate(-20deg); } }
 .corner-logo { position:absolute; left:5vw; width:74px; height:68px; border:0; background:transparent; padding:0; color:#fff; }
