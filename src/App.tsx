@@ -1512,6 +1512,12 @@ export default function App() {
         <button className="brand-logo" onClick={() => { setSiteMenuOpen(false); navigateToPage("discover"); }} aria-label="Driven home">
           <img src="/driven-logo.png" alt="Driven" />
         </button>
+        <button className="logo-loop" onClick={() => navigateToPage("discover")} aria-label="Driven home">
+          <span className="logo-loop-track" aria-hidden="true">
+            <span>DRIVEN</span><span>DRIVEN</span><span>DRIVEN</span>
+            <span>DRIVEN</span><span>DRIVEN</span><span>DRIVEN</span>
+          </span>
+        </button>
         <div className="profile-actions" ref={accountMenuRef}>
           <button className="profile-button" aria-label={authUserId ? "Open account menu" : "Log in or create an account"} aria-haspopup={authUserId ? "menu" : undefined} aria-expanded={authUserId ? accountMenuOpen : undefined} onClick={() => { setSiteMenuOpen(false); authUserId ? setAccountMenuOpen(open => !open) : setCreatingProfile(true); }}><UserRound size={18}/>{authUserId && <span>{profile?.username ?? "Account"}</span>}</button>
           {authUserId && accountMenuOpen && (
