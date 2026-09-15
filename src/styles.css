@@ -22,9 +22,11 @@ button { cursor:pointer; color:inherit; }
 .nav { height:72px; border-bottom:0; display:flex; align-items:center; padding:0 5vw; justify-content:flex-end; background:#f7f7f5cc; backdrop-filter:blur(12px); position:sticky; top:0; z-index:5; }
 .brand-logo { position:absolute; left:5vw; width:214px; height:64px; overflow:hidden; border:0; background:#0048E8; padding:0; }
 .brand-logo img { position:absolute; top:-75px; left:0; display:block; width:214px; max-width:none; height:auto; }
-.brand-logo::after { content:"✦"; position:absolute; top:4px; right:15px; color:#fff; font-size:19px; line-height:1; opacity:0; pointer-events:none; text-shadow:0 0 5px #fff,0 0 12px rgba(255,255,255,.9); transform:scale(.2) rotate(-20deg); animation:logo-sparkle 10s ease-in-out infinite; }
+.brand-logo::before,.brand-logo::after { content:"✦"; position:absolute; z-index:1; top:4px; color:#fff; font-size:19px; line-height:1; opacity:0; pointer-events:none; text-shadow:0 0 5px #fff,0 0 12px rgba(255,255,255,.9); transform:scale(.2) rotate(-20deg); animation:logo-sparkle 10s ease-in-out infinite; }
+.brand-logo::before { left:15px; animation-delay:5s; }
+.brand-logo::after { right:15px; }
 .brand-logo:hover,.brand-logo:focus-visible { transform:scale(1.04); outline:0; }
-@keyframes logo-sparkle { 0%,91%,100% { opacity:0; transform:scale(.2) rotate(-20deg); } 94% { opacity:1; transform:scale(1.35) rotate(12deg); } 97% { opacity:.75; transform:scale(.8) rotate(30deg); } }
+@keyframes logo-sparkle { 0% { opacity:1; transform:scale(1.35) rotate(12deg); } 3% { opacity:.75; transform:scale(.8) rotate(30deg); } 7%,100% { opacity:0; transform:scale(.2) rotate(-20deg); } }
 .corner-logo { position:absolute; left:5vw; width:74px; height:68px; border:0; background:transparent; padding:0; color:#fff; }
 .corner-logo-letter { position:absolute; z-index:2; top:11px; left:20px; display:block; font-size:44px; font-weight:700; font-style:italic; line-height:1; letter-spacing:-1px; transform:skewX(-12deg); }
 .corner-logo-curb { position:absolute; z-index:1; inset:0; width:74px; height:68px; overflow:visible; }
@@ -67,7 +69,7 @@ button { cursor:pointer; color:inherit; }
 .profile-button:hover::before,.profile-button:focus-visible::before { opacity:1; animation:account-curb-pattern 8s linear infinite; }
 .profile-button:hover,.profile-button:focus-visible { border-color:transparent; }
 @keyframes account-curb-pattern { to { --account-curb-angle:360deg; } }
-@media (prefers-reduced-motion:reduce) { .profile-button:hover::before,.profile-button:focus-visible::before { animation:none; } .logo-loop-track { animation-play-state:paused; } .brand-logo::after { animation:none; } .site-menu-overlay,.site-menu-overlay nav { animation:none; } }
+@media (prefers-reduced-motion:reduce) { .profile-button:hover::before,.profile-button:focus-visible::before { animation:none; } .logo-loop-track { animation-play-state:paused; } .brand-logo::before,.brand-logo::after { animation:none; } .site-menu-overlay,.site-menu-overlay nav { animation:none; } }
 main { max-width:1240px; margin:0 auto; padding:0 28px; }
 .hero { min-height:560px; display:flex; flex-direction:column; justify-content:center; padding:90px 0 70px; }
 .eyebrow { font-family:"DM Mono",monospace; font-size:11px; letter-spacing:.09em; text-transform:uppercase; color:#85847e; margin:0 0 13px; }
